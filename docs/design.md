@@ -34,3 +34,7 @@ Per [REST API Architectural Constraints | geeksforgeeks.org](https://www.geeksfo
 the backend will follow the RESTful API architecture, or very close too.
 Ideally, the project will closely follow the URL structure to keep file organized
 and their location predictable.
+
+### Frontend
+
+Check out [Using Rust and Leptos to build beautifyl, declarative UIs | LogRocket.com](https://blog.logrocket.com/using-rust-leptos-build-beautiful-declarative-uis/).
