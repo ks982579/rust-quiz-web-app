@@ -15,3 +15,15 @@ We can circumvent the issue by giving the container a directory it has [free rei
 sudo mkdir /var/lib/surrealquizdata
 sudo chmod 777 /var/lib/surrealquizdata
 ```
+
+Once you have that folder, assuming you have docker installed,
+on my WSL2 Ubuntu instance, run the following commands in the root of this project:
+
+```bash
+docker compose build
+docker compose up
+```
+
+The Leptos frontend _should_ be available on port 8080,
+The Actix-Web backend _should_ be available on port 8000,
+and the SurrealDB instance _should_ be accessible on port 8001.
