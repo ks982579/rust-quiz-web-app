@@ -27,3 +27,14 @@ docker compose up
 The Leptos frontend _should_ be available on port 8080,
 The Actix-Web backend _should_ be available on port 8000,
 and the SurrealDB instance _should_ be accessible on port 8001.
+
+## Development Cycle
+
+Just setup a new branch called "develop".
+The workflow will follow something like [Gitflow | Atlassian.com](https://www.atlassian.com/continuous-delivery/continuous-integration/trunk-based-development).
+This project is (as of May 2024) still in early stages of development.
+As such, there will be the "main" branch, which _should_ always be stable.
+Then there is the "develop" branch, where features branches are merged into.
+Only after proving changes to "develop" are stable should it be merged to "main".
+
+When the project is deployed to the cloud, this will hopefully ensure stable deployments.
