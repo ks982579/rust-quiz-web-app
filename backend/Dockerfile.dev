@@ -1,0 +1,31 @@
+# FROM rust:1.78-slim-bookworm
+#
+# WORKDIR /app
+# RUN apt update && apt install lld clang -y
+# COPY . .
+# EXPOSE 8080
+# # RUN cargo build
+#
+# # ENV APP_ENVIRONMENT development
+# # ENTRYPOINT ["./target/debug/backend"]
+# # CMD ["./target/debug/backend"]
+# CMD ["cargo", "run"]
+
+
+FROM rust:latest AS builder
+ENV APP backend
+RUN apt update && apt install lld clang -y
+WORKDIR /app
+COPY . .
+# RUN ls -alhFR
+RUN cargo build --bin backend
+EXPOSE 8000
+ENTRYPOINT ["./target/debug/backend"]
+# CMD ["cargo", "run"]
+
+# FROM debian:bookworm-slim AS runtime
+# # RUN apk add --no-cache libc6-compat
+# COPY --from=builder /app/target/debug/backend /app
+# EXPOSE 8080
+# WORKDIR /app
+# CMD ["backend"]

@@ -1,0 +1,10 @@
+name: quiz-web-application
+services:
+  backend:
+    # image: quiz-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+      network: host
+    ports:
+      - 8000:8000

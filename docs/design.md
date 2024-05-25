@@ -38,3 +38,5 @@ and their location predictable.
 ### Frontend
 
 Check out [Using Rust and Leptos to build beautifyl, declarative UIs | LogRocket.com](https://blog.logrocket.com/using-rust-leptos-build-beautiful-declarative-uis/).
+The `trunk` crate is a bundler.
+It will compile Rust to WASM and bundle in the `frontend/dist` directory
