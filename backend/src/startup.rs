@@ -27,6 +27,7 @@ impl Application {
             // port
             config.application.port,
         };
+        println!("Running on {:?}", &address);
 
         // Need listener to obtain randomly selected port
         let listener: TcpListener = TcpListener::bind(address)?;

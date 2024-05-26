@@ -13,14 +13,18 @@
 
 
 FROM rust:latest AS builder
-ENV APP backend
 RUN apt update && apt install lld clang -y
 WORKDIR /app
+RUN cargo init . --vcs none
+COPY ./Cargo.toml ./Cargo.toml
+RUN cargo build --bin backend
+# ---
 COPY . .
-# RUN ls -alhFR
 RUN cargo build --bin backend
 EXPOSE 8000
-ENTRYPOINT ["./target/debug/backend"]
+ENV APP_ENVIRONMENT local
+ENV QUIZAPP_APPLICATION__HOST 0.0.0.0
+CMD ["./target/debug/backend"]
 # CMD ["cargo", "run"]
 
 # FROM debian:bookworm-slim AS runtime

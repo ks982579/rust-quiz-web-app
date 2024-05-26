@@ -61,26 +61,28 @@ pub struct Settings {
 /// That will set the settings.application.port = "127.0.0.1"
 pub fn get_configuration() -> Result<Settings, ConfigError> {
     // Because we may be in workspace, must do quick look for right folder
-    let mut base_path: PathBuf =
+    let base_path: PathBuf =
         std::env::current_dir().expect("Failed to determine current directory");
-    // let dir_list: std::fs::ReadDir = match base_path.read_dir() {
-    //     Ok(dir_iter) => dir_iter,
-    //     Err(_) => {
-    //         return Err(ConfigError::Message(
-    //             "Error reading current directory".into(),
-    //         ))
-    //     }
-    // };
-    // if
-    if !base_path.ends_with("backend") {
-        base_path = base_path.join("backend");
+
+    // Checks if directory is there
+    // else checks if it is in backend directory
+    // else errors out
+    let config_dir = if let true = base_path.join("configuration").exists() {
+        base_path.join("configuration")
+    } else if let true = base_path.join("backend").join("configuration").exists() {
+        base_path.join("backend").join("configuration")
+    } else {
+        return Err(ConfigError::NotFound(format!(
+            "Cannot find 'configuration' directory from {:?}",
+            base_path
+        )));
     };
-    let config_dir: PathBuf = base_path.join("configuration");
 
     if let false = config_dir.exists() {
-        return Err(ConfigError::NotFound(
-            "Unable to find configuration directory".into(),
-        ));
+        return Err(ConfigError::NotFound(format!(
+            "{:?} - Does not exist?",
+            config_dir
+        )));
     };
 
     // Detect selected environment or default to _local_
@@ -102,11 +104,12 @@ pub fn get_configuration() -> Result<Settings, ConfigError> {
         // being last allows to override config in files
         .add_source(
             config::Environment::with_prefix("QUIZAPP")
-                .prefix("_")
+                .prefix_separator("_")
                 .separator("__"),
         )
         .build()?;
 
     // Try deserialize values into struct
+    println!("{:?}", &settings);
     settings.try_deserialize::<Settings>()
 }
