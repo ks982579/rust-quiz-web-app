@@ -17,7 +17,6 @@ impl Application {
     /// Builder pattern for `Application` struct to set up application
     /// based on configuration setting from files or environment variables.
     pub async fn build(config: Settings) -> Result<Self, anyhow::Error> {
-        // todo!();
         // TODO - SETUP DATABASE HERE
 
         // Update port based on settings

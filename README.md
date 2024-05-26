@@ -49,6 +49,16 @@ This is why logs should be easy to correlate.
 The book "Zero to Production in Rust" by Luca Palmieri covers Telemetry in Chapter 4.
 This project will follow the book's more complicated approach to logging.
 
+## Application Configuration
+
+> Probably going to have 3 configuration types.
+
+### Local
+
+### Container
+
+### Production
+
 ## Used Crates
 
 ### FrontEnd

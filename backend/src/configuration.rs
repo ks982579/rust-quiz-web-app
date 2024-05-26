@@ -2,7 +2,6 @@
 //! Logic to read configuration files and create structs to be used
 //! throughout the rest of the application.
 use config::ConfigError;
-use config::Environment;
 use serde::Deserialize;
 use serde_aux::field_attributes::deserialize_number_from_string;
 use std::path::PathBuf;
@@ -61,10 +60,28 @@ pub struct Settings {
 /// e.g.) QUIZAPP_APPLICATION__HOST=127.0.0.1
 /// That will set the settings.application.port = "127.0.0.1"
 pub fn get_configuration() -> Result<Settings, ConfigError> {
-    // Might need check if running in "backend" or parent dir
-    let base_path: PathBuf =
+    // Because we may be in workspace, must do quick look for right folder
+    let mut base_path: PathBuf =
         std::env::current_dir().expect("Failed to determine current directory");
+    // let dir_list: std::fs::ReadDir = match base_path.read_dir() {
+    //     Ok(dir_iter) => dir_iter,
+    //     Err(_) => {
+    //         return Err(ConfigError::Message(
+    //             "Error reading current directory".into(),
+    //         ))
+    //     }
+    // };
+    // if
+    if !base_path.ends_with("backend") {
+        base_path = base_path.join("backend");
+    };
     let config_dir: PathBuf = base_path.join("configuration");
+
+    if let false = config_dir.exists() {
+        return Err(ConfigError::NotFound(
+            "Unable to find configuration directory".into(),
+        ));
+    };
 
     // Detect selected environment or default to _local_
     let app_env: AppEnv = std::env::var("APP_ENVIRONMENT")
