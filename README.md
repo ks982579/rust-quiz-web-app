@@ -76,3 +76,9 @@ This project will follow the book's more complicated approach to logging.
   - Provides procedural macro to derive `std::error::Error` trait.
 - `cargo add anyhow@1`
   - Helps to simplify error handling by being like a catch-all error trait object.
+- `cargo add --no-default-features reqwest --features=json,rustls-tls,cookies`
+  - This is easy-to-use HTTP client, which is very helpful in testing
+- `cargo add --dev wiremock`
+  - Can spawn mock servers for testing.
+  - This will only be used for testing purposes, no need to spawn mock servers in live code.
+  - Actix-Web testing does not appear to necessarily spawn a server for integration tests.
