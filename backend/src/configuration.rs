@@ -51,6 +51,15 @@ pub struct Settings {
     pub application: ApplicationSettings,
 }
 
+/// Function to read from configuration files and create a `Settings` struct
+/// that can be used to set up the application.
+/// Values in files can be overriden with environment variables following a
+/// format of:
+///   - Prefixed with "QUIZAPP"
+///   - structs seperated by "_"
+///   - fields separated by "__"
+/// e.g.) QUIZAPP_APPLICATION__HOST=127.0.0.1
+/// That will set the settings.application.port = "127.0.0.1"
 pub fn get_configuration() -> Result<Settings, ConfigError> {
     // Might need check if running in "backend" or parent dir
     let base_path: PathBuf =
@@ -75,7 +84,7 @@ pub fn get_configuration() -> Result<Settings, ConfigError> {
         // Read from environment variables
         // being last allows to override config in files
         .add_source(
-            config::Environment::with_prefix("QUIZ")
+            config::Environment::with_prefix("QUIZAPP")
                 .prefix("_")
                 .separator("__"),
         )

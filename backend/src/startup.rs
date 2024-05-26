@@ -1,6 +1,6 @@
 //! backend/src/startup.rs
 //! Holds application level information and functions.
-use crate::routes::health_check;
+use crate::{configuration::Settings, routes::health_check};
 use actix_web::{dev::Server, web, App, HttpServer};
 use std::net::TcpListener;
 use tracing_actix_web::TracingLogger;
@@ -11,7 +11,7 @@ pub struct Application {
     server: Server,
 }
 
-pub struct Settings();
+// pub struct Settings();
 
 impl Application {
     /// Builder pattern for `Application` struct to set up application
@@ -24,9 +24,9 @@ impl Application {
         let address: String = format! {
             "{}:{}",
             // host address, 0.0.0.0 or 127.0.0.1
-            "127.0.0.1",
+            config.application.host,
             // port
-            "8000"
+            config.application.port,
         };
 
         // Need listener to obtain randomly selected port
