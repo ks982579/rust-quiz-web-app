@@ -11,12 +11,10 @@ pub struct Application {
     server: Server,
 }
 
-// pub struct Settings();
-
 impl Application {
-    /// Builder pattern for `Application` struct to set up application
+    /// Initialization for `Application` struct to set up application
     /// based on configuration setting from files or environment variables.
-    pub async fn build(config: Settings) -> Result<Self, anyhow::Error> {
+    pub async fn from_config(config: Settings) -> Result<Self, anyhow::Error> {
         // TODO - SETUP DATABASE HERE
 
         // Update port based on settings
@@ -55,7 +53,6 @@ pub async fn run(listener: TcpListener) -> Result<Server, anyhow::Error> {
             .route("/health-check", web::get().to(health_check))
     })
     .listen(listener)?
-    // .bind(("0.0.0.0", 8000))?
     .run();
     Ok(server)
 }

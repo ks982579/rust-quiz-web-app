@@ -13,6 +13,7 @@ pub enum AppEnv {
 }
 
 impl AppEnv {
+    /// Enum to `String` casting
     pub fn as_str(&self) -> &str {
         match self {
             AppEnv::Local => "local",
@@ -21,9 +22,12 @@ impl AppEnv {
     }
 }
 
+/// Implementation of Associated function on `AppEnv`
+/// but gives us `.try_into::<AppEnv>()` method on string for free.
 impl TryFrom<String> for AppEnv {
     type Error = ConfigError;
 
+    /// Associated function to (try) cast `String` to `AppEnv` enum.
     fn try_from(env_str: String) -> Result<Self, Self::Error> {
         // convert input and compare
         match env_str.to_lowercase().as_str() {
@@ -37,6 +41,7 @@ impl TryFrom<String> for AppEnv {
     }
 }
 
+/// Struct for holding information regarding serving the application.
 #[derive(Deserialize, Debug, Clone)]
 pub struct ApplicationSettings {
     #[serde(deserialize_with = "deserialize_number_from_string")]
@@ -45,6 +50,8 @@ pub struct ApplicationSettings {
     pub base_url: String,
 }
 
+/// Struct for holding all settings for a convenient means of passing
+/// through application.
 #[derive(Deserialize, Debug, Clone)]
 pub struct Settings {
     pub application: ApplicationSettings,
@@ -80,7 +87,7 @@ pub fn get_configuration() -> Result<Settings, ConfigError> {
 
     if let false = config_dir.exists() {
         return Err(ConfigError::NotFound(format!(
-            "{:?} - Does not exist?",
+            "{:?} - Does not exist",
             config_dir
         )));
     };

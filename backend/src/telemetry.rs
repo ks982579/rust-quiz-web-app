@@ -7,10 +7,11 @@ use tracing_subscriber::{fmt::MakeWriter, layer::SubscriberExt, EnvFilter, Regis
 
 /// Allows application to compose multiple layers into the tracing subscriber.
 /// returning implementation because actual returned type is very complex.
+/// The `sink` parameter is where to send logs (e.g. std::io::stdout (standard out))
 pub fn get_subscriber<T>(
     name: String,
     env_filter_level: String,
-    sink: T, // where to send logs (e.g. standard out)
+    sink: T,
 ) -> impl Subscriber + Send + Sync
 where
     T: for<'a> MakeWriter<'a> + Send + Sync + 'static,

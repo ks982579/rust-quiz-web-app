@@ -1,6 +1,10 @@
+//! backend/src/routes/health_check.rs
+//! Small endpoint whose only purpose is to ensure application is alive.
 use actix_web::http::header::ContentType;
 use actix_web::{HttpRequest, HttpResponse};
 
+/// Endpoint function for GET /health-check.
+/// it only sends back 200 OK and HTML response (TODO: change in future)
 pub async fn health_check(_req: HttpRequest) -> HttpResponse {
     HttpResponse::Ok()
         .content_type(ContentType::html())
@@ -11,7 +15,7 @@ pub async fn health_check(_req: HttpRequest) -> HttpResponse {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Login</title>
+    <title>HEALTH CHECK</title>
     <!-- <link href="css/style.css" rel="stylesheet"> -->
   </head>
   <body>
