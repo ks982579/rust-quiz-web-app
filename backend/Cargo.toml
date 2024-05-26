@@ -6,7 +6,11 @@ edition = "2021"
 [dependencies]
 actix-web = "4.6.0"
 anyhow = "1.0.86"
+config = "0.14.0"
 reqwest = { version = "0.12.4", default-features = false, features = ["json", "rustls-tls", "cookies"] }
+serde = { version = "1.0.203", features = ["derive"] }
+serde-aux = "4.5.0"
+serde_json = "1.0.117"
 thiserror = "1.0.61"
 tokio = { version = "1.37.0", features = ["macros", "rt-multi-thread"] }
 tracing = { version = "0.1.40", features = ["log"] }

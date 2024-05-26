@@ -82,3 +82,11 @@ This project will follow the book's more complicated approach to logging.
   - Can spawn mock servers for testing.
   - This will only be used for testing purposes, no need to spawn mock servers in live code.
   - Actix-Web testing does not appear to necessarily spawn a server for integration tests.
+- `cargo add serde@1 --features=derive`
+  - Rust standard for data serialization and deserialization.
+- `cargo add serde-aux@4.5`
+  - Houses helpful function for casting types during deserialization.
+- `cargo add serde_json`
+  - Providing serialization and deserialization implementation for JSON format.
+- `cargo add config`
+  - Allows you to read and merge configuration from multiple sources.
