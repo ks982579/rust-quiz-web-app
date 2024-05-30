@@ -55,16 +55,22 @@ This project will follow the book's more complicated approach to logging.
 
 ### Local
 
-### Container
-
 ### Production
 
 ## Used Crates
 
 ### FrontEnd
 
+To format the component code in the `view!{ ... }` macros,
+
+```bash
+cargo install leptosfmt
+```
+
 - `cargo add leptos@0.6 --features=csr`
-  - required for using Leptos as our frontend framework.
+  - Required for using Leptos as our frontend framework.
+- `cargo add leptos_router --features=csr`
+  - Since this is SPA, we want to give illusion of routing with a router.
 
 ### BackEnd
 

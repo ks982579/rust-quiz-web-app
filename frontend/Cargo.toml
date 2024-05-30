@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 leptos = { version = "0.6.11", features = ["csr"] }
+leptos_router = { version = "0.6.11", features = ["csr"] }
