@@ -1,5 +1,5 @@
 use leptos::*;
-use leptos_router::{Route, Router, Routes};
+use leptos_router::{Form, Route, Router, Routes, A};
 
 fn main() {
     mount_to_body(App)
@@ -41,7 +41,7 @@ fn HomePage() -> impl IntoView {
             <section>"Defines section in document"</section>
             <section>
                 <LogIn/>
-                <a href="/new-user">"New? Create an account here"</a>
+                <A href="/new-user">"New? Create an account here"</A>
             </section>
             <article>"Independent, self-contained content"</article>
         </>
@@ -68,5 +68,25 @@ fn LogIn() -> impl IntoView {
 
 #[component]
 fn CreateNewUser() -> impl IntoView {
-    view! {}
+    let (name, set_name): (ReadSignal<String>, WriteSignal<String>) =
+        create_signal("Uncontrolled".to_string());
+    let input_element: NodeRef<html::Input> = create_node_ref();
+    // let on_submit: dyn FnOnce = move || {};
+    let on_submit = move |ev: ev::SubmitEvent| {
+        // stop page reloading
+        ev.prevent_default();
+        // extract value from input
+        let value = input_element
+            .get()
+            .expect("<input> should be mounted")
+            // `leptos::HtmlElement<html::Input>` implements `Deref`
+            .value();
+        set_name.set(value);
+    };
+    view! {
+        <form on:submit=on_submit>
+            <input type="text" id="username" value=name node_ref=input_element />
+            <input type="submit" value="Join!" />
+        </form>
+    }
 }
