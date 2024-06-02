@@ -78,6 +78,8 @@ cargo install leptosfmt
   - Required for using Actix-Web as the backend framework.
 - `cargo add tokio@1.37 --features=macros,rt-multi-thread`
   - Following Zero to Production, Tokio is an asynchronous runtime for Rust.
+- `cargo add actix-cors@0.7`
+  - Cannot get separate frontend without it, see [Cors docs](https://docs.rs/actix-cors/latest/actix_cors/)
 - `cargo add tracing@0.1 --features=log`
   - Better logs for asynchronous applications
 - `cargo add tracing-subscriber@0.3 --features=registry,env-filter`

@@ -2,7 +2,10 @@ use leptos::*;
 use leptos_router::{Form, Route, Router, Routes, A};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::JsFuture;
-use web_sys::{Request, RequestInit, RequestMode, Response};
+use web_sys::{
+    wasm_bindgen::{prelude::*, JsCast, JsValue},
+    Headers, Request, RequestInit, RequestMode, Response,
+};
 
 fn main() {
     mount_to_body(App)
@@ -106,28 +109,60 @@ fn CreateNewUser() -> impl IntoView {
             .value();
 
         // Package Data into JSON String
-        let pck: String = serde_json::json! ({
+        let pckg: String = serde_json::json! ({
             "name": name_value,
             "username": username_value,
             "password": password_value,
         })
         .to_string();
-        let request: Request = Request::new_with_str_and_init(
-            "http://localhost:8080/what",
-            &RequestInit::new()
-                .method("POST")
-                .mode(RequestMode::Cors)
-                .body(Some(&pck.into())),
-        )
-        .unwrap();
 
-        request.headers().set("Accept", "application/json");
+        let headers: Headers = Headers::new().unwrap();
+        headers
+            .set("Content-Type", "application/json;charset=UTF-8")
+            .unwrap();
 
+        // println!("{:?}", headers);
+        // let this = headers.get("content-type").unwrap().unwrap();
+        // web_sys::console::log_1(&JsValue::from_str(&format!("{this:?}")));
+
+        let mut options = RequestInit::new();
+        options.method("POST");
+        options.headers(&headers);
+        options.body(Some(&JsValue::from_str(&pckg)));
+        options.mode(RequestMode::Cors);
+
+        let request: Request =
+            Request::new_with_str_and_init("http://127.0.0.1:8000/create-user", &options).unwrap();
+
+        // request.headers().set("accept", "application/json");
+        // let headers = request.headers();
+        // headers.set("content-type", "application/json").unwrap();
+
+        // let this = request.headers().get("content-type").unwrap().unwrap();
+        // web_sys::console::log_1(&JsValue::from_str(&format!("{this:?}")));
+
+        // Fetch and receive
         spawn_local(async move {
             let window = web_sys::window().unwrap();
-            let this: JsFuture = JsFuture::from(window.fetch_with_request(&request));
-            let that: Response = this.await.unwrap().into();
-        });
+
+            let response: Response =
+                wasm_bindgen_futures::JsFuture::from(window.fetch_with_request(&request))
+                    .await
+                    .unwrap()
+                    .dyn_into()
+                    .unwrap();
+
+            // convert into JSON
+            // let jzon = wasm_bindgen_futures::JsFuture::from(response.json().unwrap())
+            //     .await
+            //     .unwrap();
+        })
+
+        // spawn_local(async move {
+        //     let window = web_sys::window().unwrap();
+        //     let this: JsFuture = JsFuture::from(window.fetch_with_request(&request));
+        //     let that: Response = this.await.unwrap().into();
+        // });
         // set_name.set(value);
     };
     view! {

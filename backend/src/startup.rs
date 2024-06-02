@@ -1,9 +1,42 @@
 //! backend/src/startup.rs
 //! Holds application level information and functions.
-use crate::{configuration::AllSettings, routes::health_check};
+use crate::{
+    configuration::AllSettings,
+    routes::{create_user, health_check},
+};
+use actix_cors::Cors;
 use actix_web::{dev::Server, web, App, HttpServer};
 use std::net::TcpListener;
 use tracing_actix_web::TracingLogger;
+
+/// Builds an Actix-Web Server, from `HttpServer::new()` provided a TcpListener.
+/// Tracing is added, along with other middleware.
+/// Other pieces of application state will also be included in the returned server.
+pub async fn run(listener: TcpListener) -> Result<Server, anyhow::Error> {
+    let server: Server = HttpServer::new(|| {
+        App::new()
+            // consider versioning like /api/v1/
+            .wrap(
+                Cors::default()
+                    // front-end URL
+                    .allowed_origin("http://localhost:8080")
+                    .allow_any_header()
+                    .allow_any_method()
+                    .allowed_header(actix_web::http::header::CONTENT_TYPE)
+                    .max_age(3600),
+            )
+            .wrap(TracingLogger::default())
+            .route("/health-check", web::get().to(health_check))
+            .route("/create-user", web::post().to(create_user))
+            // setting
+            .app_data(
+                web::JsonConfig::default().content_type(|_| "application/json".parse().unwrap()),
+            )
+    })
+    .listen(listener)?
+    .run();
+    Ok(server)
+}
 
 /// To hold necessary application level information.
 pub struct Application {
@@ -46,18 +79,4 @@ impl Application {
     pub async fn run_until_stopped(self) -> std::io::Result<()> {
         self.server.await
     }
-}
-
-/// Builds an Actix-Web Server, from `HttpServer::new()` provided a TcpListener.
-/// Tracing is added, along with other middleware.
-/// Other pieces of application state will also be included in the returned server.
-pub async fn run(listener: TcpListener) -> Result<Server, anyhow::Error> {
-    let server: Server = HttpServer::new(|| {
-        App::new()
-            .wrap(TracingLogger::default())
-            .route("/health-check", web::get().to(health_check))
-    })
-    .listen(listener)?
-    .run();
-    Ok(server)
 }

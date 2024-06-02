@@ -43,3 +43,8 @@ async fn test_create_user_200() {
     dbg!(response.status());
     assert!(response.status().is_success());
 }
+
+/* Other Tests that shouldn't be too demanding:
+* - incomplete information is rejected
+* - username already taken
+*/
