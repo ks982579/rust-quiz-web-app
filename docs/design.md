@@ -28,6 +28,12 @@ This workspace has 3 members:
 Also shows the MVC more like the MVP.
 May need more consideration.
 
+### Frontend
+
+Check out [Using Rust and Leptos to build beautifyl, declarative UIs | LogRocket.com](https://blog.logrocket.com/using-rust-leptos-build-beautiful-declarative-uis/).
+The `trunk` crate is a bundler.
+It will compile Rust to WASM and bundle in the `frontend/dist` directory
+
 ### Backend
 
 Per [REST API Architectural Constraints | geeksforgeeks.org](https://www.geeksforgeeks.org/rest-api-architectural-constraints/)
@@ -35,8 +41,9 @@ the backend will follow the RESTful API architecture, or very close too.
 Ideally, the project will closely follow the URL structure to keep file organized
 and their location predictable.
 
-### Frontend
+[OpenAPI 3.1 Specification | Swagger.io](https://swagger.io/specification/)
 
-Check out [Using Rust and Leptos to build beautifyl, declarative UIs | LogRocket.com](https://blog.logrocket.com/using-rust-leptos-build-beautiful-declarative-uis/).
-The `trunk` crate is a bundler.
-It will compile Rust to WASM and bundle in the `frontend/dist` directory
+#### GET /health-check
+
+Create JSON objects for request and response.
+Nothing too intense.

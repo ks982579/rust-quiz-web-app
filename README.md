@@ -51,7 +51,7 @@ This project will follow the book's more complicated approach to logging.
 
 ## Application Configuration
 
-> Probably going to have 3 configuration types.
+> Probably going to have 2 configuration types.
 
 ### Local
 
