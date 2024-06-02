@@ -1,6 +1,6 @@
 //! backend/src/startup.rs
 //! Holds application level information and functions.
-use crate::{configuration::Settings, routes::health_check};
+use crate::{configuration::AllSettings, routes::health_check};
 use actix_web::{dev::Server, web, App, HttpServer};
 use std::net::TcpListener;
 use tracing_actix_web::TracingLogger;
@@ -14,7 +14,7 @@ pub struct Application {
 impl Application {
     /// Initialization for `Application` struct to set up application
     /// based on configuration setting from files or environment variables.
-    pub async fn from_config(config: Settings) -> Result<Self, anyhow::Error> {
+    pub async fn from_config(config: AllSettings) -> Result<Self, anyhow::Error> {
         // TODO - SETUP DATABASE HERE
 
         // Update port based on settings
@@ -34,6 +34,11 @@ impl Application {
         let server: Server = run(listener).await?;
 
         Ok(Self { port, server })
+    }
+
+    /// Returns a copy of the application port, if needed in other parts of application.
+    pub fn get_port(&self) -> u16 {
+        self.port.clone()
     }
 
     /// Final method to consume the Application and return the running server.

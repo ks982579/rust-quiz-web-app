@@ -1,6 +1,7 @@
 //! backend/tests/api/utils.rs
 //! To house utility functions for testing.
 use backend::{
+    configuration::{get_configuration, AllSettings, ApplicationSettings},
     startup::Application,
     telemetry::{get_subscriber, init_subscriber},
 };
@@ -33,9 +34,30 @@ pub async fn spawn_app() -> TestApp {
         }
     });
 
+    // Get App Configurations
+    let mut configuration: AllSettings =
+        get_configuration().expect("Failed to Read Configuration File(s)");
+
+    // Radomize OS Port
+    configuration.application.port = 0;
+
+    let application: Application = Application::from_config(configuration.clone())
+        .await
+        .expect("Failed to Build Application from Configuration");
+
+    // obtain random application port
+    let application_port: u16 = application.get_port();
+    dbg!("Running on port {&application_port}");
+
+    let client: Client = Client::builder()
+        .redirect(reqwest::redirect::Policy::none())
+        .cookie_store(true)
+        .build()
+        .unwrap();
+
     TestApp {
-        address: "127.0.0.1".into(),
-        port: 8000,
-        api_client: reqwest::Client::new(),
+        address: format!("http://127.0.0.1:{}", application_port),
+        port: application_port,
+        api_client: client,
     }
 }

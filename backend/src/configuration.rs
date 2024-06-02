@@ -53,7 +53,7 @@ pub struct ApplicationSettings {
 /// Struct for holding all settings for a convenient means of passing
 /// through application.
 #[derive(Deserialize, Debug, Clone)]
-pub struct Settings {
+pub struct AllSettings {
     pub application: ApplicationSettings,
 }
 
@@ -66,7 +66,7 @@ pub struct Settings {
 ///   - fields separated by "__"
 /// e.g.) QUIZAPP_APPLICATION__HOST=127.0.0.1
 /// That will set the settings.application.port = "127.0.0.1"
-pub fn get_configuration() -> Result<Settings, ConfigError> {
+pub fn get_configuration() -> Result<AllSettings, ConfigError> {
     // Because we may be in workspace, must do quick look for right folder
     let base_path: PathBuf =
         std::env::current_dir().expect("Failed to determine current directory");
@@ -118,5 +118,5 @@ pub fn get_configuration() -> Result<Settings, ConfigError> {
 
     // Try deserialize values into struct
     println!("{:?}", &settings);
-    settings.try_deserialize::<Settings>()
+    settings.try_deserialize::<AllSettings>()
 }
