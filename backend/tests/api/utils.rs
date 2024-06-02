@@ -47,7 +47,10 @@ pub async fn spawn_app() -> TestApp {
 
     // obtain random application port
     let application_port: u16 = application.get_port();
-    dbg!("Running on port {&application_port}");
+    dbg!(application_port);
+
+    dbg!("Starting Application");
+    let _ = tokio::spawn(application.run_until_stopped());
 
     let client: Client = Client::builder()
         .redirect(reqwest::redirect::Policy::none())
