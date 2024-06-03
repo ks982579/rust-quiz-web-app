@@ -3,6 +3,7 @@
 use crate::{
     configuration::AllSettings,
     routes::{create_user, health_check},
+    surrealdb_repo::Database,
 };
 use actix_cors::Cors;
 use actix_web::{dev::Server, web, App, HttpServer};
@@ -12,8 +13,11 @@ use tracing_actix_web::TracingLogger;
 /// Builds an Actix-Web Server, from `HttpServer::new()` provided a TcpListener.
 /// Tracing is added, along with other middleware.
 /// Other pieces of application state will also be included in the returned server.
-pub async fn run(listener: TcpListener) -> Result<Server, anyhow::Error> {
-    let server: Server = HttpServer::new(|| {
+pub async fn run(listener: TcpListener, database: Database) -> Result<Server, anyhow::Error> {
+    // Wrap connection in Smart Pointer
+    let db_connect: web::Data<Database> = web::Data::new(database);
+
+    let server: Server = HttpServer::new(move || {
         App::new()
             // consider versioning like /api/v1/
             .wrap(
@@ -32,6 +36,7 @@ pub async fn run(listener: TcpListener) -> Result<Server, anyhow::Error> {
             .app_data(
                 web::JsonConfig::default().content_type(|_| "application/json".parse().unwrap()),
             )
+            .app_data(db_connect.clone())
     })
     .listen(listener)?
     .run();
@@ -48,7 +53,10 @@ impl Application {
     /// Initialization for `Application` struct to set up application
     /// based on configuration setting from files or environment variables.
     pub async fn from_config(config: AllSettings) -> Result<Self, anyhow::Error> {
-        // TODO - SETUP DATABASE HERE
+        // TODO: Set up proper configuration
+        let database: Database = Database::init()
+            .await // Result<Database, Error>
+            .expect("Unable to Connect to Database");
 
         // Update port based on settings
         let address: String = format! {
@@ -64,7 +72,7 @@ impl Application {
         let listener: TcpListener = TcpListener::bind(address)?;
         let port: u16 = listener.local_addr().unwrap().port();
 
-        let server: Server = run(listener).await?;
+        let server: Server = run(listener, database).await?;
 
         Ok(Self { port, server })
     }

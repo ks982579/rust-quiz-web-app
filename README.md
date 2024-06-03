@@ -39,6 +39,25 @@ Only after proving changes to "develop" are stable should it be merged to "main"
 
 When the project is deployed to the cloud, this will hopefully ensure stable deployments.
 
+## Database
+
+This project uses [SurrealDB](https://surrealdb.com/).
+It has a very useful [surrealdb crate | crates.io](https://crates.io/crates/surrealdb)
+that makes integration with Rust very simple.
+The crate has [surrealdb docs | docs.rs](https://docs.rs/surrealdb/latest/surrealdb/index.html) documentation.
+
+The database is being used in a docker container for development because I just typically do not install databases directly onto my machine.
+SurrealDB can be accessed from the command line and data reviewed with SQL like commands.
+Once you have your docker container database running, use the following command:
+
+```bash
+docker exec -i -t <container-name / id> /surreal sql -u user -p password --ns surreal --db quiz_app --pretty
+```
+
+This runs the `sql` command in the `/surreal` directory in the container.
+We pass in the credentials, the namespace, database name, and request pretty formatting.
+Adding notes so I do not forget command.
+
 ## Logging
 
 Actix-Web does not simply log requests like some other frameworks.
