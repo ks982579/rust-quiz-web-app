@@ -42,6 +42,18 @@ async fn test_create_user_200() {
     // Assert
     dbg!(response.status());
     assert!(response.status().is_success());
+
+    // Clean up
+    test_app
+        .database
+        .client
+        .query(
+            r#"
+            DELETE general_user
+            WHERE username is 'joebob1234'
+            "#,
+        )
+        .await;
 }
 
 /* Other Tests that shouldn't be too demanding:

@@ -6,6 +6,8 @@ use surrealdb::engine::remote::ws::{Client, Ws};
 use surrealdb::opt::auth::Root;
 use surrealdb::{Error, Surreal};
 
+use crate::configuration::DatabaseSettings;
+
 #[derive(Clone, Debug)]
 pub struct Database {
     pub client: Surreal<Client>,
@@ -19,25 +21,31 @@ struct Count {
 }
 
 impl Database {
-    pub async fn init() -> Result<Self, Error> {
-        let client = Surreal::new::<Ws>("127.0.0.1:8001").await?;
+    /// Creating Database connection from configuration in YAML files.
+    pub async fn from_config(config: DatabaseSettings) -> Result<Self, Error> {
+        let address: String = format!("{}:{}", config.host, config.port);
+        println!("{:?}", &address);
+        let client = Surreal::new::<Ws>(&address).await?;
+        println!("Signing in");
         client
             .signin(Root {
-                // TODO: do not hard code.
-                username: "user",
-                password: "password",
+                username: &config.username,
+                password: &config.password,
             })
             .await?;
+        println!("Getting namespace and database");
         // Name Space is like a level above a database
         client
-            .use_ns("surreal")
-            .use_db("quiz_app")
+            .use_ns(&config.namespace)
+            .use_db(&config.name)
             .await
             .expect("Unable to connect to database");
+
+        println!("Returning the goods");
         Ok(Database {
             client,
-            name_space: "surreal".into(),
-            db_name: String::from("quiz_app"),
+            name_space: config.namespace,
+            db_name: config.name,
         })
     }
 

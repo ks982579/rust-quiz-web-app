@@ -54,7 +54,7 @@ impl Application {
     /// based on configuration setting from files or environment variables.
     pub async fn from_config(config: AllSettings) -> Result<Self, anyhow::Error> {
         // TODO: Set up proper configuration
-        let database: Database = Database::init()
+        let database: Database = Database::from_config(config.database)
             .await // Result<Database, Error>
             .expect("Unable to Connect to Database");
 

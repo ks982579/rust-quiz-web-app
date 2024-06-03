@@ -51,11 +51,24 @@ pub struct ApplicationSettings {
     pub base_url: String,
 }
 
+/// Struct to hold information regarding the database
+#[derive(Debug, Clone, Deserialize)]
+pub struct DatabaseSettings {
+    #[serde(deserialize_with = "deserialize_number_from_string")]
+    pub port: u16,
+    pub host: String,
+    pub username: String,
+    pub password: String,
+    pub namespace: String,
+    pub name: String,
+}
+
 /// Struct for holding all settings for a convenient means of passing
 /// through application.
 #[derive(Deserialize, Debug, Clone)]
 pub struct AllSettings {
     pub application: ApplicationSettings,
+    pub database: DatabaseSettings,
 }
 
 /// Function to read from configuration files and create a `Settings` struct
