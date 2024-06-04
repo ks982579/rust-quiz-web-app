@@ -1,6 +1,7 @@
 //! backend/tests/api/create_user.rs
 
 use crate::utils::{spawn_app, TestApp};
+use models::GeneralUser;
 use reqwest::{Client, Response};
 
 trait CreateUser<Body>
@@ -60,3 +61,54 @@ async fn test_create_user_200() {
 * - incomplete information is rejected
 * - username already taken
 */
+
+#[tokio::test]
+async fn test_create_user_400_incomplete_data() {
+    // Arrange
+    let test_app: TestApp = spawn_app().await;
+
+    // Clean database first
+    let _: surrealdb::Result<Vec<GeneralUser>> =
+        test_app.database.client.delete("general_user").await;
+
+    let missing_name: serde_json::Value = serde_json::json!({
+        "name": "",
+        "username": "joebob1234",
+        "password": "Password1234"
+    });
+    let missing_username: serde_json::Value = serde_json::json!({
+        "name": "Joe Bob",
+        "username": "",
+        "password": "Password1234"
+    });
+    let missing_password: serde_json::Value = serde_json::json!({
+        "name": "Joe Bob",
+        "username": "joebob1234",
+        "password": ""
+    });
+    let short_password: serde_json::Value = serde_json::json!({
+        "name": "Joe Bob",
+        "username": "joebob1234",
+        "password": "12345"
+    });
+
+    let test_cases: Vec<(serde_json::Value, &str)> = vec![
+        (missing_name, "Missing person name"),
+        (missing_username, "Missing username"),
+        (missing_password, "Missing password"),
+        (short_password, "Password under 6 characters"),
+    ];
+
+    for (bad_data, err_msg) in test_cases {
+        // Act
+        let response: Response = test_app.post_create_user(&bad_data).await;
+
+        //Assert
+        assert_eq!(
+            400,
+            response.status().as_u16(),
+            "API did not fail with 400 when payload was {}.",
+            err_msg
+        );
+    }
+}
