@@ -74,6 +74,28 @@ impl Into<GeneralUser> for CreateUserPayload {
     }
 }
 
+impl CreateUserPayload {
+    /// Main purpose is to be used with ? to escape logic if fields are not
+    /// correctly filled in.
+    fn validate_fields(&self) -> Result<(), CreateUserError> {
+        if self.username.trim().len() < 1 {
+            Err(CreateUserError::ValidationError(String::from(
+                "Username is required, cannot be empty space.",
+            )))
+        } else if self.name.trim().len() < 1 {
+            Err(CreateUserError::ValidationError(String::from(
+                "Name is required, cannot be empty space.",
+            )))
+        } else if self.password.len() < 6 {
+            Err(CreateUserError::ValidationError(
+                "Password must be at least 6 characters long".to_string(),
+            ))
+        } else {
+            Ok(())
+        }
+    }
+}
+
 /// Takes in JSON with user information and stores in database.
 /// If successful, returns 201 CREATED.
 #[tracing::instrument(name = "Request to Create User")]
@@ -84,23 +106,35 @@ pub async fn create_user(
 ) -> Result<HttpResponse, CreateUserError> {
     let user_data = user_info_pt.into_inner();
 
+    // Checking Data
+    user_data.validate_fields()?;
     // Is username unique?
-    let users = db
-        .count_users(&user_data.username)
-        .await
-        .context("Issue performing count")?;
-
-    // Turn this into function to unwrap with ?
-    if users > 0 {
-        return Err(CreateUserError::ValidationError(
-            "Username already exists".to_string(),
-        ));
-    }
+    let _ = unique_username(&db, &user_data.username).await?;
 
     let new_user_opt: Option<GeneralUser> = db.add_general_user(user_data.into()).await;
     let new_user = new_user_opt.unwrap();
+
     // println!("{user_info:?}");
-    HttpResponse::Created()
+    Ok(HttpResponse::Created()
         .content_type(ContentType::json())
-        .json(new_user)
+        .json(new_user))
+}
+
+async fn unique_username(
+    db: &web::Data<Database>,
+    username: &str,
+) -> Result<bool, CreateUserError> {
+    let users = db
+        .count_users(&username)
+        .await
+        // returns Anyhow error which converts to UnknownError
+        .context("Issue performing count")?;
+
+    if users > 0 {
+        Err(CreateUserError::ValidationError(String::from(
+            "Username already exists",
+        )))
+    } else {
+        Ok(true)
+    }
 }
