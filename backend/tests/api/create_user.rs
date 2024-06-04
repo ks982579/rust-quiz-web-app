@@ -111,4 +111,23 @@ async fn test_create_user_400_incomplete_data() {
             err_msg
         );
     }
+
+    let qry = r#"
+    SELECT count() FROM general_user
+    "#;
+    let mut response_res = test_app.database.client.query(qry).await;
+    let count = if let Ok(mut surreal_res) = response_res {
+        if let Ok(gen_user_cnt_opt) = surreal_res.take(0) {
+            if let Some(gen_user_count) = gen_user_cnt_opt {
+                gen_user_count
+            } else {
+                0
+            }
+        } else {
+            42
+        }
+    } else {
+        42
+    };
+    assert_eq!(count, 0);
 }

@@ -16,7 +16,7 @@ pub struct Database {
 }
 
 #[derive(Debug, Deserialize)]
-struct Count {
+struct GeneralUserCount {
     count: i64,
 }
 
@@ -78,7 +78,7 @@ impl Database {
             .bind(("username", username))
             .await?;
 
-        let count: Option<Count> = response.take(0)?;
+        let count: Option<GeneralUserCount> = response.take(0)?;
         dbg!(&count);
         match count {
             Some(count) => Ok(count.count),
