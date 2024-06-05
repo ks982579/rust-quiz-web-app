@@ -7,6 +7,7 @@ use web_sys::{
     Headers, Request, RequestInit, RequestMode, Response,
 };
 
+// Look into `reqwasm`
 fn main() {
     mount_to_body(App)
 }
