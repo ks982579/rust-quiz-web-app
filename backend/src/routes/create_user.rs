@@ -1,5 +1,6 @@
 //! backend/src/routes/create_user.rs
 //! Endpoint used for user creation given credentials.
+use crate::authentication::create_password_hash;
 use crate::error_chain_helper;
 use crate::surrealdb_repo::Database;
 use actix_web::http::header::ContentType;
@@ -7,20 +8,13 @@ use actix_web::http::StatusCode;
 use actix_web::{web, HttpRequest, HttpResponse, ResponseError};
 use anyhow::Context;
 use models::GeneralUser;
+use secrecy::{ExposeSecret, Secret};
 use serde::Deserialize;
 use uuid::Uuid;
 
 // Errors
 #[derive(thiserror::Error)]
 pub enum CreateUserError {
-    // #[error("{0}")]
-    // PasswordsDontMatch(String),
-    // #[error("{0}")]
-    // MissingName(String),
-    // #[error("{0}")]
-    // MissingUsername(String),
-    // #[error("{0}")]
-    // MissingPassword(String),
     #[error("{0}")]
     ValidationError(String),
     #[error(transparent)]
@@ -35,13 +29,6 @@ impl std::fmt::Debug for CreateUserError {
 }
 
 impl ResponseError for CreateUserError {
-    // not required method actually...
-    // fn status_code(&self) -> StatusCode {
-    //     match *self {
-    //         CreateUserError::ValidationError(_) => StatusCode::BAD_REQUEST,
-    //         CreateUserError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-    //     }
-    // }
     fn error_response(&self) -> HttpResponse<actix_web::body::BoxBody> {
         match self {
             CreateUserError::UnexpectedError(_) => {
@@ -56,23 +43,43 @@ impl ResponseError for CreateUserError {
     }
 }
 
+// TODO -> Implement a "secure" struct
 // Structs for JSON
 #[derive(Debug, Clone, Deserialize)]
 pub struct CreateUserPayload {
     name: String,
     username: String,
-    password: String,
+    // Need secrect to hid password in logs
+    password: Secret<String>,
 }
 
-impl Into<GeneralUser> for CreateUserPayload {
-    fn into(self) -> GeneralUser {
-        let uuid: String = Uuid::new_v4()
+impl From<CreateUserPayload> for GeneralUser {
+    fn from(value: CreateUserPayload) -> Self {
+        // hash should not fail
+        let password_hash = value.hash_password().unwrap();
+        let uuid_s: String = Uuid::new_v4()
             .hyphenated()
             .encode_lower(&mut Uuid::encode_buffer())
             .to_string();
-        GeneralUser::new(uuid, self.name, self.username, self.password)
+        GeneralUser::new(
+            uuid_s,
+            value.name,
+            value.username,
+            password_hash.expose_secret().to_string(),
+        )
     }
 }
+
+// impl Into<GeneralUser> for CreateUserPayload {
+//     fn into(self) -> GeneralUser {
+//         GeneralUser::new(
+//             uuid,
+//             self.name,
+//             self.username,
+//             self.password.expose_secret().to_string(),
+//         )
+//     }
+// }
 
 impl CreateUserPayload {
     /// Main purpose is to be used with ? to escape logic if fields are not
@@ -86,7 +93,7 @@ impl CreateUserPayload {
             Err(CreateUserError::ValidationError(String::from(
                 "Name is required, cannot be empty space.",
             )))
-        } else if self.password.len() < 6 {
+        } else if self.password.expose_secret().len() < 6 {
             Err(CreateUserError::ValidationError(
                 "Password must be at least 6 characters long".to_string(),
             ))
@@ -94,13 +101,16 @@ impl CreateUserPayload {
             Ok(())
         }
     }
+    pub fn hash_password(&self) -> Result<Secret<String>, anyhow::Error> {
+        create_password_hash(self.password.clone())
+    }
 }
 
 /// Takes in JSON with user information and stores in database.
 /// If successful, returns 201 CREATED.
-#[tracing::instrument(name = "Request to Create User")]
+#[tracing::instrument(name = "Request to Create User", skip(db))]
 pub async fn create_user(
-    req: HttpRequest,
+    req: HttpRequest, // for tracing
     db: web::Data<Database>,
     user_info_pt: web::Json<CreateUserPayload>,
 ) -> Result<HttpResponse, CreateUserError> {
@@ -111,13 +121,15 @@ pub async fn create_user(
     // Is username unique?
     let _ = unique_username(&db, &user_data.username).await?;
 
-    let new_user_opt: Option<GeneralUser> = db.add_general_user(user_data.into()).await;
-    let new_user = new_user_opt.unwrap();
+    // Do not return, General User has hashed password
+    let _: Option<GeneralUser> = db.add_general_user(user_data.into()).await;
 
     // println!("{user_info:?}");
+    // Unless Something comes up, no good reason to return JSON information
     Ok(HttpResponse::Created()
         .content_type(ContentType::json())
-        .json(new_user))
+        .finish())
+    // .json(new_user))
 }
 
 async fn unique_username(

@@ -24,7 +24,7 @@ pub struct UserCredentials {
 
 /// Computing Password hash for storing safely
 #[tracing::instrument(name = "Computing Password Hash", skip_all)]
-fn create_password_hash(pswd: Secret<String>) -> Result<Secret<String>, anyhow::Error> {
+pub fn create_password_hash(pswd: Secret<String>) -> Result<Secret<String>, anyhow::Error> {
     // Create random salt to make password more secure
     let salt: SaltString = SaltString::generate(&mut thread_rng());
 

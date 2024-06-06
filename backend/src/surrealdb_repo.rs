@@ -6,7 +6,9 @@ use surrealdb::engine::remote::ws::{Client, Ws};
 use surrealdb::opt::auth::Root;
 use surrealdb::{Error, Surreal};
 
+use crate::authentication::password::create_password_hash;
 use crate::configuration::DatabaseSettings;
+use crate::routes::CreateUserPayload;
 
 #[derive(Clone, Debug)]
 pub struct Database {
