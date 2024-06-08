@@ -1,3 +1,4 @@
+use leptos::html::*;
 use leptos::*;
 use leptos_router::{Form, Route, Router, Routes, A};
 use serde::{Deserialize, Serialize};
@@ -84,6 +85,8 @@ struct NewUserFormData {
 fn CreateNewUser() -> impl IntoView {
     // let (name, set_name): (ReadSignal<String>, WriteSignal<String>) =
     //     create_signal("Uncontrolled".to_string());
+    let (err_msg, set_err_msg): (ReadSignal<String>, WriteSignal<String>) =
+        create_signal(String::from(""));
 
     let name_input_elm: NodeRef<html::Input> = create_node_ref();
     let username_input_elm: NodeRef<html::Input> = create_node_ref();
@@ -166,12 +169,19 @@ fn CreateNewUser() -> impl IntoView {
         // });
         // set_name.set(value);
     };
+
+    let err_msg: Option<HtmlElement<Div>> =
+        (move || true.then(|| view! {<div> "Error Message"</div>}))();
+
     view! {
+        <>
+        {err_msg}
         <form on:submit=on_submit>
-            <input type="text" id="name" node_ref=name_input_elm />
-            <input type="text" id="username" node_ref=username_input_elm />
-            <input type="text" id="password" node_ref=password_input_elm />
+            <input type="text" id="name" node_ref=name_input_elm placeholder="Name" required/><br/>
+            <input type="text" id="username" node_ref=username_input_elm placeholder="Username" required/><br/>
+            <input type="password" id="password" node_ref=password_input_elm placeholder="Password" required/> <br/>
             <input type="submit" value="Join!" />
         </form>
+        </>
     }
 }
