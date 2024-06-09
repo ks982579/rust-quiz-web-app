@@ -81,12 +81,30 @@ struct NewUserFormData {
     password: String,
 }
 
+#[derive(Clone, Debug)]
+struct ShowPassword {
+    show: bool,
+    input_type: String,
+    span_class: String,
+}
+
+impl Default for ShowPassword {
+    fn default() -> Self {
+        Self {
+            show: false,
+            input_type: "password".to_string(),
+            span_class: String::from("toggle-password"),
+        }
+    }
+}
+
 #[component]
 fn CreateNewUser() -> impl IntoView {
     // let (name, set_name): (ReadSignal<String>, WriteSignal<String>) =
     //     create_signal("Uncontrolled".to_string());
     let (err_msg, set_err_msg): (ReadSignal<String>, WriteSignal<String>) =
         create_signal(String::from(""));
+    let (show_password, set_show_password) = create_signal((ShowPassword::default()));
 
     let name_input_elm: NodeRef<html::Input> = create_node_ref();
     let username_input_elm: NodeRef<html::Input> = create_node_ref();
@@ -173,13 +191,27 @@ fn CreateNewUser() -> impl IntoView {
     let err_msg: Option<HtmlElement<Div>> =
         (move || true.then(|| view! {<div> "Error Message"</div>}))();
 
+    let toggle_password = move |n| match show_password.get().show {
+        true => set_show_password.set(ShowPassword {
+            show: false,
+            input_type: "password".to_string(),
+            span_class: "toggle-password".to_string(),
+        }),
+        false => set_show_password.set(ShowPassword {
+            show: true,
+            input_type: "text".to_string(),
+            span_class: "toggle-password show".to_string(),
+        }),
+    };
+
     view! {
         <>
         {err_msg}
         <form on:submit=on_submit>
             <input type="text" id="name" node_ref=name_input_elm placeholder="Name" required/><br/>
             <input type="text" id="username" node_ref=username_input_elm placeholder="Username" required/><br/>
-            <input type="password" id="password" node_ref=password_input_elm placeholder="Password" required/> <br/>
+            <input type=move || { show_password.get().input_type } id="password" node_ref=password_input_elm placeholder="Password" required/>
+            <span id="togglePassword" class=move || {show_password.get().span_class} on:click=toggle_password>Show</span><br/>
             <input type="submit" value="Join!" />
         </form>
         </>
