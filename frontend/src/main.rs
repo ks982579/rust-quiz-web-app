@@ -1,12 +1,12 @@
-use leptos::html::*;
+use leptos::leptos_dom::logging::console_warn;
 use leptos::*;
+use leptos::{html::*, leptos_dom::logging::console_log};
 use leptos_router::{Form, Route, Router, Routes, A};
 use serde::{Deserialize, Serialize};
+use wasm_bindgen::JsValue;
 use wasm_bindgen_futures::JsFuture;
-use web_sys::{
-    wasm_bindgen::{prelude::*, JsCast, JsValue},
-    Headers, Request, RequestInit, RequestMode, Response,
-};
+use web_sys::js_sys::Uint8Array;
+use web_sys::{wasm_bindgen::prelude::*, Headers, Request, RequestInit, RequestMode, Response};
 
 // Look into `reqwasm`
 fn main() {
@@ -98,12 +98,23 @@ impl Default for ShowPassword {
     }
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct BackendJSON {
+    msg: Option<String>,
+}
+
+impl Default for BackendJSON {
+    fn default() -> Self {
+        Self { msg: None }
+    }
+}
+
 #[component]
 fn CreateNewUser() -> impl IntoView {
     // let (name, set_name): (ReadSignal<String>, WriteSignal<String>) =
     //     create_signal("Uncontrolled".to_string());
-    let (err_msg, set_err_msg): (ReadSignal<String>, WriteSignal<String>) =
-        create_signal(String::from(""));
+    let (err_msg, set_err_msg): (ReadSignal<Option<String>>, WriteSignal<Option<String>>) =
+        create_signal(None);
     let (show_password, set_show_password) = create_signal((ShowPassword::default()));
 
     let name_input_elm: NodeRef<html::Input> = create_node_ref();
@@ -167,17 +178,39 @@ fn CreateNewUser() -> impl IntoView {
         spawn_local(async move {
             let window = web_sys::window().unwrap();
 
-            let response: Response =
-                wasm_bindgen_futures::JsFuture::from(window.fetch_with_request(&request))
-                    .await
-                    .unwrap()
-                    .dyn_into()
-                    .unwrap();
+            let response: Response = JsFuture::from(window.fetch_with_request(&request))
+                .await
+                .unwrap()
+                .dyn_into()
+                .unwrap();
+            response.body();
 
-            // convert into JSON
-            // let jzon = wasm_bindgen_futures::JsFuture::from(response.json().unwrap())
-            //     .await
-            //     .unwrap();
+            // convert into JSON stuck in a `JsValue`
+            // let jzon: JsValue = JsFuture::from(response.json().unwrap()).await.unwrap();
+            // let jzon: BackendJSON = JsFuture::from(response.json().unwrap()).await.unwrap();
+            let response_body_promise = response.array_buffer().unwrap();
+            let js_value = JsFuture::from(response_body_promise).await.unwrap();
+            let unit8_array: Uint8Array = Uint8Array::new(&js_value);
+            let response_body = unit8_array.to_vec();
+            let deserialized: BackendJSON = serde_json::from_slice(&response_body).unwrap();
+            // console_log(&data.msg.unwrap_or("".to_string()));
+            // Literally small party as this finally works...
+
+            // Serde implementation apparently deprecated due to dependency issues (cyclical)
+            // transforming JsValue into String to massage into struct.
+
+            // Not sure why this is an issue!!!
+            // let this: String = console_warn(&jzon.as_string().unwrap());
+
+            // let deserialized = serde_json::from_str::<BackendJSON>(&jzon.as_string().unwrap());
+
+            // console_warn(&format!("{:?}", deserialized));
+            set_err_msg.set(deserialized.msg.clone());
+
+            // console::log_1(&jzon);
+            // console::log_1(&format!("{deserialized:?}").into());
+            // let json_obj = jzon.into_serde().unwrap();
+            // println!("{:?}", jzon);
         })
 
         // spawn_local(async move {
@@ -188,10 +221,12 @@ fn CreateNewUser() -> impl IntoView {
         // set_name.set(value);
     };
 
-    let err_msg: Option<HtmlElement<Div>> =
-        (move || true.then(|| view! {<div> "Error Message"</div>}))();
+    // let error_message: Option<HtmlElement<Div>> = (move || match err_msg.get().msg {
+    //     Some(msg) => Some(view! { <div>move || { msg }</div> }),
+    //     None => None,
+    // })();
 
-    let toggle_password = move |n| match show_password.get().show {
+    let toggle_password = move |_| match show_password.get().show {
         true => set_show_password.set(ShowPassword {
             show: false,
             input_type: "password".to_string(),
@@ -206,7 +241,7 @@ fn CreateNewUser() -> impl IntoView {
 
     view! {
         <>
-        {err_msg}
+        <div>{ move || {  err_msg.get() }  }</div>
         <form on:submit=on_submit>
             <input type="text" id="name" node_ref=name_input_elm placeholder="Name" required/><br/>
             <input type="text" id="username" node_ref=username_input_elm placeholder="Username" required/><br/>

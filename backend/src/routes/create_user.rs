@@ -128,7 +128,7 @@ pub async fn create_user(
     // Unless Something comes up, no good reason to return JSON information
     Ok(HttpResponse::Created()
         .content_type(ContentType::json())
-        .finish())
+        .json(serde_json::json!({ "msg": "Account created successfully"})))
     // .json(new_user))
 }
 
