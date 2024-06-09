@@ -39,6 +39,25 @@ Only after proving changes to "develop" are stable should it be merged to "main"
 
 When the project is deployed to the cloud, this will hopefully ensure stable deployments.
 
+## Database
+
+This project uses [SurrealDB](https://surrealdb.com/).
+It has a very useful [surrealdb crate | crates.io](https://crates.io/crates/surrealdb)
+that makes integration with Rust very simple.
+The crate has [surrealdb docs | docs.rs](https://docs.rs/surrealdb/latest/surrealdb/index.html) documentation.
+
+The database is being used in a docker container for development because I just typically do not install databases directly onto my machine.
+SurrealDB can be accessed from the command line and data reviewed with SQL like commands.
+Once you have your docker container database running, use the following command:
+
+```bash
+docker exec -i -t <container-name / id> /surreal sql -u user -p password --ns surreal --db quiz_app --pretty
+```
+
+This runs the `sql` command in the `/surreal` directory in the container.
+We pass in the credentials, the namespace, database name, and request pretty formatting.
+Adding notes so I do not forget command.
+
 ## Logging
 
 Actix-Web does not simply log requests like some other frameworks.
@@ -51,11 +70,9 @@ This project will follow the book's more complicated approach to logging.
 
 ## Application Configuration
 
-> Probably going to have 3 configuration types.
+> Probably going to have 2 configuration types.
 
 ### Local
-
-### Container
 
 ### Production
 
@@ -63,8 +80,16 @@ This project will follow the book's more complicated approach to logging.
 
 ### FrontEnd
 
+To format the component code in the `view!{ ... }` macros,
+
+```bash
+cargo install leptosfmt
+```
+
 - `cargo add leptos@0.6 --features=csr`
-  - required for using Leptos as our frontend framework.
+  - Required for using Leptos as our frontend framework.
+- `cargo add leptos_router --features=csr`
+  - Since this is SPA, we want to give illusion of routing with a router.
 
 ### BackEnd
 
@@ -72,6 +97,8 @@ This project will follow the book's more complicated approach to logging.
   - Required for using Actix-Web as the backend framework.
 - `cargo add tokio@1.37 --features=macros,rt-multi-thread`
   - Following Zero to Production, Tokio is an asynchronous runtime for Rust.
+- `cargo add actix-cors@0.7`
+  - Cannot get separate frontend without it, see [Cors docs](https://docs.rs/actix-cors/latest/actix_cors/)
 - `cargo add tracing@0.1 --features=log`
   - Better logs for asynchronous applications
 - `cargo add tracing-subscriber@0.3 --features=registry,env-filter`

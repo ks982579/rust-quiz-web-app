@@ -1,6 +1,7 @@
 //! backend/src/configuration.rs
 //! Logic to read configuration files and create structs to be used
 //! throughout the rest of the application.
+use crate::surrealdb_repo::Database;
 use config::ConfigError;
 use serde::Deserialize;
 use serde_aux::field_attributes::deserialize_number_from_string;
@@ -50,11 +51,24 @@ pub struct ApplicationSettings {
     pub base_url: String,
 }
 
+/// Struct to hold information regarding the database
+#[derive(Debug, Clone, Deserialize)]
+pub struct DatabaseSettings {
+    #[serde(deserialize_with = "deserialize_number_from_string")]
+    pub port: u16,
+    pub host: String,
+    pub username: String,
+    pub password: String,
+    pub namespace: String,
+    pub name: String,
+}
+
 /// Struct for holding all settings for a convenient means of passing
 /// through application.
 #[derive(Deserialize, Debug, Clone)]
-pub struct Settings {
+pub struct AllSettings {
     pub application: ApplicationSettings,
+    pub database: DatabaseSettings,
 }
 
 /// Function to read from configuration files and create a `Settings` struct
@@ -66,7 +80,7 @@ pub struct Settings {
 ///   - fields separated by "__"
 /// e.g.) QUIZAPP_APPLICATION__HOST=127.0.0.1
 /// That will set the settings.application.port = "127.0.0.1"
-pub fn get_configuration() -> Result<Settings, ConfigError> {
+pub fn get_configuration() -> Result<AllSettings, ConfigError> {
     // Because we may be in workspace, must do quick look for right folder
     let base_path: PathBuf =
         std::env::current_dir().expect("Failed to determine current directory");
@@ -118,5 +132,5 @@ pub fn get_configuration() -> Result<Settings, ConfigError> {
 
     // Try deserialize values into struct
     println!("{:?}", &settings);
-    settings.try_deserialize::<Settings>()
+    settings.try_deserialize::<AllSettings>()
 }
