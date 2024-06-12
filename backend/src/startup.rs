@@ -2,7 +2,7 @@
 //! Holds application level information and functions.
 use crate::{
     configuration::AllSettings,
-    routes::{create_user, health_check},
+    routes::{create_user, health_check, user_login},
     surrealdb_repo::Database,
 };
 use actix_cors::Cors;
@@ -32,6 +32,7 @@ pub async fn run(listener: TcpListener, database: Database) -> Result<Server, an
             .wrap(TracingLogger::default())
             .route("/health-check", web::get().to(health_check))
             .route("/create-user", web::post().to(create_user))
+            .route("/user-login", web::post().to(user_login))
             // setting
             .app_data(
                 web::JsonConfig::default().content_type(|_| "application/json".parse().unwrap()),
