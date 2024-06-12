@@ -4,7 +4,7 @@ use crate::utils::{spawn_app, TestApp};
 use models::GeneralUser;
 use reqwest::{Client, Response};
 
-trait CreateUser<Body>
+pub trait CreateUser<Body>
 where
     Body: serde::Serialize,
 {

@@ -3,4 +3,5 @@
 //! This makes it easier to share code and setup / execute tests
 mod create_user;
 mod health_check;
+mod loggin_user;
 mod utils;
