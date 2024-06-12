@@ -1,0 +1,10 @@
+application:
+  base_url: "http://127.0.0.1"
+  host: 127.0.0.1
+database:
+  host: 127.0.0.1
+  port: 8001
+  username: "user"
+  password: "password"
+  namespace: "surreal"
+  name: "quiz_app"

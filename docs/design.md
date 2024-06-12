@@ -28,6 +28,12 @@ This workspace has 3 members:
 Also shows the MVC more like the MVP.
 May need more consideration.
 
+### Frontend
+
+Check out [Using Rust and Leptos to build beautifyl, declarative UIs | LogRocket.com](https://blog.logrocket.com/using-rust-leptos-build-beautiful-declarative-uis/).
+The `trunk` crate is a bundler.
+It will compile Rust to WASM and bundle in the `frontend/dist` directory
+
 ### Backend
 
 Per [REST API Architectural Constraints | geeksforgeeks.org](https://www.geeksforgeeks.org/rest-api-architectural-constraints/)
@@ -35,8 +41,78 @@ the backend will follow the RESTful API architecture, or very close too.
 Ideally, the project will closely follow the URL structure to keep file organized
 and their location predictable.
 
-### Frontend
+[OpenAPI 3.1 Specification | Swagger.io](https://swagger.io/specification/)
 
-Check out [Using Rust and Leptos to build beautifyl, declarative UIs | LogRocket.com](https://blog.logrocket.com/using-rust-leptos-build-beautiful-declarative-uis/).
-The `trunk` crate is a bundler.
-It will compile Rust to WASM and bundle in the `frontend/dist` directory
+#### GET /health-check
+
+Create JSON objects for request and response.
+Nothing too intense.
+
+#### POST /create-user
+
+```yaml
+openapi: 3.1.0
+info:
+  title: Create User API
+  version: 0.1.0
+  description: API for creating new users
+
+servers:
+  - url: http://api.example.com/v1
+
+paths:
+  /users:
+    post:
+      summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRequest"
+      responses:
+        "201":
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "400":
+          description: Bad request (invalid input data)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+
+components:
+  schemas:
+    UserRequest:
+      type: object
+      required:
+        - name
+        - username
+        - password
+      properties:
+        name:
+          type: string
+          example: John Doe
+        username:
+          type: string
+          example: johndoe123
+        password:
+          type: string
+          format: password
+          example: at_least_6_chars
+    UserResponse:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: Unknown Error
+```
