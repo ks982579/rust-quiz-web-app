@@ -90,6 +90,14 @@ cargo install leptosfmt
   - Required for using Leptos as our frontend framework.
 - `cargo add leptos_router --features=csr`
   - Since this is SPA, we want to give illusion of routing with a router.
+- `cargo add serde@1.0 --features=derive`
+  - Required for serializing and deserialization
+- `cargo add serde_json@1.0`
+  - Required for serializing and deserialization
+- `cargo add wasm-bindgen@0.2`
+  - This is crate of WASM bindings to JavaScript web APIs, needed to fetch.
+- `cargo add wasm-bindgen-futures@0.4`
+  - This is crate of WASM bindings to JavaScript web APIs, needed Promises and futures (for fetching).
 
 ### BackEnd
 

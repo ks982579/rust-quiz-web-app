@@ -115,7 +115,7 @@ fn CreateNewUser() -> impl IntoView {
     //     create_signal("Uncontrolled".to_string());
     let (err_msg, set_err_msg): (ReadSignal<Option<String>>, WriteSignal<Option<String>>) =
         create_signal(None);
-    let (show_password, set_show_password) = create_signal((ShowPassword::default()));
+    let (show_password, set_show_password) = create_signal(ShowPassword::default());
 
     let name_input_elm: NodeRef<html::Input> = create_node_ref();
     let username_input_elm: NodeRef<html::Input> = create_node_ref();
@@ -183,7 +183,6 @@ fn CreateNewUser() -> impl IntoView {
                 .unwrap()
                 .dyn_into()
                 .unwrap();
-            response.body();
 
             // convert into JSON stuck in a `JsValue`
             // let jzon: JsValue = JsFuture::from(response.json().unwrap()).await.unwrap();
