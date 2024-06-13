@@ -41,7 +41,7 @@ pub fn create_password_hash(pswd: Secret<String>) -> Result<Secret<String>, anyh
 }
 
 /// Function will raise an error if actual and expected passwords do not match.
-fn verify_password_hash(
+pub fn verify_password_hash(
     actual_pswd_string: Secret<String>,
     expected_pswd_hash: Secret<String>,
 ) -> Result<(), AuthError> {
