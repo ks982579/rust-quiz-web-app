@@ -1,5 +1,6 @@
 //! backend/src/telemetry.rs
 //! To house logic and data regarding application telemetry (logging)
+use tokio::task::{spawn_blocking, JoinHandle};
 use tracing::{subscriber::set_global_default, Subscriber};
 use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
 use tracing_log::LogTracer;
@@ -35,4 +36,16 @@ where
 {
     LogTracer::init().expect("Failed to set Global Logger");
     set_global_default(subscriber).expect("Failed to set Global Subscriber")
+}
+
+/// For CPU intensive tasks we block the thread to await task completion
+/// Copy trait bounds and signature from `spawn_blocking`.
+/// The function act as a wrapper to provide tracing for blocked thread.
+pub fn spawn_blocking_and_tracing<F, R>(task: F) -> JoinHandle<R>
+where
+    F: FnOnce() -> R + Send + 'static,
+    R: Send + 'static,
+{
+    let current_span: tracing::Span = tracing::Span::current();
+    spawn_blocking(move || current_span.in_scope(task))
 }

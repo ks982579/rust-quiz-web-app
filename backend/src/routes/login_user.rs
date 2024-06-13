@@ -1,7 +1,13 @@
 //! backend/src/routes/login_user.rs
 //! Endpoint to log user into system.
 //! Must set the Session Token in browser as well.
-use crate::{authentication::verify_password_hash, error_chain_helper, surrealdb_repo::Database};
+use crate::authentication::UserCredentials;
+use crate::{
+    authentication::{validate_credentials, verify_password_hash, AuthError},
+    error_chain_helper,
+    session_wrapper::SessionWrapper,
+    surrealdb_repo::Database,
+};
 use actix_web::{
     http::{header::ContentType, StatusCode},
     web, HttpRequest, HttpResponse, ResponseError,
@@ -10,14 +16,7 @@ use anyhow::Context;
 use models::GeneralUser;
 use secrecy::{ExposeSecret, Secret};
 use serde::Deserialize;
-
-/// Input struct for JSON
-#[derive(Debug, Clone, Deserialize)]
-pub struct UserCredentials {
-    username: String,
-    // Secret to hide password from telemetry
-    password: Secret<String>,
-}
+use surrealdb::sql::Uuid;
 
 #[derive(thiserror::Error)]
 pub enum UserLoginError {
@@ -51,11 +50,12 @@ impl ResponseError for UserLoginError {
 }
 
 // -- Traits for DB
-trait LookUpUser {
-    async fn get_user_by_username(
+// Compiler suggest not making public async trait...
+pub trait LookUpUser {
+    fn get_user_by_username(
         &self,
         username: String,
-    ) -> Result<Option<GeneralUser>, anyhow::Error>;
+    ) -> impl std::future::Future<Output = Result<Option<GeneralUser>, anyhow::Error>> + Send;
 }
 
 impl LookUpUser for Database {
@@ -85,30 +85,36 @@ impl LookUpUser for Database {
 
 #[tracing::instrument(
     name = "User Login"
-    skip(db)
+    skip(db, session)
 )]
 pub async fn user_login(
     req: HttpRequest, // for tracing
     db: web::Data<Database>,
     user_info_ptr: web::Json<UserCredentials>,
+    session: SessionWrapper,
 ) -> Result<HttpResponse, UserLoginError> {
     let user_data: UserCredentials = user_info_ptr.into_inner();
-    // TODO: Validation of credentials
-    let maybe_surreal_user: Option<GeneralUser> =
-        db.get_user_by_username(user_data.username).await?;
-    let surreal_user: GeneralUser = if let Some(user) = maybe_surreal_user {
-        user
-    } else {
-        return Err(UserLoginError::AuthError(anyhow::anyhow!(
-            "Did not find user"
-        )));
-    };
 
-    let _ = verify_password_hash(user_data.password, surreal_user.password_hash.into())
-        .context("Invalid password")?;
+    match validate_credentials(user_data, db).await {
+        Ok(user_uuid) => {
+            tracing::Span::current().record("UUID", &tracing::field::display(&user_uuid));
+            // Setting Cookies
+            // Renew help prevent fixation attacks
+            session.renew();
+            session
+                .insert_user_id(user_uuid)
+                .map_err(|_| anyhow::anyhow!("Failed to insert user UUID"))?;
+        }
+        Err(e) => {
+            let e = match e {
+                AuthError::InvalidCredentials(_) => UserLoginError::AuthError(e.into()),
+                AuthError::UnexpectedError(_) => UserLoginError::UnexpectedError(e.into()),
+            };
+            return Err(e);
+        }
+    }
 
-    // Setting Cookies
-    //
-
-    Ok(HttpResponse::ImATeapot().finish())
+    Ok(HttpResponse::Ok()
+        .content_type(ContentType::json())
+        .json(serde_json::json!({"msg": "Login Successful"})))
 }
