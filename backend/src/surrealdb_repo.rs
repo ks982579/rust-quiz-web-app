@@ -11,7 +11,7 @@ use std::collections::HashMap;
 use surrealdb::engine::remote::ws::{Client, Ws};
 use surrealdb::opt::auth::Root;
 use surrealdb::sql::{Id, Thing};
-use surrealdb::{Error, Response, Surreal};
+use surrealdb::{Error, Surreal};
 
 #[derive(Clone, Debug)]
 pub struct Database {

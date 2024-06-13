@@ -3,6 +3,7 @@
 //! throughout the rest of the application.
 use crate::surrealdb_repo::Database;
 use config::ConfigError;
+use secrecy::Secret;
 use serde::Deserialize;
 use serde_aux::field_attributes::deserialize_number_from_string;
 use std::path::PathBuf;
@@ -49,6 +50,7 @@ pub struct ApplicationSettings {
     pub port: u16,
     pub host: String,
     pub base_url: String,
+    pub hmac_secret: Secret<String>,
 }
 
 /// Struct to hold information regarding the database

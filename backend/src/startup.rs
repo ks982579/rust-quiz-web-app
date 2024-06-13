@@ -6,16 +6,25 @@ use crate::{
     surrealdb_repo::Database,
 };
 use actix_cors::Cors;
-use actix_web::{dev::Server, web, App, HttpServer};
+use actix_session::SessionMiddleware;
+use actix_web::{cookie::Key, dev::Server, web, App, HttpServer};
+use secrecy::{ExposeSecret, Secret};
 use std::net::TcpListener;
 use tracing_actix_web::TracingLogger;
 
 /// Builds an Actix-Web Server, from `HttpServer::new()` provided a TcpListener.
 /// Tracing is added, along with other middleware.
 /// Other pieces of application state will also be included in the returned server.
-pub async fn run(listener: TcpListener, database: Database) -> Result<Server, anyhow::Error> {
+pub async fn run(
+    listener: TcpListener,
+    database: Database,
+    hmac_secret: Secret<String>,
+) -> Result<Server, anyhow::Error> {
     // Wrap connection in Smart Pointer
+    // ideally we want separate database for cookies, but should be OK for small project
     let db_connect: web::Data<Database> = web::Data::new(database);
+    // Key for cookies
+    let secret_key = Key::from(hmac_secret.expose_secret().as_bytes());
 
     let server: Server = HttpServer::new(move || {
         App::new()
@@ -29,6 +38,11 @@ pub async fn run(listener: TcpListener, database: Database) -> Result<Server, an
                     .allowed_header(actix_web::http::header::CONTENT_TYPE)
                     .max_age(3600),
             )
+            // .wrap(SessionMiddleware::new(database.clone(), secret_key.clone()))
+            .wrap(SessionMiddleware::new(
+                db_connect.as_ref().clone(),
+                secret_key.clone(),
+            ))
             .wrap(TracingLogger::default())
             .route("/health-check", web::get().to(health_check))
             .route("/create-user", web::post().to(create_user))
@@ -73,7 +87,7 @@ impl Application {
         let listener: TcpListener = TcpListener::bind(address)?;
         let port: u16 = listener.local_addr().unwrap().port();
 
-        let server: Server = run(listener, database).await?;
+        let server: Server = run(listener, database, config.application.hmac_secret).await?;
 
         Ok(Self { port, server })
     }
