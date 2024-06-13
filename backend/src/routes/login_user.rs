@@ -3,7 +3,7 @@
 //! Must set the Session Token in browser as well.
 use crate::authentication::UserCredentials;
 use crate::{
-    authentication::{validate_credentials, verify_password_hash, AuthError},
+    authentication::{validate_credentials, AuthError},
     error_chain_helper,
     session_wrapper::SessionWrapper,
     surrealdb_repo::Database,
@@ -12,11 +12,7 @@ use actix_web::{
     http::{header::ContentType, StatusCode},
     web, HttpRequest, HttpResponse, ResponseError,
 };
-use anyhow::Context;
 use models::GeneralUser;
-use secrecy::{ExposeSecret, Secret};
-use serde::Deserialize;
-use surrealdb::sql::Uuid;
 
 #[derive(thiserror::Error)]
 pub enum UserLoginError {

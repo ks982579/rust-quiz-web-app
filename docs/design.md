@@ -116,3 +116,17 @@ components:
           type: string
           example: Unknown Error
 ```
+
+---
+
+Unsure where to put this for now, but the session token in the database looks like:
+
+```json
+[
+  {
+    expiry: '2024-06-14T17:26:06.403Z',
+    id: sessions:Amxy66...LOL,
+    token: '{"user_id": "\\"ae51-...-5e37c71b835c\\""}'
+  }
+]
+```
