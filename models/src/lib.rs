@@ -20,6 +20,17 @@ impl GeneralUser {
     }
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct JsonMsg {
+    pub msg: Option<String>,
+}
+
+impl std::default::Default for JsonMsg {
+    fn default() -> Self {
+        Self { msg: None }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

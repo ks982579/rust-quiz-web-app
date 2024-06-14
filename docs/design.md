@@ -33,6 +33,9 @@ May need more consideration.
 Check out [Using Rust and Leptos to build beautifyl, declarative UIs | LogRocket.com](https://blog.logrocket.com/using-rust-leptos-build-beautiful-declarative-uis/).
 The `trunk` crate is a bundler.
 It will compile Rust to WASM and bundle in the `frontend/dist` directory
+Since it is SPA, going to follow "component-based architecture.
+There is a book "React Application Architecture for Production" by Alan Alickovic
+that begins a project structure overview section on page 28.
 
 ### Backend
 
