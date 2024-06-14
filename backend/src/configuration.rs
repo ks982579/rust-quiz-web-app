@@ -1,7 +1,6 @@
 //! backend/src/configuration.rs
 //! Logic to read configuration files and create structs to be used
 //! throughout the rest of the application.
-use crate::surrealdb_repo::Database;
 use config::ConfigError;
 use secrecy::Secret;
 use serde::Deserialize;
