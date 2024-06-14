@@ -1,5 +1,5 @@
-//! frontend/src/pages/home.rs
-//! This is main component of Homepage.
+//! frontend/src/pages/dashboard.rs
+//! This is dashboard that appears for logged in users.
 //! The `LogIn` componenet is currently part of the `HomePage`.
 //! That is why it is implemented here.
 //! If it becomes its own page one day, it can (and should) be moved.
@@ -18,21 +18,20 @@ use web_sys::{wasm_bindgen::prelude::*, Headers, Request, RequestInit, RequestMo
 
 /// Component of main home page.
 #[component]
-pub fn HomePage() -> impl IntoView {
+pub fn Dashboard() -> impl IntoView {
     view! {
         <>
+            <nav>"Shoule have own nav bar"</nav>
+            <h1>"Welcome back {:name}"</h1>
             <summary>"Heading for details tag"</summary>
             <details>"additional things user can open and close as needed."</details>
             <aside>"Content aside from content, like side bar!"</aside>
             <section>"Defines section in document"</section>
-            <section>
-                <LogIn/>
-                <A href="/new-user">"New? Create an account here"</A>
-            </section>
             <article>"Independent, self-contained content"</article>
         </>
     }
 }
+/*
 
 #[derive(Clone, Debug)]
 struct ShowPassword {
@@ -100,7 +99,7 @@ fn LogIn() -> impl IntoView {
                 .unwrap();
 
             if response.status() == 200 {
-                navigator_clone("/dashboard", NavigateOptions::default());
+                navigator_clone("/home", NavigateOptions::default());
             }
 
             let response_body_promise = response.array_buffer().unwrap();
@@ -150,3 +149,5 @@ fn LogIn() -> impl IntoView {
         </form>
     }
 }
+
+*/

@@ -1,12 +1,16 @@
 //! frontend/src/app.rs
 //! This holds the main app component for this web UI
-use crate::pages::*;
 use crate::router::AppRouter;
+use crate::{pages::*, store::AuthState};
 use leptos::*;
 use leptos_router::{Route, Router, Routes, A};
 
 #[component]
 pub fn App() -> impl IntoView {
+    // Adding Context
+    let auth_state = AuthState::new();
+    provide_context(auth_state.clone());
+
     view! {
         <>
             <header>

@@ -4,6 +4,7 @@ use leptos::*;
 mod app;
 mod pages;
 mod router;
+mod store;
 
 use crate::app::*;
 
