@@ -4,6 +4,7 @@
 //! That is why it is implemented here.
 //! If it becomes its own page one day, it can (and should) be moved.
 use leptos::ev::SubmitEvent;
+use leptos::logging::*;
 use leptos::*;
 use leptos_router::{use_navigate, NavigateOptions, A};
 use models::JsonMsg;
@@ -99,7 +100,7 @@ fn LogIn() -> impl IntoView {
                 .unwrap();
 
             if response.status() == 200 {
-                navigator_clone("/", NavigateOptions::default());
+                navigator_clone("/home", NavigateOptions::default());
             }
 
             let response_body_promise = response.array_buffer().unwrap();
@@ -114,7 +115,6 @@ fn LogIn() -> impl IntoView {
 
     let on_submit = move |evnt: SubmitEvent| {
         evnt.prevent_default();
-        console_warn("Prevented Default");
         let username_value: String = username_input_elm
             .get()
             .expect("<input> should be mounted")
@@ -128,15 +128,15 @@ fn LogIn() -> impl IntoView {
     };
 
     view! {
-        <p><b>{move || { test_thing.get() } }</b></p>
+        <p><b>{move || { err_msg.get() } }</b></p>
         <form  on:submit=on_submit >
             <label for="username">Username:</label>
             <br/>
-            <input id="username" type="text" name="username" placeholder="username"/>
+            <input id="username" type="text" name="username" placeholder="username" node_ref=username_input_elm/>
             <br/>
             <label for="password">Password:</label>
             <br/>
-            <input id="password" type="password" name="password" placeholder="password"/>
+            <input id="password" type="password" name="password" placeholder="password" node_ref=password_input_elm/>
             <br/>
             <input type="submit" value="Log In"/>
             <br/>

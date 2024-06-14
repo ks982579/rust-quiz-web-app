@@ -40,7 +40,7 @@ impl ResponseError for UserLoginError {
             // not passing information through so slightly harder to guess a username
             UserLoginError::AuthError(_) => HttpResponse::build(StatusCode::BAD_REQUEST)
                 .insert_header(ContentType::json())
-                .json(serde_json::json!({ "msg": "Incorrect username of password" })),
+                .json(serde_json::json!({ "msg": "Incorrect username or password" })),
         }
     }
 }
