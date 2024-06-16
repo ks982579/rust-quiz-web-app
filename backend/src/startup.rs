@@ -1,6 +1,7 @@
 //! backend/src/startup.rs
 //! Holds application level information and functions.
 use crate::{
+    authentication::AuthCookie,
     configuration::AllSettings,
     routes::{create_user, health_check, user_login},
     surrealdb_repo::Database,
@@ -43,6 +44,8 @@ pub async fn run(
                 db_connect.as_ref().clone(),
                 secret_key.clone(),
             ))
+            // This checks if authorized
+            .wrap(AuthCookie)
             .wrap(TracingLogger::default())
             .route("/health-check", web::get().to(health_check))
             .route("/create-user", web::post().to(create_user))

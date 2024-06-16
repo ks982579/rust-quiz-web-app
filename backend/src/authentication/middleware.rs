@@ -4,14 +4,13 @@
 //! closely and hoping for the best
 
 use crate::session_wrapper::SessionWrapper;
-use actix_session::{Session, SessionExt};
+use actix_session::SessionExt;
 use actix_web::{
-    body::BoxBody,
     dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
     HttpMessage, HttpResponse,
 };
 use models::UserID;
-use std::{boxed::Box, pin::Pin, rc::Rc};
+use std::{boxed::Box, pin::Pin};
 
 /// Returns HTTP Status 500 and preserves root cause for logging
 pub fn http_500<T>(err: T) -> actix_web::Error
