@@ -16,9 +16,16 @@ use wasm_bindgen_futures::JsFuture;
 use web_sys::js_sys::Uint8Array;
 use web_sys::{wasm_bindgen::prelude::*, Headers, Request, RequestInit, RequestMode, Response};
 
+use crate::store::AuthState;
+
 /// Component of main home page.
 #[component]
 pub fn HomePage() -> impl IntoView {
+    // TODO: Check if user is logged in
+    // If yes, send them to dashboard.
+    // If no, render this login.
+    // Maybe then we can have one homepage, and 2 nav bars,
+    // and conditionally render... probably not
     view! {
         <>
             <summary>"Heading for details tag"</summary>
@@ -54,6 +61,8 @@ impl std::default::Default for ShowPassword {
 /// The form for user login.
 #[component]
 fn LogIn() -> impl IntoView {
+    // Pull AuthState Context
+    let auth_state: AuthState = use_context::<AuthState>().expect("AuthState context not found");
     // Create Navigator
     let navigator = use_navigate();
     let navigator_rc = Rc::new(navigator);
@@ -100,6 +109,7 @@ fn LogIn() -> impl IntoView {
                 .unwrap();
 
             if response.status() == 200 {
+                auth_state.set_authenticated(true);
                 navigator_clone("/dashboard", NavigateOptions::default());
             }
 
