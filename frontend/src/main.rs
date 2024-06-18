@@ -5,8 +5,10 @@ mod app;
 mod pages;
 mod router;
 mod store;
+mod utils;
 
 use crate::app::*;
+use crate::utils::*;
 
 /// Entrypoint of application
 fn main() {

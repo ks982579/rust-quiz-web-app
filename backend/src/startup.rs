@@ -8,7 +8,7 @@ use crate::{
 };
 use actix_cors::Cors;
 use actix_session::SessionMiddleware;
-use actix_web::{cookie::Key, dev::Server, web, App, HttpServer};
+use actix_web::{cookie::Key, dev::Server, http::header, web, App, HttpServer};
 use secrecy::{ExposeSecret, Secret};
 use std::net::TcpListener;
 use tracing_actix_web::TracingLogger;
@@ -36,20 +36,33 @@ pub async fn run(
                     .allowed_origin("http://localhost:8080")
                     .allow_any_header()
                     .allow_any_method()
-                    .allowed_header(actix_web::http::header::CONTENT_TYPE)
+                    // .allowed_header(header::CONTENT_TYPE)
+                    .allowed_headers(vec![
+                        header::AUTHORIZATION,
+                        header::ACCEPT,
+                        header::CONTENT_TYPE,
+                        header::ORIGIN,
+                        header::WWW_AUTHENTICATE,
+                    ])
+                    // Allows inclusion of cookies and HTTP Authentication Info
+                    .supports_credentials()
                     .max_age(3600),
             )
-            // .wrap(SessionMiddleware::new(database.clone(), secret_key.clone()))
             .wrap(SessionMiddleware::new(
                 db_connect.as_ref().clone(),
                 secret_key.clone(),
             ))
             // This checks if authorized
-            .wrap(AuthCookie)
             .wrap(TracingLogger::default())
             .route("/health-check", web::get().to(health_check))
             .route("/create-user", web::post().to(create_user))
             .route("/user-login", web::post().to(user_login))
+            .service(
+                web::scope("")
+                    // .wrap(SessionMiddleware::new(database.clone(), secret_key.clone()))
+                    .wrap(AuthCookie)
+                    .route("/check", web::get().to(|| actix_web::HttpResponse::Ok())),
+            )
             // setting
             .app_data(
                 web::JsonConfig::default().content_type(|_| "application/json".parse().unwrap()),

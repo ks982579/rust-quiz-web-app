@@ -18,6 +18,18 @@ use web_sys::{wasm_bindgen::prelude::*, Headers, Request, RequestInit, RequestMo
 
 use crate::store::AuthState;
 
+#[derive(Clone, Debug, PartialEq, PartialOrd)]
+enum AuthStatus {
+    Loading,
+    Authenticated,
+    Unauthenticated,
+}
+
+#[component]
+fn LoadingScreen() -> impl IntoView {
+    view! { <div>"Loading..."</div>}
+}
+
 /// Component of main home page.
 #[component]
 pub fn HomePage() -> impl IntoView {
@@ -26,6 +38,9 @@ pub fn HomePage() -> impl IntoView {
     // If no, render this login.
     // Maybe then we can have one homepage, and 2 nav bars,
     // and conditionally render... probably not
+    let (auth_status, set_auth_status) = create_signal(AuthStatus::Loading);
+    let auth_state: AuthState = use_context()::<AuthState().expect("AuthState context not found?");
+
     view! {
         <>
             <summary>"Heading for details tag"</summary>
