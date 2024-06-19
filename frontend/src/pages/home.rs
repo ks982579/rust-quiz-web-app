@@ -16,7 +16,8 @@ use wasm_bindgen_futures::JsFuture;
 use web_sys::js_sys::Uint8Array;
 use web_sys::{wasm_bindgen::prelude::*, Headers, Request, RequestInit, RequestMode, Response};
 
-use crate::store::AuthState;
+use crate::store::{AppSettings, AuthState};
+use crate::Fetcher;
 
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 enum AuthStatus {
@@ -39,7 +40,7 @@ pub fn HomePage() -> impl IntoView {
     // Maybe then we can have one homepage, and 2 nav bars,
     // and conditionally render... probably not
     let (auth_status, set_auth_status) = create_signal(AuthStatus::Loading);
-    let auth_state: AuthState = use_context()::<AuthState().expect("AuthState context not found?");
+    let auth_state: AuthState = use_context::<AuthState>().expect("AuthState context not found?");
 
     view! {
         <>
@@ -78,12 +79,19 @@ impl std::default::Default for ShowPassword {
 fn LogIn() -> impl IntoView {
     // Pull AuthState Context
     let auth_state: AuthState = use_context::<AuthState>().expect("AuthState context not found");
+    let app_settings: AppSettings =
+        use_context::<AppSettings>().expect("AppSettings context not found");
+
     // Create Navigator
     let navigator = use_navigate();
     let navigator_rc = Rc::new(navigator);
+
+    // Create signals for component
     let (err_msg, set_err_msg): (ReadSignal<Option<String>>, WriteSignal<Option<String>>) =
         create_signal(None);
     let (show_password, set_show_password) = create_signal(ShowPassword::default());
+
+    // Create nodes for form elements
     let username_input_elm: NodeRef<html::Input> = create_node_ref();
     let password_input_elm: NodeRef<html::Input> = create_node_ref();
     let (test_thing, set_test_thing): (ReadSignal<Option<String>>, WriteSignal<Option<String>>) =
@@ -109,30 +117,34 @@ fn LogIn() -> impl IntoView {
         options.body(Some(&JsValue::from_str(&pckg)));
         options.mode(RequestMode::Cors);
 
-        let request: Request =
-            Request::new_with_str_and_init("http://127.0.0.1:8000/user-login", &options).unwrap();
+        let _ = "asdfasdf".to_string() + "asdfas";
+
+        let fetcher: Fetcher = Fetcher::init()
+            .set_url(app_settings.backend_url.to_string() + "user-login")
+            .set_method("POST")
+            .set_mode(RequestMode::Cors)
+            .set_headers(headers)
+            .build();
+
+        // let request: Request =
+        //     Request::new_with_str_and_init("http://127.0.0.1:8000/user-login", &options).unwrap();
 
         let navigator_clone = Rc::clone(&navigator_rc);
 
         async move {
-            let window = web_sys::window().unwrap();
-
-            let response: Response = JsFuture::from(window.fetch_with_request(&request))
-                .await
-                .unwrap()
-                .dyn_into()
-                .unwrap();
+            let response: Response = fetcher.fetch(Some(pckg)).await;
 
             if response.status() == 200 {
                 auth_state.set_authenticated(true);
                 navigator_clone("/dashboard", NavigateOptions::default());
             }
 
-            let response_body_promise = response.array_buffer().unwrap();
-            let js_value = JsFuture::from(response_body_promise).await.unwrap();
-            let unit8_array: Uint8Array = Uint8Array::new(&js_value);
-            let response_body = unit8_array.to_vec();
-            let deserialized: JsonMsg = serde_json::from_slice(&response_body).unwrap();
+            // let response_body_promise = response.array_buffer().unwrap();
+            // let js_value = JsFuture::from(response_body_promise).await.unwrap();
+            // let unit8_array: Uint8Array = Uint8Array::new(&js_value);
+            // let response_body = unit8_array.to_vec();
+            // let deserialized: JsonMsg = serde_json::from_slice(&response_body).unwrap();
+            let deserialized: JsonMsg = Fetcher::response_to_struct(&response).await;
 
             set_err_msg.set(deserialized.msg.clone());
         }
