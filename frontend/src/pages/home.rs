@@ -6,6 +6,7 @@
 use leptos::ev::SubmitEvent;
 use leptos::logging::*;
 use leptos::*;
+use leptos_dom::logging::console_log;
 use leptos_router::{use_navigate, NavigateOptions, A};
 use models::JsonMsg;
 use serde::{Deserialize, Serialize};
@@ -39,8 +40,33 @@ pub fn HomePage() -> impl IntoView {
     // If no, render this login.
     // Maybe then we can have one homepage, and 2 nav bars,
     // and conditionally render... probably not
+    console_log("Starting homepage component");
     let (auth_status, set_auth_status) = create_signal(AuthStatus::Loading);
     let auth_state: AuthState = use_context::<AuthState>().expect("AuthState context not found?");
+    let app_settings: AppSettings =
+        use_context::<AppSettings>().expect("AppSettings context not found");
+
+    create_effect(move |_| {
+        let headers: Headers = Headers::new().unwrap();
+        headers
+            .set("Content-Type", "application/json;charset=UTF-8")
+            .unwrap();
+        headers.set("Access-Control-Allow-Origin", "true").unwrap();
+        let fetcher: Fetcher = Fetcher::init()
+            .set_url(app_settings.backend_url.to_string() + "check-login")
+            .set_method("GET")
+            .set_headers(headers)
+            .set_mode(RequestMode::Cors)
+            .build();
+        spawn_local(async move {
+            let response: Response = fetcher.fetch(None).await;
+            if response.status() == 200 {
+                console_log("It worked!");
+            } else {
+                console_log("It's broke like you son");
+            }
+        });
+    });
 
     view! {
         <>
@@ -90,6 +116,7 @@ fn LogIn() -> impl IntoView {
     let (err_msg, set_err_msg): (ReadSignal<Option<String>>, WriteSignal<Option<String>>) =
         create_signal(None);
     let (show_password, set_show_password) = create_signal(ShowPassword::default());
+    let (checked, set_checked) = create_signal(false);
 
     // Create nodes for form elements
     let username_input_elm: NodeRef<html::Input> = create_node_ref();
@@ -109,15 +136,7 @@ fn LogIn() -> impl IntoView {
         headers
             .set("Content-Type", "application/json;charset=UTF-8")
             .unwrap();
-
-        // Set headers for fetch
-        let mut options = RequestInit::new();
-        options.method("POST");
-        options.headers(&headers);
-        options.body(Some(&JsValue::from_str(&pckg)));
-        options.mode(RequestMode::Cors);
-
-        let _ = "asdfasdf".to_string() + "asdfas";
+        headers.set("Access-Control-Allow-Origin", "true").unwrap();
 
         let fetcher: Fetcher = Fetcher::init()
             .set_url(app_settings.backend_url.to_string() + "user-login")
@@ -139,11 +158,6 @@ fn LogIn() -> impl IntoView {
                 navigator_clone("/dashboard", NavigateOptions::default());
             }
 
-            // let response_body_promise = response.array_buffer().unwrap();
-            // let js_value = JsFuture::from(response_body_promise).await.unwrap();
-            // let unit8_array: Uint8Array = Uint8Array::new(&js_value);
-            // let response_body = unit8_array.to_vec();
-            // let deserialized: JsonMsg = serde_json::from_slice(&response_body).unwrap();
             let deserialized: JsonMsg = Fetcher::response_to_struct(&response).await;
 
             set_err_msg.set(deserialized.msg.clone());
@@ -152,16 +166,20 @@ fn LogIn() -> impl IntoView {
 
     let on_submit = move |evnt: SubmitEvent| {
         evnt.prevent_default();
-        let username_value: String = username_input_elm
-            .get()
-            .expect("<input> should be mounted")
-            .value();
-        let password_value: String = password_input_elm
-            .get()
-            .expect("<input> should be mounted")
-            .value();
-        set_test_thing.set(Some(username_value.clone()));
-        attempt_login.dispatch((username_value, password_value));
+
+        if checked.get() {
+            let username_value: String = username_input_elm
+                .get()
+                .expect("<input> should be mounted")
+                .value();
+            let password_value: String = password_input_elm
+                .get()
+                .expect("<input> should be mounted")
+                .value();
+            attempt_login.dispatch((username_value, password_value));
+        } else {
+            set_err_msg.set(Some(String::from("Please accept use of cookies")));
+        }
     };
 
     view! {
@@ -169,16 +187,25 @@ fn LogIn() -> impl IntoView {
         <form  on:submit=on_submit >
             <label for="username">Username:</label>
             <br/>
-            <input id="username" type="text" name="username" placeholder="username" node_ref=username_input_elm/>
+            <input id="username" type="text" name="username" placeholder="username" node_ref=username_input_elm required/>
             <br/>
             <label for="password">Password:</label>
             <br/>
-            <input id="password" type="password" name="password" placeholder="password" node_ref=password_input_elm/>
+            <input id="password" type="password" name="password" placeholder="password" node_ref=password_input_elm required/>
             <br/>
             <div>
-                <label for="cookie_acceptance">Logging in requires the use of a Session token in the form of a cookie</label>
-                <br/>
-                <input id="cookie_acceptance" type="checkbox" />
+                <p>"This website uses cookies for user login. To log in, you must accept the use of said cookies."</p>
+                <label for="cookie_acceptance">"I accept the use of essential cookies for logging in."</label>
+                <br />
+                <input
+                    id="cookie_acceptance"
+                    type="checkbox"
+                    prop:checked=checked
+                    on:change=move |_| set_checked.update(|val| {
+                        *val = !*val;
+                    })
+                    required
+                />
             <span>I accept the cookies</span>
             </div>
             <br/>

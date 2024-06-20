@@ -114,3 +114,8 @@ pub async fn user_login(
         .content_type(ContentType::json())
         .json(serde_json::json!({"msg": "Login Successful"})))
 }
+
+#[tracing::instrument(name = "Check If Logged In")]
+pub async fn check_login(req: HttpRequest) -> HttpResponse {
+    HttpResponse::Ok().finish()
+}

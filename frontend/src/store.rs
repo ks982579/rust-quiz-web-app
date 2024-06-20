@@ -7,6 +7,7 @@ use std::{
 };
 
 use leptos::*;
+use leptos_dom::logging::console_log;
 
 #[derive(Clone, Copy, Debug)]
 pub struct AuthState {
@@ -36,8 +37,12 @@ pub struct AppSettings {
 
 impl AppSettings {
     pub fn init() -> Self {
-        let mut settings = Self::load_from_file();
+        // let mut settings = Self::load_from_file();
+        let mut settings = AppSettings {
+            backend_url: "http://127.0.0.1:8000/".to_string(),
+        };
         Self::load_from_env(&mut settings);
+
         settings
     }
 

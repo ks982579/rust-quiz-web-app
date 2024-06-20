@@ -114,5 +114,3 @@ impl std::default::Default for FetchBuilder {
         }
     }
 }
-
-// pub fn fetch<T>() -> T {}

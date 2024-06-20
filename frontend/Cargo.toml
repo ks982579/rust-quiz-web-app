@@ -11,6 +11,7 @@ serde_json = "1.0.117"
 wasm-bindgen = "0.2.92"
 wasm-bindgen-futures = "0.4.42"
 models = { path = "../models" }
+console_error_panic_hook = "0.1.7"
 
 [dependencies.web-sys]
 version = "0.3.69"

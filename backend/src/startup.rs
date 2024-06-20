@@ -3,12 +3,17 @@
 use crate::{
     authentication::AuthCookie,
     configuration::AllSettings,
-    routes::{create_user, health_check, user_login},
+    routes::{check_login, create_user, health_check, user_login},
     surrealdb_repo::Database,
 };
 use actix_cors::Cors;
 use actix_session::SessionMiddleware;
-use actix_web::{cookie::Key, dev::Server, http::header, web, App, HttpServer};
+use actix_web::{
+    cookie::{Key, SameSite},
+    dev::Server,
+    http::header,
+    web, App, HttpServer,
+};
 use secrecy::{ExposeSecret, Secret};
 use std::net::TcpListener;
 use tracing_actix_web::TracingLogger;
@@ -31,27 +36,34 @@ pub async fn run(
         App::new()
             // consider versioning like /api/v1/
             .wrap(
+                SessionMiddleware::builder(db_connect.as_ref().clone(), secret_key.clone())
+                    .cookie_http_only(false)
+                    .cookie_name(String::from("session-cookie"))
+                    .cookie_same_site(SameSite::None)
+                    .cookie_secure(true)
+                    .cookie_domain(Some(String::from("http://localhost:8080")))
+                    .build(),
+            )
+            .wrap(
                 Cors::default()
                     // front-end URL
                     .allowed_origin("http://localhost:8080")
                     .allow_any_header()
                     .allow_any_method()
                     // .allowed_header(header::CONTENT_TYPE)
-                    .allowed_headers(vec![
-                        header::AUTHORIZATION,
-                        header::ACCEPT,
-                        header::CONTENT_TYPE,
-                        header::ORIGIN,
-                        header::WWW_AUTHENTICATE,
-                    ])
+                    // .allowed_headers(vec![
+                    //     header::AUTHORIZATION,
+                    //     header::ACCEPT,
+                    //     header::CONTENT_TYPE,
+                    //     header::ORIGIN,
+                    //     header::WWW_AUTHENTICATE,
+                    //     header::X_,
+                    //     header::ACCESS_CONTROL_ALLOW_ORIGIN,
+                    // ])
                     // Allows inclusion of cookies and HTTP Authentication Info
                     .supports_credentials()
                     .max_age(3600),
             )
-            .wrap(SessionMiddleware::new(
-                db_connect.as_ref().clone(),
-                secret_key.clone(),
-            ))
             // This checks if authorized
             .wrap(TracingLogger::default())
             .route("/health-check", web::get().to(health_check))
@@ -61,7 +73,7 @@ pub async fn run(
                 web::scope("")
                     // .wrap(SessionMiddleware::new(database.clone(), secret_key.clone()))
                     .wrap(AuthCookie)
-                    .route("/check", web::get().to(|| actix_web::HttpResponse::Ok())),
+                    .route("/check-login", web::get().to(check_login)),
             )
             // setting
             .app_data(
