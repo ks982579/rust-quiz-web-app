@@ -7,9 +7,9 @@ use crate::{
     surrealdb_repo::Database,
 };
 use actix_cors::Cors;
-use actix_session::SessionMiddleware;
+use actix_session::{config::PersistentSession, SessionMiddleware};
 use actix_web::{
-    cookie::{Key, SameSite},
+    cookie::{time::Duration, Key, SameSite},
     dev::Server,
     http::header,
     web, App, HttpServer,
@@ -37,17 +37,26 @@ pub async fn run(
             // consider versioning like /api/v1/
             .wrap(
                 SessionMiddleware::builder(db_connect.as_ref().clone(), secret_key.clone())
-                    .cookie_http_only(false)
-                    .cookie_name(String::from("session-cookie"))
+                    .cookie_http_only(true)
+                    .cookie_name(String::from("sessionid"))
                     .cookie_same_site(SameSite::None)
                     .cookie_secure(true)
-                    .cookie_domain(Some(String::from("http://localhost:8080")))
+                    // .cookie_domain(Some(String::from("localhost:8000")))
+                    .cookie_content_security(actix_session::config::CookieContentSecurity::Signed)
+                    .session_lifecycle(
+                        PersistentSession::default()
+                            .session_ttl_extension_policy(
+                                actix_session::config::TtlExtensionPolicy::OnStateChanges,
+                            )
+                            .session_ttl(Duration::days(7)),
+                    )
                     .build(),
             )
             .wrap(
                 Cors::default()
                     // front-end URL
-                    .allowed_origin("http://localhost:8080")
+                    // .allowed_origin("http://localhost:8080")
+                    .allow_any_origin()
                     .allow_any_header()
                     .allow_any_method()
                     // .allowed_header(header::CONTENT_TYPE)

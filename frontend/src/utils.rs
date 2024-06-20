@@ -31,6 +31,7 @@ impl Fetcher {
         options.method(&self.method);
         options.headers(&self.headers);
         options.mode(self.mode.clone());
+        options.credentials(web_sys::RequestCredentials::Include);
 
         if let Some(pckg) = json_package {
             options.body(Some(&JsValue::from_str(&pckg)));

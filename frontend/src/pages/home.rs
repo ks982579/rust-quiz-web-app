@@ -136,7 +136,7 @@ fn LogIn() -> impl IntoView {
         headers
             .set("Content-Type", "application/json;charset=UTF-8")
             .unwrap();
-        headers.set("Access-Control-Allow-Origin", "true").unwrap();
+        // headers.set("Access-Control-Allow-Origin", "true").unwrap();
 
         let fetcher: Fetcher = Fetcher::init()
             .set_url(app_settings.backend_url.to_string() + "user-login")
