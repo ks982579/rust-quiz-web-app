@@ -3,19 +3,15 @@
 //! The `LogIn` componenet is currently part of the `HomePage`.
 //! That is why it is implemented here.
 //! If it becomes its own page one day, it can (and should) be moved.
+use crate::pages::Dashboard;
 use leptos::ev::SubmitEvent;
 use leptos::logging::*;
 use leptos::*;
 use leptos_dom::logging::console_log;
 use leptos_router::{use_navigate, NavigateOptions, A};
 use models::JsonMsg;
-use serde::{Deserialize, Serialize};
 use std::rc::Rc;
-
-use wasm_bindgen::JsValue;
-use wasm_bindgen_futures::JsFuture;
-use web_sys::js_sys::Uint8Array;
-use web_sys::{wasm_bindgen::prelude::*, Headers, Request, RequestInit, RequestMode, Response};
+use web_sys::{Headers, RequestMode, Response};
 
 use crate::store::{AppSettings, AuthState};
 use crate::Fetcher;
@@ -61,24 +57,49 @@ pub fn HomePage() -> impl IntoView {
         spawn_local(async move {
             let response: Response = fetcher.fetch(None).await;
             if response.status() == 200 {
-                console_log("It worked!");
+                auth_state.set_authenticated(true);
+                set_auth_status.set(AuthStatus::Authenticated);
             } else {
-                console_log("It's broke like you son");
+                auth_state.set_authenticated(false);
+                set_auth_status.set(AuthStatus::Unauthenticated);
             }
         });
     });
 
     view! {
         <>
-            <summary>"Heading for details tag"</summary>
-            <details>"additional things user can open and close as needed."</details>
-            <aside>"Content aside from content, like side bar!"</aside>
-            <section>"Defines section in document"</section>
-            <section>
-                <LogIn/>
-                <A href="/new-user">"New? Create an account here"</A>
-            </section>
-            <article>"Independent, self-contained content"</article>
+            {move || {
+                match auth_status.get() {
+                    AuthStatus::Loading => {
+                    view! {
+                        <>
+                            <div>"Loading..."</div>
+                        </>
+                    }
+                }
+                AuthStatus::Unauthenticated => {
+                    view! {
+                        <>
+                            <summary>"Heading for details tag"</summary>
+                            <details>"additional things user can open and close as needed."</details>
+                            <aside>"Content aside from content, like side bar!"</aside>
+                            <section>"Defines section in document"</section>
+                            <section>
+                                <LogIn/>
+                                <A href="/new-user">"New? Create an account here"</A>
+                            </section>
+                            <article>"Independent, self-contained content"</article>
+                        </>
+                    }
+                }
+                AuthStatus::Authenticated => {
+                    view! {
+                        <>
+                            <Dashboard />
+                        </>
+                    }
+                }
+            }}}
         </>
     }
 }
