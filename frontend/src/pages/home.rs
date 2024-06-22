@@ -9,7 +9,7 @@ use leptos::logging::*;
 use leptos::*;
 use leptos_dom::logging::console_log;
 use leptos_router::{use_navigate, NavigateOptions, A};
-use models::JsonMsg;
+use models::{JsonMsg, PartialUser};
 use std::rc::Rc;
 use web_sys::{Headers, RequestMode, Response};
 
@@ -57,6 +57,9 @@ pub fn HomePage() -> impl IntoView {
         spawn_local(async move {
             let response: Response = fetcher.fetch(None).await;
             if response.status() == 200 {
+                let user: PartialUser = Fetcher::response_to_struct(&response).await;
+                // Putting PartialUser into Context
+                provide_context(user);
                 auth_state.set_authenticated(true);
                 set_auth_status.set(AuthStatus::Authenticated);
             } else {
@@ -142,8 +145,6 @@ fn LogIn() -> impl IntoView {
     // Create nodes for form elements
     let username_input_elm: NodeRef<html::Input> = create_node_ref();
     let password_input_elm: NodeRef<html::Input> = create_node_ref();
-    let (test_thing, set_test_thing): (ReadSignal<Option<String>>, WriteSignal<Option<String>>) =
-        create_signal(None);
 
     let attempt_login = create_action(move |credentials: &(String, String)| {
         let (username, password) = credentials.clone();

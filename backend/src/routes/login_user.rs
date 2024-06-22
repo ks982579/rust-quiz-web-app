@@ -10,14 +10,17 @@ use crate::{
 };
 use actix_web::{
     http::{header::ContentType, StatusCode},
-    web, HttpRequest, HttpResponse, ResponseError,
+    web, HttpMessage, HttpRequest, HttpResponse, ResponseError,
 };
-use models::GeneralUser;
+use anyhow::Context;
+use models::{GeneralUser, PartialUser, UserID};
 
 #[derive(thiserror::Error)]
 pub enum UserLoginError {
     #[error("Authentication Failed")]
     AuthError(#[source] anyhow::Error),
+    #[error("Unauthenticated")]
+    Unauthorized(#[source] anyhow::Error),
     #[error("Unexpected error")]
     UnexpectedError(#[from] anyhow::Error),
 }
@@ -41,6 +44,10 @@ impl ResponseError for UserLoginError {
             UserLoginError::AuthError(_) => HttpResponse::build(StatusCode::BAD_REQUEST)
                 .insert_header(ContentType::json())
                 .json(serde_json::json!({ "msg": "Incorrect username or password" })),
+
+            UserLoginError::Unauthorized(_) => HttpResponse::build(StatusCode::UNAUTHORIZED)
+                .insert_header(ContentType::json())
+                .json(serde_json::json!({ "msg": "User Unauthenticated" })),
         }
     }
 }
@@ -116,6 +123,23 @@ pub async fn user_login(
 }
 
 #[tracing::instrument(name = "Check If Logged In")]
-pub async fn check_login(req: HttpRequest) -> HttpResponse {
-    HttpResponse::Ok().finish()
+pub async fn check_login(
+    req: HttpRequest,
+    db: web::Data<Database>,
+) -> Result<HttpResponse, UserLoginError> {
+    let user: Option<PartialUser> = if let Some(user_id) = req.extensions().get::<UserID>() {
+        db.client
+            .select(("general_user", &user_id.0))
+            .await
+            .context("Error")?
+    } else {
+        None
+    };
+
+    match user {
+        Some(user) => Ok(HttpResponse::Ok().json(user)),
+        None => Err(UserLoginError::Unauthorized(anyhow::anyhow!(
+            "Unauthorized"
+        ))),
+    }
 }

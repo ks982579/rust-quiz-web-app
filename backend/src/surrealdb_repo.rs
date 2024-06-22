@@ -92,6 +92,8 @@ impl Database {
     }
 }
 
+// -- Below is for Session Store --
+
 type SessionState = HashMap<String, String>;
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, PartialOrd, Clone)]
@@ -141,11 +143,11 @@ impl SessionStore for Database {
         };
 
         // Getting value from database
-        let mut session_token_res: surrealdb::Result<Option<SessionToken>> =
+        let session_token_res: surrealdb::Result<Option<SessionToken>> =
             self.client.select(token_info.clone()).await;
 
         // Extracting value or error
-        let mut session_token_opt: Option<SessionToken> = if let Ok(res) = session_token_res {
+        let session_token_opt: Option<SessionToken> = if let Ok(res) = session_token_res {
             res
         } else {
             tracing::warn!("Error getting result from database");
