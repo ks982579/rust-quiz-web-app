@@ -58,6 +58,37 @@ This runs the `sql` command in the `/surreal` directory in the container.
 We pass in the credentials, the namespace, database name, and request pretty formatting.
 Adding notes so I do not forget command.
 
+## Testing
+
+If you are running all back-end tests together, they must be run sequentially.
+I could spin up a new database for each test case, but that also sounds like a lot of work.
+There's also a `serial_test` crate to provide a `#[serial]` macro you stick under the `#[test]` macro
+for tests you want to run sequentially.
+Or, you can implement a mutex yourself with something like
+
+```rust
+use std::sync::Mutex;
+use lazy_static::laxy_static;
+
+lazy_static! {
+  static ref TEST_MUTEX: Mutex<()> = Mutex::new(());
+}
+
+#[test]
+fn example_test() {
+  let _test_guard = TEST_MUTEX.lock().unwrap();
+  // Add test logic below
+}
+```
+
+Again, that's a bit of work.
+
+When you run tests, use the following:
+
+```bash
+cargo test -- --test-threads=1
+```
+
 ## Logging
 
 Actix-Web does not simply log requests like some other frameworks.
