@@ -8,7 +8,7 @@ use serde_json::Value;
 use surrealdb::sql::Thing;
 
 #[tokio::test]
-async fn test_log_out_user_200() {
+async fn test_log_out_logged_in_user_200() {
     // Arrange
     let test_app: TestApp = spawn_app().await;
     // dbg!(String::from("Spawned test app"));
@@ -91,6 +91,56 @@ async fn test_log_out_user_200() {
         test_app.database.client.select("sessions").await.unwrap();
     dbg!(&logout_db_token);
     assert!(logout_db_token.len() == 0);
+
+    // Clean Up
+    // TODO: Code duplication
+    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("general_user").await;
+
+    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("sessions").await;
+}
+
+#[tokio::test]
+async fn test_log_out_anonymous_user_200() {
+    // Arrange
+    let test_app: TestApp = spawn_app().await;
+    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("general_user").await;
+    // Clear out session tokens
+    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("sessions").await;
+
+    // Test User Data
+    let user_data: Value = serde_json::json!({
+        "name": "Test User",
+        "username": "testuser123",
+        "password": "Password@1234"
+    });
+    // Creating User via API
+    let _ = test_app
+        .api_client
+        .post(&format!("{}/create-user", &test_app.address))
+        .json(&user_data)
+        .send()
+        .await
+        .expect("Failed to create user");
+
+    let login_data: Value = serde_json::json!({
+        "username": "testuser123",
+        "password": "Password@1234"
+    });
+
+    // Not logging user into application
+
+    // Act
+    let log_out_response: Response = test_app
+        .api_client
+        .get(format!("{}/user-logout", &test_app.address))
+        .send()
+        .await
+        .expect("Failed to send log out request");
+
+    // Assert
+    dbg!(&log_out_response);
+    // Middleware catches this
+    assert!(log_out_response.status().as_u16() == 401_u16);
 
     // Clean Up
     // TODO: Code duplication
