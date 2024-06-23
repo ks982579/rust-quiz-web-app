@@ -15,6 +15,7 @@
 ### Changing
 
 - UI design of user creation
+- UI design for user dashboard
 - On successful user creation, the user should be redirected to login page or Logged-in.
 
 ### Decprecating
@@ -32,6 +33,22 @@ No bugs currently logged.
 ### Security
 
 No known security vulnerabilities reported as of yet.
+
+## [0.3.0] - 2024-06-23
+
+### Added
+
+- v0.3 Back-end API to log users into application, issuing session cookies
+- v0.3 Back-end middleware to check session cookies for protected endpoints
+- v0.3 Created SurrealDB Session store for holding cookies
+  - As a small application, reusing what we already have. If project grows, expand this to in memory database.
+- v0.3 Added user dashboard to logged-in users in the UI.
+
+### Changed
+
+- User log-in page updated to include cookie acceptance check-box and send requests to backend
+- Added several new crates again to implement new features, such as `actix-session`
+- parts of front-end were refactored to reduce duplicated logic.
 
 ## [0.2.0] - 2024-06-12
 

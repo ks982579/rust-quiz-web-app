@@ -1,5 +1,9 @@
 use serde::{Deserialize, Serialize};
 
+/// Struct to how user UUID, to pass from middleware
+#[derive(Debug, Deserialize, Serialize, PartialEq, PartialOrd, Clone)]
+pub struct UserID(pub String);
+
 #[derive(Debug, Deserialize, Serialize, PartialEq, PartialOrd, Clone)]
 pub struct GeneralUser {
     pub uuid: String,
@@ -17,6 +21,24 @@ impl GeneralUser {
             username,
             password_hash,
         }
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize, PartialEq, PartialOrd, Clone)]
+pub struct PartialUser {
+    pub uuid: String,
+    pub name: String,
+    pub username: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct JsonMsg {
+    pub msg: Option<String>,
+}
+
+impl std::default::Default for JsonMsg {
+    fn default() -> Self {
+        Self { msg: None }
     }
 }
 

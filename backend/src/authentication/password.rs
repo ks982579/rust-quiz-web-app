@@ -1,5 +1,7 @@
 //! backend/src/authentication/password.rs
 //! Passwords will use the Argon2 encryption method
+use crate::{surrealdb_repo::Database, telemetry::spawn_blocking_and_tracing};
+use actix_web::web;
 use anyhow::Context;
 use argon2::{
     password_hash::SaltString, Algorithm, Argon2, Params, PasswordHash, PasswordHasher,
@@ -7,6 +9,11 @@ use argon2::{
 };
 use rand::thread_rng;
 use secrecy::{ExposeSecret, Secret};
+use uuid::Uuid;
+// trait for Database
+use crate::routes::LookUpUser;
+use serde::Deserialize;
+use std::str::FromStr;
 
 // Errors
 #[derive(Debug, thiserror::Error)]
@@ -17,9 +24,45 @@ pub enum AuthError {
     UnexpectedError(#[from] anyhow::Error),
 }
 
+#[derive(Debug, Clone, Deserialize)]
 pub struct UserCredentials {
     pub username: String,
     pub password: Secret<String>,
+}
+
+#[tracing::instrument(name = "Validate Credentials", skip_all)]
+pub async fn validate_credentials(
+    credentials: UserCredentials,
+    db: web::Data<Database>,
+) -> Result<uuid::Uuid, AuthError> {
+    // To keep return time consistent
+    let mut db_user_id: Option<Uuid> = None;
+    let mut expected_password_hash = Secret::new(
+        "$argon2id$v=19$m=10000,t=2,p=1$\
+        BOvW4laFSaAuhBGKyUq1lQ$H9mEowzY3Wj4vGRdnCzmzY15OGdlq64gytD+u/eOGrQ"
+            .to_string(),
+    );
+
+    // fetch user data from database if it exists
+    // Unless the database errors out, we want to hash password for consistent time.
+    let db_user_opt: Option<models::GeneralUser> = db
+        .get_user_by_username(credentials.username.clone())
+        .await?;
+
+    if let Some(gen_user) = db_user_opt {
+        db_user_id = Some(Uuid::from_str(&gen_user.uuid).context("Failed to parse UUID")?);
+        expected_password_hash = gen_user.password_hash.into();
+    }
+
+    spawn_blocking_and_tracing(move || {
+        verify_password_hash(credentials.password, expected_password_hash)
+    })
+    .await
+    .context("Failed to spawn blocking task")??;
+
+    db_user_id
+        .ok_or_else(|| anyhow::anyhow!("Invalid username"))
+        .map_err(AuthError::InvalidCredentials)
 }
 
 /// Computing Password hash for storing safely
@@ -41,7 +84,7 @@ pub fn create_password_hash(pswd: Secret<String>) -> Result<Secret<String>, anyh
 }
 
 /// Function will raise an error if actual and expected passwords do not match.
-fn verify_password_hash(
+pub fn verify_password_hash(
     actual_pswd_string: Secret<String>,
     expected_pswd_hash: Secret<String>,
 ) -> Result<(), AuthError> {

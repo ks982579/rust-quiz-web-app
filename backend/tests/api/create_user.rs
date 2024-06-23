@@ -45,7 +45,7 @@ async fn test_create_user_200() {
     assert!(response.status().is_success());
 
     // Clean up
-    test_app
+    let _ = test_app
         .database
         .client
         .query(

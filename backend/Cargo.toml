@@ -1,6 +1,6 @@
 [package]
 name = "backend"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 
 [dependencies]
@@ -25,6 +25,8 @@ uuid = { version = "1.8.0", features = ["v4"] }
 argon2 = { version = "0.5.3", features = ["std"] }
 secrecy = { version = "0.8.0", features = ["serde"] }
 rand = { version = "0.8.5", features = ["std_rng"] }
+actix-session = "0.9.0"
+chrono = "0.4.38"
 
 [dev-dependencies]
 wiremock = "0.6.0"
