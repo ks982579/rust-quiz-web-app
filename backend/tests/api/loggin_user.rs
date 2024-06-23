@@ -1,5 +1,6 @@
 //! backend/tests/api/loggin_user.rs
 use crate::utils::{spawn_app, TestApp};
+use backend::surrealdb_repo::SessionToken;
 // need new model
 use reqwest::{cookie::Cookie, Client, Response};
 use serde_json::Value;
@@ -58,10 +59,10 @@ async fn test_log_in_user_200() {
     let browser_cookie: Vec<Cookie> = response.cookies().collect();
     dbg!(&browser_cookie);
     assert!(browser_cookie.len() > 0);
-    let db_token: Vec<Thing> = test_app.database.client.select("sessions").await.unwrap();
+    // Must Explicitly return SessionToken because it declares an ID
+    let db_token: Vec<SessionToken> = test_app.database.client.select("sessions").await.unwrap();
     dbg!(&db_token);
     assert!(db_token.len() > 0);
-    // later check that token in database and stored in Cookies.
 
     // Clean Up
     // TODO: Code duplication
@@ -70,7 +71,6 @@ async fn test_log_in_user_200() {
     let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("sessions").await;
 }
 
-// TODO: This test is copied from 200 and not really updated... so do that
 #[tokio::test]
 async fn test_log_in_user_400() {
     // Arrange
@@ -150,7 +150,8 @@ async fn test_log_in_user_400() {
         let browser_cookie: Vec<Cookie> = response.cookies().collect();
         dbg!(&browser_cookie);
         assert!(browser_cookie.len() == 0);
-        let db_token: Vec<Thing> = test_app.database.client.select("sessions").await.unwrap();
+        let db_token: Vec<SessionToken> =
+            test_app.database.client.select("sessions").await.unwrap();
         dbg!(&db_token);
         assert!(db_token.len() == 0);
     }
