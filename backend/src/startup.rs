@@ -3,7 +3,7 @@
 use crate::{
     authentication::AuthCookie,
     configuration::AllSettings,
-    routes::{check_login, create_user, health_check, user_login},
+    routes::{check_login, create_user, health_check, user_login, user_logout},
     surrealdb_repo::Database,
 };
 use actix_cors::Cors;
@@ -82,7 +82,8 @@ pub async fn run(
                 web::scope("")
                     // .wrap(SessionMiddleware::new(database.clone(), secret_key.clone()))
                     .wrap(AuthCookie)
-                    .route("/check-login", web::get().to(check_login)),
+                    .route("/check-login", web::get().to(check_login))
+                    .route("/user-logout", web::get().to(user_logout)),
             )
             // setting
             .app_data(
