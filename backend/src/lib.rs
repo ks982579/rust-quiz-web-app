@@ -2,6 +2,7 @@
 pub mod authentication;
 pub mod configuration;
 pub mod routes;
+pub mod session_wrapper;
 pub mod startup;
 pub mod surrealdb_repo;
 pub mod telemetry;
