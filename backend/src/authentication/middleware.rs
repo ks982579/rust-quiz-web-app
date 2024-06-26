@@ -71,7 +71,22 @@ where
         // Creating our Session Wrapper
         // if let Some(session) = http_request.get_session() {
         let this_session = SessionWrapper::wrap(req.get_session());
-        let user_id = this_session.get_user_id(); //.map(Rc::new);
+        let user_id_res = this_session.get_user_id(); //.map(Rc::new);
+
+        // If there's an error, we say it is Internal Server Error
+        let user_id = if let Ok(id) = user_id_res {
+            id
+        } else {
+            let (http_req, _) = req.into_parts();
+            let unauth_response = HttpResponse::InternalServerError().finish();
+            let service_response = ServiceResponse::new(http_req, unauth_response);
+            return Box::pin(async {
+                // After much fighting with borrow checker this is what works best
+                // forget the original requestion and return a clean slate
+                let _err = anyhow::anyhow!("Internal Error");
+                Ok(service_response)
+            });
+        };
 
         if let Some(userid) = user_id {
             req.extensions_mut().insert(UserID(userid.to_string()));
