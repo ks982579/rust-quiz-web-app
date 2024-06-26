@@ -17,7 +17,7 @@ where
 {
     async fn post_create_quiz(&self, json: &Body) -> Response {
         self.api_client
-            .post(&format!("{}/create-quiz", &self.address))
+            .post(&format!("{}/quiz-nexus", &self.address))
             .json(json)
             .send()
             .await
@@ -29,6 +29,10 @@ where
 async fn test_create_quiz_200() {
     // Arrange
     let test_app: TestApp = spawn_app().await;
+    let mut test_app_response = test_app.create_new_test_user().await;
+    assert!(test_app_response.status().is_success());
+    test_app_response = test_app.log_in_test_user().await;
+    assert!(test_app_response.status().is_success());
     // let client: Client = Client::new();
 
     // Quiz Structure - Hopefully no questions starts and empty vector
