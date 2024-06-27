@@ -4,6 +4,7 @@ use actix_web::http::{header::ContentType, StatusCode};
 use actix_web::{web, HttpRequest, HttpResponse, ResponseError};
 use serde::{Deserialize, Serialize};
 use surrealdb::sql::{Id, Thing};
+use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct JsonPkg {
@@ -22,17 +23,24 @@ impl JsonPkg {
     }
 }
 
-pub struct Quiz {
+#[derive(Serialize, Deserialize, Debug)]
+pub struct FullQuiz {
     pub id: Thing,
     pub name: String,
-    pub author_id: String,
-    pub questions_mc: Vec<String>,
+    pub author_id: Uuid,
+    pub questions_mc: Vec<Uuid>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Quiz {
+    pub name: String,
+    pub author_id: Uuid,
+    pub questions_mc: Vec<Uuid>,
 }
 
 impl Quiz {
-    pub fn new(name: String, author_id: String) -> Self {
+    pub fn new(name: String, author_id: Uuid) -> Self {
         Self {
-            id: Thing::from(("quizzes", Id::uuid())),
             name,
             author_id,
             questions_mc: Vec::new(),
@@ -45,6 +53,8 @@ impl Quiz {
 pub enum CreateQuizError {
     #[error("{0}")]
     ValidationError(String),
+    #[error("{0}")]
+    AuthorizationError(String),
     #[error(transparent)]
     UnexpectedError(#[from] anyhow::Error),
 }
@@ -67,10 +77,16 @@ impl ResponseError for CreateQuizError {
             CreateQuizError::ValidationError(msg) => HttpResponse::build(StatusCode::BAD_REQUEST)
                 .insert_header(ContentType::json())
                 .json(serde_json::json!({ "msg": msg })),
+            CreateQuizError::AuthorizationError(msg) => {
+                HttpResponse::build(StatusCode::UNAUTHORIZED)
+                    .insert_header(ContentType::json())
+                    .json(serde_json::json!({ "msg": msg }))
+            }
         }
     }
 }
 
+/// ToDo: Documentation
 #[tracing::instrument(
     name = "Request to Create Quiz"
     skip(db, session)
@@ -83,6 +99,28 @@ pub async fn create_new_quiz(
 ) -> Result<HttpResponse, CreateQuizError> {
     let quiz_data: JsonPkg = quiz_pkg_pt.into_inner();
     quiz_data.validate_field()?;
+
+    let some_user_id: Option<Uuid> = session
+        .get_user_id()
+        .map_err(|_| CreateQuizError::UnexpectedError(anyhow::anyhow!("A SessionGetError")))?;
+
+    // Middleware should catch unauthorized users, but just in case
+    let user_id: Uuid = if let Some(id) = some_user_id {
+        id
+    } else {
+        return Err(CreateQuizError::AuthorizationError(
+            "Session Token not found".to_string(),
+        ));
+    };
+
+    let quiz_to_save: Quiz = Quiz::new(quiz_data.name, user_id);
+
+    let created: i32 = db
+        .client
+        .create("quizzes")
+        .content(&quiz_to_save)
+        .await
+        .map_err(|_| CreateQuizError::UnexpectedError(anyhow::anyhow!("surrealdb::Error")));
 
     // Dummy response to shut up linter
     Ok(HttpResponse::Ok().finish())

@@ -44,7 +44,7 @@ async fn test_create_quiz_200() {
     let response: Response = test_app.post_create_quiz(&info).await;
 
     // Assert
-    dbg!(response.status());
+    dbg!(&response);
     assert!(response.status().is_success());
 
     // Clean up
