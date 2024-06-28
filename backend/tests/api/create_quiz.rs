@@ -2,6 +2,7 @@
 use crate::utils::{spawn_app, TestApp};
 use models::GeneralUser;
 use reqwest::{Client, Response};
+use serde::{Deserialize, Serialize};
 use surrealdb::sql::Thing;
 
 trait CreateQuiz<Body>
@@ -25,14 +26,87 @@ where
     }
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+struct QuizName {
+    name: String,
+}
+
 #[tokio::test]
 async fn test_create_quiz_200() {
     // Arrange
     let test_app: TestApp = spawn_app().await;
+
+    let _: Vec<QuizName> = test_app.database.client.delete("quizzes").await.unwrap();
+
     let mut test_app_response = test_app.create_new_test_user().await;
     assert!(test_app_response.status().is_success());
     test_app_response = test_app.log_in_test_user().await;
     assert!(test_app_response.status().is_success());
+    // let client: Client = Client::new();
+
+    // Quiz Structure - Hopefully no questions starts and empty vector
+    let info: serde_json::Value = serde_json::json!({
+        "name": "Algorithms",
+    });
+
+    for _ in 0..=5 {
+        // Act
+        let response: Response = test_app.post_create_quiz(&info).await;
+
+        // Assert
+        dbg!(&response);
+        assert!(response.status().is_success());
+        // TODO: Also want to compare `response.json().await` to database query.
+    }
+
+    // assert!(false);
+    // Clean up
+    let _: Vec<QuizName> = test_app.database.client.delete("quizzes").await.unwrap();
+}
+
+#[tokio::test]
+async fn test_create_quiz_400() {
+    // Arrange
+    let test_app: TestApp = spawn_app().await;
+
+    let _: Vec<QuizName> = test_app.database.client.delete("quizzes").await.unwrap();
+
+    let mut test_app_response = test_app.create_new_test_user().await;
+    assert!(test_app_response.status().is_success());
+    test_app_response = test_app.log_in_test_user().await;
+    assert!(test_app_response.status().is_success());
+    // let client: Client = Client::new();
+
+    // Quiz Structure - Hopefully no questions starts and empty vector
+    let info: serde_json::Value = serde_json::json!({
+        "name": "  ",
+    });
+
+    // Act
+    let response: Response = test_app.post_create_quiz(&info).await;
+
+    // Assert
+    dbg!(&response);
+    assert!(response.status() == 400);
+    // TODO: Also want to compare `response.json().await` to database query.
+
+    // assert!(false);
+    // Clean up
+    let _: Vec<QuizName> = test_app.database.client.delete("quizzes").await.unwrap();
+}
+
+#[tokio::test]
+async fn test_create_quiz_401() {
+    // Arrange
+    let test_app: TestApp = spawn_app().await;
+
+    let _: Vec<QuizName> = test_app.database.client.delete("quizzes").await.unwrap();
+
+    // Not Creating a User
+    // let mut test_app_response = test_app.create_new_test_user().await;
+    // assert!(test_app_response.status().is_success());
+    // test_app_response = test_app.log_in_test_user().await;
+    // assert!(test_app_response.status().is_success());
     // let client: Client = Client::new();
 
     // Quiz Structure - Hopefully no questions starts and empty vector
@@ -45,12 +119,12 @@ async fn test_create_quiz_200() {
 
     // Assert
     dbg!(&response);
-    assert!(response.status().is_success());
+    assert!(response.status() == 401);
+    // TODO: Also want to compare `response.json().await` to database query.
 
     // Clean up
-    let _: Vec<Thing> = test_app.database.client.delete("quizzes").await.unwrap();
+    let _: Vec<QuizName> = test_app.database.client.delete("quizzes").await.unwrap();
 }
-
 /* Other Tests that shouldn't be too demanding:
 * - incomplete information is rejected
 * - username already taken

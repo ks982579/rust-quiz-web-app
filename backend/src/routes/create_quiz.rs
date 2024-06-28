@@ -27,19 +27,19 @@ impl JsonPkg {
 pub struct FullQuiz {
     pub id: Thing,
     pub name: String,
-    pub author_id: Uuid,
-    pub questions_mc: Vec<Uuid>,
+    pub author_id: String,
+    pub questions_mc: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Quiz {
     pub name: String,
-    pub author_id: Uuid,
-    pub questions_mc: Vec<Uuid>,
+    pub author_id: String,
+    pub questions_mc: Vec<String>,
 }
 
 impl Quiz {
-    pub fn new(name: String, author_id: Uuid) -> Self {
+    pub fn new(name: String, author_id: String) -> Self {
         Self {
             name,
             author_id,
@@ -103,10 +103,11 @@ pub async fn create_new_quiz(
     let some_user_id: Option<Uuid> = session
         .get_user_id()
         .map_err(|_| CreateQuizError::UnexpectedError(anyhow::anyhow!("A SessionGetError")))?;
+    dbg!(&some_user_id);
 
     // Middleware should catch unauthorized users, but just in case
-    let user_id: Uuid = if let Some(id) = some_user_id {
-        id
+    let user_id: String = if let Some(id) = some_user_id {
+        id.to_string()
     } else {
         return Err(CreateQuizError::AuthorizationError(
             "Session Token not found".to_string(),
@@ -114,14 +115,16 @@ pub async fn create_new_quiz(
     };
 
     let quiz_to_save: Quiz = Quiz::new(quiz_data.name, user_id);
+    dbg!(&quiz_to_save);
+    dbg!(Id::uuid().to_string());
 
-    let created: i32 = db
+    let created: Option<FullQuiz> = db
         .client
-        .create("quizzes")
+        .create(("quizzes", Id::uuid().to_string()))
         .content(&quiz_to_save)
         .await
-        .map_err(|_| CreateQuizError::UnexpectedError(anyhow::anyhow!("surrealdb::Error")));
+        .map_err(|e| CreateQuizError::ValidationError(e.to_string()))?;
 
     // Dummy response to shut up linter
-    Ok(HttpResponse::Ok().finish())
+    Ok(HttpResponse::Ok().json(&created))
 }
