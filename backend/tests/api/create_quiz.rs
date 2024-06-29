@@ -27,8 +27,8 @@ where
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-struct QuizName {
-    name: String,
+struct SurrealRecord {
+    id: Thing,
 }
 
 #[tokio::test]
@@ -36,7 +36,7 @@ async fn test_create_quiz_200() {
     // Arrange
     let test_app: TestApp = spawn_app().await;
 
-    let _: Vec<QuizName> = test_app.database.client.delete("quizzes").await.unwrap();
+    let _: Vec<SurrealRecord> = test_app.database.client.delete("quizzes").await.unwrap();
 
     let mut test_app_response = test_app.create_new_test_user().await;
     assert!(test_app_response.status().is_success());
@@ -62,7 +62,7 @@ async fn test_create_quiz_200() {
 
     // assert!(false);
     // Clean up
-    let _: Vec<QuizName> = test_app.database.client.delete("quizzes").await.unwrap();
+    let _: Vec<SurrealRecord> = test_app.database.client.delete("quizzes").await.unwrap();
 }
 
 #[tokio::test]
@@ -70,7 +70,7 @@ async fn test_create_quiz_400() {
     // Arrange
     let test_app: TestApp = spawn_app().await;
 
-    let _: Vec<QuizName> = test_app.database.client.delete("quizzes").await.unwrap();
+    let _: Vec<SurrealRecord> = test_app.database.client.delete("quizzes").await.unwrap();
 
     let mut test_app_response = test_app.create_new_test_user().await;
     assert!(test_app_response.status().is_success());
@@ -94,7 +94,7 @@ async fn test_create_quiz_400() {
 
     // assert!(false);
     // Clean up
-    let _: Vec<QuizName> = test_app.database.client.delete("quizzes").await.unwrap();
+    let _: Vec<SurrealRecord> = test_app.database.client.delete("quizzes").await.unwrap();
 }
 
 #[tokio::test]
@@ -102,7 +102,7 @@ async fn test_create_quiz_401() {
     // Arrange
     let test_app: TestApp = spawn_app().await;
 
-    let _: Vec<QuizName> = test_app.database.client.delete("quizzes").await.unwrap();
+    let _: Vec<SurrealRecord> = test_app.database.client.delete("quizzes").await.unwrap();
 
     // Not Creating a User
     // let mut test_app_response = test_app.create_new_test_user().await;
@@ -126,7 +126,7 @@ async fn test_create_quiz_401() {
     // TODO: Also want to compare `response.json().await` to database query.
 
     // Clean up
-    let _: Vec<QuizName> = test_app.database.client.delete("quizzes").await.unwrap();
+    let _: Vec<SurrealRecord> = test_app.database.client.delete("quizzes").await.unwrap();
 }
 /* Other Tests that shouldn't be too demanding:
 * - incomplete information is rejected

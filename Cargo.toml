@@ -3,4 +3,5 @@ members = [
   "frontend",
   "backend",
   "models",
+  "surrealize_macro"
 ]
