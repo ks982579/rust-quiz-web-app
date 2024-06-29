@@ -30,7 +30,7 @@ pub struct FullQuiz {
     pub name: String,
     pub description: String,
     pub author_id: String,
-    pub questions_mc: Vec<String>,
+    pub questions_mc: Vec<Thing>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -38,7 +38,7 @@ pub struct Quiz {
     pub name: String,
     pub description: String,
     pub author_id: String,
-    pub questions_mc: Vec<String>,
+    pub questions_mc: Vec<Thing>,
 }
 
 impl Quiz {
