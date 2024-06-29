@@ -1,10 +1,11 @@
 use serde::{Deserialize, Serialize};
+use surrealize_macro::Surrealize;
 
 /// Struct to how user UUID, to pass from middleware
 #[derive(Debug, Deserialize, Serialize, PartialEq, PartialOrd, Clone)]
 pub struct UserID(pub String);
 
-#[derive(Debug, Deserialize, Serialize, PartialEq, PartialOrd, Clone)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, PartialOrd, Clone, Surrealize)]
 pub struct GeneralUser {
     pub uuid: String,
     pub name: String,

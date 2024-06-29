@@ -6,4 +6,5 @@ edition = "2021"
 [dependencies]
 secrecy = { version = "0.8.0", features = ["serde"] }
 serde = { version = "1.0.203", features = ["derive"] }
-
+surrealdb = "1.5.3"
+surrealize_macro = { path = "../surrealize_macro" }
