@@ -9,6 +9,7 @@ use uuid::Uuid;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct JsonPkg {
     name: String,
+    description: String,
 }
 
 impl JsonPkg {
@@ -27,6 +28,7 @@ impl JsonPkg {
 pub struct FullQuiz {
     pub id: Thing,
     pub name: String,
+    pub description: String,
     pub author_id: String,
     pub questions_mc: Vec<String>,
 }
@@ -34,14 +36,16 @@ pub struct FullQuiz {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Quiz {
     pub name: String,
+    pub description: String,
     pub author_id: String,
     pub questions_mc: Vec<String>,
 }
 
 impl Quiz {
-    pub fn new(name: String, author_id: String) -> Self {
+    pub fn new(name: String, description: String, author_id: String) -> Self {
         Self {
             name,
+            description,
             author_id,
             questions_mc: Vec::new(),
         }
@@ -114,7 +118,7 @@ pub async fn create_new_quiz(
         ));
     };
 
-    let quiz_to_save: Quiz = Quiz::new(quiz_data.name, user_id);
+    let quiz_to_save: Quiz = Quiz::new(quiz_data.name, quiz_data.description, user_id);
     dbg!(&quiz_to_save);
     dbg!(Id::uuid().to_string());
 

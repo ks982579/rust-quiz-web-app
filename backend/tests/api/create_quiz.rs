@@ -47,6 +47,7 @@ async fn test_create_quiz_200() {
     // Quiz Structure - Hopefully no questions starts and empty vector
     let info: serde_json::Value = serde_json::json!({
         "name": "Algorithms",
+        "description": "An algorithms quiz"
     });
 
     for _ in 0..=5 {
@@ -80,6 +81,7 @@ async fn test_create_quiz_400() {
     // Quiz Structure - Hopefully no questions starts and empty vector
     let info: serde_json::Value = serde_json::json!({
         "name": "  ",
+        "description": "A blank quiz"
     });
 
     // Act
@@ -112,6 +114,7 @@ async fn test_create_quiz_401() {
     // Quiz Structure - Hopefully no questions starts and empty vector
     let info: serde_json::Value = serde_json::json!({
         "name": "Algorithms",
+        "description": "An algorithms quiz"
     });
 
     // Act
