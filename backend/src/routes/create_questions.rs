@@ -5,12 +5,11 @@ use actix_web::http::{header::ContentType, StatusCode};
 use actix_web::{web, HttpRequest, HttpResponse, ResponseError};
 use models::{
     model_errors::ModelErrors,
-    questions::{JsonQuestion, JsonQuestionMC, QuestionJsonPkg, QuestionMC, SurrealQuestionMC},
+    questions::{JsonQuestion, QuestionJsonPkg, QuestionMC},
     SurrealRecord,
 };
-use serde::{Deserialize, Serialize};
 use surrealdb::opt::PatchOp;
-use surrealdb::sql::{Id, Thing};
+use surrealdb::sql::Thing;
 use uuid::Uuid;
 
 // -- Errors --
