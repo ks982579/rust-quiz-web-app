@@ -112,7 +112,6 @@ async fn test_log_in_user_400() {
 
     for (bad_data, err_msg) in test_cases {
         // Act
-        // could probably life into a trait
         let response: Response = test_app
             .api_client
             .post(&format!("{}/user-login", &test_app.address))
