@@ -2,7 +2,9 @@ use serde::{Deserialize, Serialize};
 use surrealdb::sql::Thing;
 use surrealize_macro::Surrealize;
 
+pub mod model_errors;
 pub mod questions;
+pub mod quiz;
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, PartialOrd, Clone)]
 pub struct SurrealRecord {
