@@ -4,17 +4,17 @@
 //! That is why it is implemented here.
 //! If it becomes its own page one day, it can (and should) be moved.
 use crate::pages::Dashboard;
+use crate::utils::{JsonMsg, PartialUser};
 use leptos::ev::SubmitEvent;
 use leptos::logging::*;
 use leptos::*;
 use leptos_dom::logging::console_log;
 use leptos_router::{use_navigate, NavigateOptions, A};
-use models::{JsonMsg, PartialUser};
 use std::rc::Rc;
 use web_sys::{Headers, RequestMode, Response};
 
 use crate::store::{AppSettings, AuthState};
-use crate::Fetcher;
+use crate::utils::Fetcher;
 
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub enum AuthStatus {

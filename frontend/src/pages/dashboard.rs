@@ -1,12 +1,12 @@
 //! frontend/src/pages/dashboard.rs
 //! This is dashboard that appears for logged in users.
 use leptos::*;
-use models::{JsonMsg, PartialUser};
 use web_sys::{Headers, RequestMode, Response};
 
 use crate::{
+    components::Card,
     store::{AppSettings, AuthState},
-    Fetcher,
+    utils::{DashDisplay, Fetcher, JsonMsg, PartialUser},
 };
 
 #[component]
@@ -41,20 +41,44 @@ fn LogoutButton() -> impl IntoView {
         >"Log Out"</button>
     }
 }
+
 /// Dashboard component to be the main logged in part of homepage.
 #[component]
 pub fn Dashboard() -> impl IntoView {
     let user: PartialUser = use_context().expect("PartialUser Context not set");
+    let (read_display, write_display): (ReadSignal<DashDisplay>, WriteSignal<DashDisplay>) =
+        create_signal(DashDisplay::default());
+
+    let main_screen = move || match read_display.get() {
+        DashDisplay::MyQuizzes => view! {
+            <div>"GET CURRENT TESTS"</div>
+            <div>"GET CURRENT TESTS"</div>
+        },
+        DashDisplay::MakeQuizzes => view! {
+            <><div>"Making Quizzes"</div></>
+        },
+    };
+
     view! {
         <>
             <LogoutButton />
-            <nav>"Shoule have own nav bar"</nav>
+            <nav>"left: Kev's Quiz App | Right: Find People  Notifications  Profile"</nav>
             <h1>"Welcome back "{user.name}</h1>
-            <summary>"Heading for details tag"</summary>
-            <details>"additional things user can open and close as needed."</details>
-            <aside>"Content aside from content, like side bar!"</aside>
-            <section>"Defines section in document"</section>
-            <article>"Independent, self-contained content"</article>
+            <div class="split-screen">
+                <aside class="sidebar">
+                    <Card on_click=Some(write_display)>
+                        "Make a New Quiz"
+                    </Card>
+                    <ul>
+                        <li>"Make a New Quiz"</li>
+                        <li>"Saved Quizzes"</li>
+                        <li>"Search Quizzes"</li>
+                    </ul>
+                </aside>
+                <section class="main-content">
+                    {main_screen}
+                </section>
+            </div>
         </>
     }
 }

@@ -5,7 +5,6 @@ use leptos::ev::SubmitEvent;
 use leptos::logging::*;
 use leptos::*;
 use leptos_router::{use_navigate, NavigateOptions, A};
-use models::JsonMsg;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
@@ -20,6 +19,17 @@ pub struct Fetcher {
     headers: Headers,
     mode: RequestMode,
     url: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct JsonMsg {
+    pub msg: Option<String>,
+}
+
+impl std::default::Default for JsonMsg {
+    fn default() -> Self {
+        Self { msg: None }
+    }
 }
 
 impl Fetcher {
@@ -114,4 +124,18 @@ impl std::default::Default for FetchBuilder {
             url: "http://127.0.0.1:8000/".to_string(),
         }
     }
+}
+
+#[derive(Debug, Deserialize, Serialize, PartialEq, PartialOrd, Clone)]
+pub struct PartialUser {
+    pub uuid: String,
+    pub name: String,
+    pub username: String,
+}
+
+#[derive(Debug, Default, Clone)]
+pub enum DashDisplay {
+    #[default]
+    MyQuizzes,
+    MakeQuizzes,
 }

@@ -17,6 +17,24 @@
       .toggle-password.show:before {
         content: "\1FAE3";
       }
+      .split-screen {
+        display: flex;
+        width: 100%;
+      }
+      .sidebar {
+        width: 20rem;
+      }
+      .main-content {
+        flex: 1;
+        padding: 3rem;
+        margin: 1rem;
+        overflow-y: auto;
+        display: flex;
+        flex-flow: column;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: flex-start;
+      }
     </style>
     <title>Leptos Tutorial</title>
     <!-- <link href="css/style.css" rel="stylesheet"> -->

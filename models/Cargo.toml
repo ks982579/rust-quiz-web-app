@@ -2,9 +2,11 @@
 name = "models"
 version = "0.3.0"
 edition = "2021"
+resolver = "2"
 
 [dependencies]
 secrecy = { version = "0.8.0", features = ["serde"] }
 serde = { version = "1.0.203", features = ["derive"] }
-surrealdb = "1.5.3"
+surrealdb = { version = "1.5"}
 surrealize_macro = { path = "../surrealize_macro" }
+tokio = { version = "1" }
