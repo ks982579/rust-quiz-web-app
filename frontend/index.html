@@ -5,40 +5,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
-      body {
-        background-color: grey;
-      }
-      .toggle-password {
-        cursor: pointer;
-      }
-      .toggle-password:before {
-        content: "\1F611";
-      }
-      .toggle-password.show:before {
-        content: "\1FAE3";
-      }
-      .split-screen {
-        display: flex;
-        width: 100%;
-      }
-      .sidebar {
-        width: 20rem;
-      }
-      .main-content {
-        flex: 1;
-        padding: 3rem;
-        margin: 1rem;
-        overflow-y: auto;
-        display: flex;
-        flex-flow: column;
-        flex-wrap: wrap;
-        justify-content: center;
-        align-items: flex-start;
+      html {
+        height: 100vh;
+        margin: 0;
+        padding: 0;
       }
     </style>
     <title>Leptos Tutorial</title>
-    <!-- <link href="css/style.css" rel="stylesheet"> -->
+    <link data-trunk href="public/css/style.css" rel="css" />
     <!-- See Trunk Docs, but Linking asset types requires ... -->
+    <!-- [Trunk Docs](https://trunkrs.dev/assets/#css) -->
     <!-- <link data-trunk rel="scss" href="css/style.css" rel="stylesheet"> -->
   </head>
   <body></body>

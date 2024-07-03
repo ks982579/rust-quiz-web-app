@@ -4,7 +4,7 @@ use leptos::*;
 use web_sys::{Headers, RequestMode, Response};
 
 use crate::{
-    components::Card,
+    components::{dashboard::MakeQuiz, Card},
     store::{AppSettings, AuthState},
     utils::{DashDisplay, Fetcher, JsonMsg, PartialUser},
 };
@@ -55,7 +55,7 @@ pub fn Dashboard() -> impl IntoView {
             <div>"GET CURRENT TESTS"</div>
         },
         DashDisplay::MakeQuizzes => view! {
-            <><div>"Making Quizzes"</div></>
+            <><MakeQuiz /></>
         },
     };
 
