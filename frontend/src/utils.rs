@@ -138,4 +138,5 @@ pub enum DashDisplay {
     #[default]
     MyQuizzes,
     MakeQuizzes,
+    MakeQuestions,
 }

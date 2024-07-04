@@ -1,10 +1,11 @@
 //! frontend/src/pages/dashboard.rs
 //! This is dashboard that appears for logged in users.
 use leptos::*;
+use serde_json::Value;
 use web_sys::{Headers, RequestMode, Response};
 
 use crate::{
-    components::{dashboard::MakeQuiz, Card},
+    components::{dashboard::CreateQuestions, dashboard::MakeQuiz, Card},
     store::{AppSettings, AuthState},
     utils::{DashDisplay, Fetcher, JsonMsg, PartialUser},
 };
@@ -45,9 +46,13 @@ fn LogoutButton() -> impl IntoView {
 /// Dashboard component to be the main logged in part of homepage.
 #[component]
 pub fn Dashboard() -> impl IntoView {
-    let user: PartialUser = use_context().expect("PartialUser Context not set");
+    // -- Create Signals --
     let (read_display, write_display): (ReadSignal<DashDisplay>, WriteSignal<DashDisplay>) =
         create_signal(DashDisplay::default());
+    let (json_data, set_json_data): (ReadSignal<Option<Value>>, WriteSignal<Option<Value>>) =
+        create_signal(None);
+    // -- Use Context --
+    let user: PartialUser = use_context().expect("PartialUser Context not set");
 
     let main_screen = move || match read_display.get() {
         DashDisplay::MyQuizzes => view! {
@@ -55,7 +60,16 @@ pub fn Dashboard() -> impl IntoView {
             <div>"GET CURRENT TESTS"</div>
         },
         DashDisplay::MakeQuizzes => view! {
-            <><MakeQuiz /></>
+            <><MakeQuiz display_settings=write_display response_setter=set_json_data/></>
+        },
+        DashDisplay::MakeQuestions => view! {
+            <>
+                <CreateQuestions
+                    display_settings=write_display
+                    response_getter=json_data
+                    response_setter=set_json_data
+                />
+            </>
         },
     };
 

@@ -3,6 +3,7 @@
 //! user to the making questions screen.
 use leptos::*;
 
+use serde_json::Value;
 use web_sys::{Headers, RequestMode, Response};
 
 use crate::{
@@ -17,7 +18,10 @@ pub struct QuizJsonPkg {
 }
 
 #[component]
-pub fn MakeQuiz() -> impl IntoView {
+pub fn MakeQuiz(
+    display_settings: WriteSignal<DashDisplay>,
+    response_setter: WriteSignal<Option<Value>>,
+) -> impl IntoView {
     //  -- Create Signals --
     let (err_msg, set_err_msg): (ReadSignal<Option<String>>, WriteSignal<Option<String>>) =
         create_signal(None);
@@ -44,7 +48,10 @@ pub fn MakeQuiz() -> impl IntoView {
         async move {
             let response: Response = fetcher.fetch(Some(pkg_clone)).await;
             if response.status() == 200 {
-                let this: Option<char> = None; // change Some display to making questions
+                // Maybe a little hacky to transform into Value, can refine in future
+                let hack_data: Value = Fetcher::response_to_struct(&response).await;
+                response_setter.set(Some(hack_data));
+                display_settings.set(DashDisplay::MakeQuestions);
             } else {
                 let deserialized: JsonMsg = Fetcher::response_to_struct(&response).await;
                 set_err_msg.set(deserialized.msg.clone());
