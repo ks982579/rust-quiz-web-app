@@ -37,7 +37,7 @@ impl ResponseError for CreateQuizError {
             }
             CreateQuizError::ValidationError(err) => HttpResponse::build(StatusCode::BAD_REQUEST)
                 .insert_header(ContentType::json())
-                .json(serde_json::json!({ "msg": err })),
+                .json(serde_json::json!({ "msg": err.to_string() })),
             CreateQuizError::AuthorizationError(msg) => {
                 HttpResponse::build(StatusCode::UNAUTHORIZED)
                     .insert_header(ContentType::json())
