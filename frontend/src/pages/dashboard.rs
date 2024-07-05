@@ -7,7 +7,7 @@ use web_sys::{Headers, RequestMode, Response};
 use crate::{
     components::{dashboard::CreateQuestions, dashboard::MakeQuiz, Card},
     store::{AppSettings, AuthState},
-    utils::{DashDisplay, Fetcher, JsonMsg, PartialUser},
+    utils::{DashDisplay, Fetcher, PartialUser},
 };
 
 #[component]

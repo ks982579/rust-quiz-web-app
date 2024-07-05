@@ -11,7 +11,8 @@ pub fn Card(children: Children, on_click: Option<WriteSignal<DashDisplay>>) -> i
             style={if let Some(_) = on_click {"cursor:pointer"} else {""}}
             on:click=move |_| {
                 if let Some(sig) = on_click {
-                    sig.set(DashDisplay::MakeQuizzes);
+                    // sig.set(DashDisplay::MakeQuizzes);
+                    sig.set(DashDisplay::MakeQuestions);
                 }
             }
             class="card"

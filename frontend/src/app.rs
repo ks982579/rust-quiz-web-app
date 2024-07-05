@@ -2,10 +2,9 @@
 //! This holds the main app component for this web UI
 use crate::router::AppRouter;
 use crate::store::AppSettings;
-use crate::{pages::*, store::AuthState};
+use crate::store::AuthState;
 use leptos::*;
 use leptos_dom::logging::console_log;
-use leptos_router::{Route, Router, Routes, A};
 
 #[component]
 pub fn App() -> impl IntoView {

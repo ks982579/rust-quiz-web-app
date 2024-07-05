@@ -6,11 +6,9 @@
 use crate::pages::Dashboard;
 use crate::utils::{JsonMsg, PartialUser};
 use leptos::ev::SubmitEvent;
-use leptos::logging::*;
 use leptos::*;
 use leptos_dom::logging::console_log;
-use leptos_router::{use_navigate, NavigateOptions, A};
-use std::rc::Rc;
+use leptos_router::A;
 use web_sys::{Headers, RequestMode, Response};
 
 use crate::store::{AppSettings, AuthState};
@@ -152,10 +150,6 @@ fn LogIn() -> impl IntoView {
     let auth_state: AuthState = use_context::<AuthState>().expect("AuthState context not found");
     let app_settings: AppSettings =
         use_context::<AppSettings>().expect("AppSettings context not found");
-
-    // Create Navigator
-    let navigator = use_navigate();
-    let navigator_rc = Rc::new(navigator);
 
     // Create signals for component
     let (err_msg, set_err_msg): (ReadSignal<Option<String>>, WriteSignal<Option<String>>) =
