@@ -40,9 +40,71 @@ pub struct JsonQuestionMC {
     pub choices: Vec<String>,
 }
 
+#[derive(Clone, Debug)]
+pub struct QLInternals {
+    pub id: usize,
+    pub data: JsonQuestion,
+}
+
 #[component]
-pub fn QuestionEditor() -> impl IntoView {
+pub fn QuestionListMaker(id: usize, rw: RwSignal<Vec<QLInternals>>) -> impl IntoView {
     view! {
-        <div>"Question Editor"</div>
+        <div>
+            <p>"Only Multiple Choice at the moment"</p>
+            {move || {
+                match rw.get()[id].data {
+                    JsonQuestion::MultipleChoice(_) => view! {
+                        <QuestionMakerMC
+                            id=id
+                            rw=rw
+                        />
+                    }
+            }
+        }}
+        </div>
+    }
+}
+
+// .questions
+// .push(JsonQuestion::MultipleChoice(JsonQuestionMC {
+// question: String::from(
+//     "In Big O notation, which of the following represents the most efficient algorithm for large inputs?",
+// ),
+// hint: None,
+// answer: String::from("O(log(n))"),
+// choices: vec![
+//     String::from("O(n^2)"),
+//     String::from("O(n*log(n))"),
+//     String::from("O(n)"),
+// ],
+#[component]
+pub fn QuestionMakerMC(id: usize, rw: RwSignal<Vec<QLInternals>>) -> impl IntoView {
+    // Import Enum to be concise
+    use JsonQuestion::*;
+
+    // --- updates
+    let update_question = move |ev| {
+        rw.update(|this| {
+            this[id] = if let MultipleChoice(st) = this[id].data {
+                JsonQuestionMC {
+                    question: event_target_value(&ev),
+                    hint: st.hint,
+                    answer: st.answer,
+                    choices: st.choices,
+                }
+            }
+        })
+    };
+
+    view! {
+        <div>
+            <h4>"don't give up"</h4>
+            <input type="text" placeholder="question" on:change=update_question required/>
+            <input type="text" placeholder="hint" />
+            <input type="text" placeholder="answer" required/>
+            <input type="text" placeholder="wrong choice" required/>
+            <input type="text" placeholder="wrong choice" required/>
+            <input type="text" placeholder="wrong choice" required/>
+        </div>
     }
 }

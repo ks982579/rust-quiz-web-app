@@ -24,7 +24,7 @@ pub struct QuestionMC {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct QuestionJsonPkg {
     pub quiz_id: Thing,
-    pub questions: Vec<JsonQuestion>,
+    pub question: JsonQuestion,
 }
 
 /// To allow for the easy transporation of data
@@ -46,27 +46,22 @@ impl QuestionJsonPkg {
     pub fn validate_fields(&self) -> Result<(), ModelErrors> {
         // The type system ensures quiz_id isn't empty
         use JsonQuestion::*;
-        for (num, what) in self.questions.iter().enumerate() {
-            match what {
-                MultipleChoice(qmc) => {
-                    if qmc.question.trim().len() < 1 {
-                        return Err(ModelErrors::JsonValidation(format!(
-                            "Q{}: Question cannot be empty",
-                            num
-                        )));
-                    } else if qmc.answer.trim().len() < 1 {
-                        return Err(ModelErrors::JsonValidation(format!(
-                            "Q{}: Question needs valid answer",
-                            num
-                        )));
-                    } else if qmc.choices.len() < 1 {
-                        return Err(ModelErrors::JsonValidation(format!(
-                            "Q{}: Question needs at least one additional choice",
-                            num
-                        )));
-                    }
-                    // Could loop through choices to ensure they are also not blank
+        match &self.question {
+            MultipleChoice(qmc) => {
+                if qmc.question.trim().len() < 1 {
+                    return Err(ModelErrors::JsonValidation(format!(
+                        "Question cannot be empty",
+                    )));
+                } else if qmc.answer.trim().len() < 1 {
+                    return Err(ModelErrors::JsonValidation(format!(
+                        "Question needs valid answer",
+                    )));
+                } else if qmc.choices.len() < 1 {
+                    return Err(ModelErrors::JsonValidation(format!(
+                        "Question needs at least one additional choice",
+                    )));
                 }
+                // Could loop through choices to ensure they are also not blank
             }
         }
         Ok(())

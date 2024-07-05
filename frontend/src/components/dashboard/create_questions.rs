@@ -7,16 +7,10 @@ use serde_json::Value;
 use web_sys::{Headers, RequestMode, Response};
 
 use crate::{
-    components::dashboard::{JsonQuestion, QuestionEditor},
+    components::dashboard::{JsonQuestion, QLInternals, QuestionListMaker, QuestionMakerMC},
     store::{AppSettings, AuthState},
     utils::{DashDisplay, Fetcher, JsonMsg, PartialUser},
 };
-
-#[derive(Clone, Debug)]
-struct Internals {
-    id: u32,
-    data: JsonQuestion,
-}
 
 #[component]
 pub fn CreateQuestions(
@@ -25,8 +19,8 @@ pub fn CreateQuestions(
     response_setter: WriteSignal<Option<Value>>,
 ) -> impl IntoView {
     // -- Create Signals
-    let question_signal = create_rw_signal(Vec::<Internals>::new());
-    let bin_count: RwSignal<u32> = create_rw_signal(0);
+    let question_signal = create_rw_signal(Vec::<QLInternals>::new());
+    let bin_count: RwSignal<usize> = create_rw_signal(0);
     if let Some(val) = response_getter.get() {
         console_log(&val.to_string());
     };
@@ -36,13 +30,13 @@ pub fn CreateQuestions(
     // -- Call backs --
     let add_question = move |_event: ev::MouseEvent| {
         question_signal.update(|this| {
-            this.push(Internals {
+            this.push(QLInternals {
                 id: bin_count.get(),
                 data: JsonQuestion::default(),
             })
         });
         bin_count.update(|val| {
-            *val = *val + 1u32;
+            *val = *val + 1;
         });
     };
 
@@ -56,7 +50,12 @@ pub fn CreateQuestions(
             <For
                 each=move || question_signal.get()
                 key=|q| q.id.clone()
-                children=move |thing| view! {<div>"whoa"</div>}
+                children=move |thing| view!{
+                    <QuestionListMaker
+                        id=thing.id
+                        rw=question_signal
+                    />
+                }
             />
             <button on:click=add_question>"+ add question"</button>
             <button on:click=submit_all>"submit all questions"</button>
