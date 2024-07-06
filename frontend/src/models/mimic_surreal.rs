@@ -18,3 +18,24 @@ pub enum Id {
     Number(i64),
     String(String),
 }
+
+/// Multiple Choice question type
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct SurrealQuestionMC {
+    pub id: Thing,
+    pub question: String,
+    pub hint: Option<String>,
+    pub author_id: String,
+    pub parent_quiz: Thing,
+    pub answer: String,
+    pub choices: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct SurrealQuiz {
+    pub id: Thing,
+    pub name: String,
+    pub description: String,
+    pub author_id: String,
+    pub questions_mc: Vec<Thing>,
+}

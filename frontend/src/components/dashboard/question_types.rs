@@ -1,66 +1,34 @@
 //! frontend/src/components/dashboard/create_questions.rs
 //! This component will handle the initial question making procecss
-use leptos::*;
-
-use leptos_dom::logging::console_log;
-// use leptos_dom::logging::console_log;
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use web_sys::{Headers, RequestMode, Response};
-
 use crate::{
-    components::Card,
-    models::mimic_surreal::{Id, Thing},
-    store::{AppSettings, AuthState},
-    utils::{DashDisplay, Fetcher, JsonMsg, PartialUser},
+    models::mimic_surreal::{SurrealQuestionMC, SurrealQuiz},
+    models::questions::{JsonQuestion, JsonQuestionMC, QLInternals, QuestType, QuestionJsonPkg},
+    store::AppSettings,
+    utils::{Fetcher, JsonMsg},
 };
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct QuestionJsonPkg {
-    pub quiz_id: Thing,
-    pub question: JsonQuestion,
-}
-
-/// To allow for the easy transporation of data
-/// If adding another type, be sure to update the `JsonPkg::validate_fields()` method.
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub enum JsonQuestion {
-    MultipleChoice(JsonQuestionMC),
-}
-
-impl Default for JsonQuestion {
-    fn default() -> Self {
-        Self::MultipleChoice(JsonQuestionMC::default())
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
-pub struct JsonQuestionMC {
-    pub question: String,
-    pub hint: Option<String>,
-    pub answer: String,
-    pub choices: Vec<String>,
-}
-
-/// Question List Internals, Used to track and
-#[derive(Clone, Debug)]
-pub struct QLInternals {
-    pub id: usize,
-    pub data: JsonQuestion,
-}
+use leptos::*;
+use leptos_dom::logging::console_log;
+use web_sys::{Headers, RequestMode, Response};
 
 /// The Mold is a generic placeholder for all question to be Cast.
 #[component]
-pub fn QuestionMold(id: usize, rw: RwSignal<Vec<QLInternals>>) -> impl IntoView {
+pub fn QuestionMold(
+    question: QLInternals,
+    new_quest_rw: RwSignal<Vec<QLInternals>>,
+    quest_callback: Callback<QuestType>,
+    quiz_data: ReadSignal<Option<SurrealQuiz>>,
+) -> impl IntoView {
     view! {
         <div>
             <p>"Only Multiple Choice at the moment"</p>
             {move || {
-                match rw.get()[id].data {
+                match question.data {
                     JsonQuestion::MultipleChoice(_) => view! {
                         <QuestionCastMC
-                            id=id
-                            rw=rw
+                            question=question.to_owned()
+                            quiz_data=quiz_data
+                            rw=new_quest_rw
+                            quest_callback=quest_callback
                         />
                     }
             }
@@ -69,22 +37,14 @@ pub fn QuestionMold(id: usize, rw: RwSignal<Vec<QLInternals>>) -> impl IntoView 
     }
 }
 
-// .questions
-// .push(JsonQuestion::MultipleChoice(JsonQuestionMC {
-// question: String::from(
-//     "In Big O notation, which of the following represents the most efficient algorithm for large inputs?",
-// ),
-// hint: None,
-// answer: String::from("O(log(n))"),
-// choices: vec![
-//     String::from("O(n^2)"),
-//     String::from("O(n*log(n))"),
-//     String::from("O(n)"),
-// ],
-
 /// Casting a Multiple Choice question (from a mold)
 #[component]
-pub fn QuestionCastMC(id: usize, rw: RwSignal<Vec<QLInternals>>) -> impl IntoView {
+pub fn QuestionCastMC(
+    question: QLInternals,
+    rw: RwSignal<Vec<QLInternals>>,
+    quest_callback: Callback<QuestType>,
+    quiz_data: ReadSignal<Option<SurrealQuiz>>,
+) -> impl IntoView {
     //  -- Create Signals --
     let (err_msg, set_err_msg): (ReadSignal<Option<String>>, WriteSignal<Option<String>>) =
         create_signal(None);
@@ -121,9 +81,20 @@ pub fn QuestionCastMC(id: usize, rw: RwSignal<Vec<QLInternals>>) -> impl IntoVie
             let response: Response = fetcher.fetch(Some(pkg_clone)).await;
             console_log(&response.status().to_string());
             if response.status() >= 200 && response.status() < 300 {
-                // Maybe a little hacky to transform into Value, can refine in future
-                let hack_data: Value = Fetcher::response_to_struct(&response).await;
-                console_log(&hack_data.to_string());
+                let data: SurrealQuestionMC = Fetcher::response_to_struct(&response).await;
+
+                // Add component as a Quest
+                // quest_rw.update(|this| this.push(Quest::MC(data)));
+
+                quest_callback.call(QuestType::MC(data));
+
+                // Remove Component since it has been saved
+                rw.update(|this| {
+                    if let Some(index) = this.iter().position(|comp| comp.id == question.id) {
+                        this.remove(index);
+                    }
+                })
+
                 // response_setter.set(Some(hack_data));
                 // display_settings.set(DashDisplay::MakeQuestions);
             } else {
@@ -167,14 +138,15 @@ pub fn QuestionCastMC(id: usize, rw: RwSignal<Vec<QLInternals>>) -> impl IntoVie
             ],
         });
 
-        let fake_id: Id = Id::String(String::from("01907c77-1a03-7102-b963-bc610b76ca30"));
-        let fake_thing: Thing = Thing {
-            tb: String::from("quizzes"),
-            id: fake_id,
+        let owned_quiz_data = if let Some(surreal_quiz) = quiz_data.get() {
+            surreal_quiz
+        } else {
+            set_err_msg.set(Some(String::from("Parent quiz data not provied")));
+            return ();
         };
 
         let pre_pkg: QuestionJsonPkg = QuestionJsonPkg {
-            quiz_id: fake_thing,
+            quiz_id: owned_quiz_data.id,
             question: pre_pre_pkg,
         };
 

@@ -1,17 +1,16 @@
 //! frontend/src/components/dashboard/make_quiz.rs
 //! This component will handle quiz making logic and pass
 //! user to the making questions screen.
+use crate::{
+    models::mimic_surreal::SurrealQuiz,
+    store::AppSettings,
+    utils::{DashDisplay, Fetcher, JsonMsg},
+};
 use leptos::*;
-
-use serde_json::Value;
+use serde::{Deserialize, Serialize};
 use web_sys::{Headers, RequestMode, Response};
 
-use crate::{
-    components::Card,
-    store::{AppSettings, AuthState},
-    utils::{DashDisplay, Fetcher, JsonMsg, PartialUser},
-};
-// #[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct QuizJsonPkg {
     pub name: String,
     pub description: String,
@@ -20,7 +19,7 @@ pub struct QuizJsonPkg {
 #[component]
 pub fn MakeQuiz(
     display_settings: WriteSignal<DashDisplay>,
-    response_setter: WriteSignal<Option<Value>>,
+    response_setter: WriteSignal<Option<SurrealQuiz>>,
 ) -> impl IntoView {
     //  -- Create Signals --
     let (err_msg, set_err_msg): (ReadSignal<Option<String>>, WriteSignal<Option<String>>) =
@@ -48,9 +47,8 @@ pub fn MakeQuiz(
         async move {
             let response: Response = fetcher.fetch(Some(pkg_clone)).await;
             if response.status() == 200 {
-                // Maybe a little hacky to transform into Value, can refine in future
-                let hack_data: Value = Fetcher::response_to_struct(&response).await;
-                response_setter.set(Some(hack_data));
+                let data: SurrealQuiz = Fetcher::response_to_struct(&response).await;
+                response_setter.set(Some(data));
                 display_settings.set(DashDisplay::MakeQuestions);
             } else {
                 let deserialized: JsonMsg = Fetcher::response_to_struct(&response).await;
@@ -58,6 +56,7 @@ pub fn MakeQuiz(
             }
         }
     });
+
     // -- On Submit --
     let on_submit = move |subevent: ev::SubmitEvent| {
         subevent.prevent_default();
