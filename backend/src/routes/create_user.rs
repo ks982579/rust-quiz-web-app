@@ -43,7 +43,6 @@ impl ResponseError for CreateUserError {
     }
 }
 
-// TODO -> Implement a "secure" struct
 // Structs for JSON
 #[derive(Debug, Clone, Deserialize)]
 pub struct CreateUserPayload {
@@ -69,17 +68,6 @@ impl From<CreateUserPayload> for GeneralUser {
         )
     }
 }
-
-// impl Into<GeneralUser> for CreateUserPayload {
-//     fn into(self) -> GeneralUser {
-//         GeneralUser::new(
-//             uuid,
-//             self.name,
-//             self.username,
-//             self.password.expose_secret().to_string(),
-//         )
-//     }
-// }
 
 impl CreateUserPayload {
     /// Main purpose is to be used with ? to escape logic if fields are not
@@ -124,12 +112,10 @@ pub async fn create_user(
     // Do not return, General User has hashed password
     let _: Option<GeneralUser> = db.add_general_user(user_data.into()).await;
 
-    // println!("{user_info:?}");
     // Unless Something comes up, no good reason to return JSON information
     Ok(HttpResponse::Created()
         .content_type(ContentType::json())
         .json(serde_json::json!({ "msg": "Account created successfully"})))
-    // .json(new_user))
 }
 
 async fn unique_username(

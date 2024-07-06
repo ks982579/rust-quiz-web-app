@@ -7,7 +7,6 @@ use std::{
 };
 
 use leptos::*;
-use leptos_dom::logging::console_log;
 
 #[derive(Clone, Copy, Debug)]
 pub struct AuthState {

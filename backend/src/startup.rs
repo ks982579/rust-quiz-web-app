@@ -3,7 +3,10 @@
 use crate::{
     authentication::AuthCookie,
     configuration::AllSettings,
-    routes::{check_login, create_user, health_check, user_login, user_logout},
+    routes::{
+        check_login, create_new_questions, create_new_quiz, create_user, health_check, user_login,
+        user_logout,
+    },
     surrealdb_repo::Database,
 };
 use actix_cors::Cors;
@@ -83,7 +86,12 @@ pub async fn run(
                     // .wrap(SessionMiddleware::new(database.clone(), secret_key.clone()))
                     .wrap(AuthCookie)
                     .route("/check-login", web::get().to(check_login))
-                    .route("/user-logout", web::get().to(user_logout)),
+                    .route("/user-logout", web::get().to(user_logout))
+                    // This is for making and fetching quizzes
+                    .route("/quiz-nexus", web::post().to(create_new_quiz))
+                    .route("/question-forge", web::post().to(create_new_questions)),
+                // Below I think will be for making questions
+                // .route("/query-forge", web::get().to(?)),
             )
             // setting
             .app_data(

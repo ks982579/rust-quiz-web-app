@@ -3,7 +3,7 @@ use crate::utils::{spawn_app, TestApp};
 use backend::surrealdb_repo::SessionToken;
 use std::time::Duration;
 // need new model
-use reqwest::{cookie::Cookie, Client, Response};
+use reqwest::{cookie::Cookie, Response};
 use serde_json::Value;
 use surrealdb::sql::Thing;
 
@@ -11,15 +11,11 @@ use surrealdb::sql::Thing;
 async fn test_log_out_logged_in_user_200() {
     // Arrange
     let test_app: TestApp = spawn_app().await;
-    // dbg!(String::from("Spawned test app"));
 
-    // dbg!(String::from("Clearing database"));
     // Clear out users
     let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("general_user").await;
     // Clear out session tokens
     let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("sessions").await;
-
-    // dbg!(String::from("Database cleared"));
 
     // Test User Data
     let user_data: Value = serde_json::json!({
@@ -27,9 +23,7 @@ async fn test_log_out_logged_in_user_200() {
         "username": "testuser123",
         "password": "Password@1234"
     });
-    // dbg!(String::from("JSON Test User"));
 
-    // dbg!("Trying to create test user");
     // Creating User via API
     let _ = test_app
         .api_client
@@ -57,7 +51,6 @@ async fn test_log_out_logged_in_user_200() {
     let browser_cookie: Vec<Cookie> = response.cookies().collect();
     assert!(browser_cookie.len() > 0);
     let db_token: Vec<SessionToken> = test_app.database.client.select("sessions").await.unwrap();
-    // dbg!(&db_token);
     assert!(db_token.len() > 0);
 
     // Act

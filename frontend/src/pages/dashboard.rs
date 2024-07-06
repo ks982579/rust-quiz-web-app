@@ -1,14 +1,19 @@
 //! frontend/src/pages/dashboard.rs
 //! This is dashboard that appears for logged in users.
 use leptos::*;
-use models::{JsonMsg, PartialUser};
 use web_sys::{Headers, RequestMode, Response};
 
 use crate::{
+    components::{
+        dashboard::{MakeQuiz, QuestionForge},
+        Card,
+    },
+    models::mimic_surreal::SurrealQuiz,
     store::{AppSettings, AuthState},
-    Fetcher,
+    utils::{DashDisplay, Fetcher, PartialUser},
 };
 
+/// Component to log user out of web application
 #[component]
 fn LogoutButton() -> impl IntoView {
     let auth_state: AuthState = use_context::<AuthState>().expect("AuthState context not found?");
@@ -41,20 +46,86 @@ fn LogoutButton() -> impl IntoView {
         >"Log Out"</button>
     }
 }
+
 /// Dashboard component to be the main logged in part of homepage.
 #[component]
 pub fn Dashboard() -> impl IntoView {
+    // -- Create Signals --
+    let (read_display, write_display): (ReadSignal<DashDisplay>, WriteSignal<DashDisplay>) =
+        create_signal(DashDisplay::default());
+    // - for holding Json data between components (like creating quiz)
+    let (quiz_data, set_quiz_data): (
+        ReadSignal<Option<SurrealQuiz>>,
+        WriteSignal<Option<SurrealQuiz>>,
+    ) = create_signal(None);
+    // -- Use Context --
     let user: PartialUser = use_context().expect("PartialUser Context not set");
+
+    // -- Call backs --
+    let set_display_make_quiz = Callback::new(move |_click: ev::MouseEvent| {
+        write_display.set(DashDisplay::MakeQuizzes);
+    });
+
+    // TODO: Make request for current tests
+    // try `create_local_resource`
+    // or `create_render_effect`
+    // let quiz_list = create_rw_signal(Vec::new());
+    // let quizzes_resource = create_resource(
+    //     || (), // only render once
+    //     |_| async move {
+    //         todo!(); // fetch quizzes
+    //     },
+    // );
+    // let add_quiz = move |new_quiz: SurrealQuiz| {
+    //     quiz_list.update(|quizzes| quizzes.push(new_quiz));
+    // };
+    // let remove_quiz = move |dead_quiz: SurrealQuiz| {
+    //     quiz_list.update(|q| q.retain(|qz| qz.id != dead_quiz.id));
+    // };
+    // create_effect(move |_| {
+    //     if let Some(Ok(fetched_quizzes)) = quizzes_resource.get() {
+    //         quiz_list.set(fetched_quizzes);
+    //     }
+    // });
+
+    let main_screen = move || match read_display.get() {
+        DashDisplay::MyQuizzes => view! {
+            <div>"GET CURRENT TESTS"</div>
+            <div>"GET CURRENT TESTS"</div>
+        },
+        DashDisplay::MakeQuizzes => view! {
+            <><MakeQuiz display_settings=write_display response_setter=set_quiz_data/></>
+        },
+        DashDisplay::MakeQuestions => view! {
+            <>
+                <QuestionForge
+                    display_settings=write_display
+                    quiz_data=quiz_data
+                />
+            </>
+        },
+    };
+
     view! {
         <>
             <LogoutButton />
-            <nav>"Shoule have own nav bar"</nav>
+            <nav>"left: Kev's Quiz App | Right: Find People  Notifications  Profile"</nav>
             <h1>"Welcome back "{user.name}</h1>
-            <summary>"Heading for details tag"</summary>
-            <details>"additional things user can open and close as needed."</details>
-            <aside>"Content aside from content, like side bar!"</aside>
-            <section>"Defines section in document"</section>
-            <article>"Independent, self-contained content"</article>
+            <div class="split-screen">
+                <aside class="sidebar">
+                    <Card on_click=Some(set_display_make_quiz)>
+                        "Make a New Quiz"
+                    </Card>
+                    <ul>
+                        <li>"Make a New Quiz"</li>
+                        <li>"Saved Quizzes"</li>
+                        <li>"Search Quizzes"</li>
+                    </ul>
+                </aside>
+                <section class="main-content">
+                    {main_screen}
+                </section>
+            </div>
         </>
     }
 }
