@@ -5,7 +5,7 @@ use serde_json::Value;
 use web_sys::{Headers, RequestMode, Response};
 
 use crate::{
-    components::{dashboard::CreateQuestions, dashboard::MakeQuiz, Card},
+    components::{dashboard::MakeQuiz, dashboard::QuestionForge, Card},
     store::{AppSettings, AuthState},
     utils::{DashDisplay, Fetcher, PartialUser},
 };
@@ -49,6 +49,7 @@ pub fn Dashboard() -> impl IntoView {
     // -- Create Signals --
     let (read_display, write_display): (ReadSignal<DashDisplay>, WriteSignal<DashDisplay>) =
         create_signal(DashDisplay::default());
+    // - for holding Json data between components (like creating quiz)
     let (json_data, set_json_data): (ReadSignal<Option<Value>>, WriteSignal<Option<Value>>) =
         create_signal(None);
     // -- Use Context --
@@ -64,10 +65,8 @@ pub fn Dashboard() -> impl IntoView {
         },
         DashDisplay::MakeQuestions => view! {
             <>
-                <CreateQuestions
+                <QuestionForge
                     display_settings=write_display
-                    response_getter=json_data
-                    response_setter=set_json_data
                 />
             </>
         },

@@ -7,29 +7,26 @@ use serde_json::Value;
 use web_sys::{Headers, RequestMode, Response};
 
 use crate::{
-    components::dashboard::{JsonQuestion, QLInternals, QuestionListMaker, QuestionMakerMC},
+    components::dashboard::{JsonQuestion, QLInternals, QuestionMold},
     store::{AppSettings, AuthState},
     utils::{DashDisplay, Fetcher, JsonMsg, PartialUser},
 };
 
+/// Holds Data and logic for creating and editing questions.
+/// The name indicates using this component to both create and edit questions.
 #[component]
-pub fn CreateQuestions(
-    display_settings: WriteSignal<DashDisplay>,
-    response_getter: ReadSignal<Option<Value>>,
-    response_setter: WriteSignal<Option<Value>>,
-) -> impl IntoView {
+pub fn QuestionForge(display_settings: WriteSignal<DashDisplay>) -> impl IntoView {
     // -- Create Signals
-    let question_signal = create_rw_signal(Vec::<QLInternals>::new());
+    let exist_question_signal = create_rw_signal(Vec::<QLInternals>::new());
+    let new_question_signal = create_rw_signal(Vec::<QLInternals>::new());
     let bin_count: RwSignal<usize> = create_rw_signal(0);
-    if let Some(val) = response_getter.get() {
-        console_log(&val.to_string());
-    };
-    let surreal_id: Option<Value> = response_getter.get();
-    let mut fun_vec: Vec<HtmlElement<html::Div>> = Vec::new();
+    let mut fun_vec: Vec<HtmlElement<html::Form>> = Vec::new();
+
+    // TODO: Make Request to get already made questions
 
     // -- Call backs --
     let add_question = move |_event: ev::MouseEvent| {
-        question_signal.update(|this| {
+        new_question_signal.update(|this| {
             this.push(QLInternals {
                 id: bin_count.get(),
                 data: JsonQuestion::default(),
@@ -40,25 +37,26 @@ pub fn CreateQuestions(
         });
     };
 
-    let submit_all = move |_event: ev::MouseEvent| {
-        ();
-    };
+    // let submit_all = move |_event: ev::MouseEvent| {
+    //     ();
+    // };
 
     view! {
         <>
             <h1>Question Forge</h1>
+            // Here would be list of already made questions
             <For
-                each=move || question_signal.get()
+                each=move || new_question_signal.get()
                 key=|q| q.id.clone()
                 children=move |thing| view!{
-                    <QuestionListMaker
+                    <QuestionMold
                         id=thing.id
-                        rw=question_signal
+                        rw=new_question_signal
                     />
                 }
             />
             <button on:click=add_question>"+ add question"</button>
-            <button on:click=submit_all>"submit all questions"</button>
+            // <button on:click=submit_all>"submit all questions"</button>
         </>
     }
 }

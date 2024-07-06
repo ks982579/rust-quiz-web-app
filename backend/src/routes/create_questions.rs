@@ -87,11 +87,11 @@ pub async fn create_new_questions(
     };
 
     // Lists of certain question types here to have data pushed to.
-    let mut questions_to_save_mc: Vec<QuestionMC> = Vec::new();
 
     // If you have more questions, put into more lists
     let json_val: serde_json::Value = match question {
         JsonQuestion::MultipleChoice(what) => {
+            // -- Save Question into Database
             let res: Vec<SurrealQuestionMC> = db
                 .client
                 .create("questions_mc")
@@ -105,6 +105,7 @@ pub async fn create_new_questions(
                 })
                 .await
                 .map_err(|e| CreateQuestionError::UnexpectedError(anyhow::anyhow!(e)))?;
+            // Check it returned correctly
             if res.len() < 1 {
                 return Err(CreateQuestionError::UnexpectedError(anyhow::anyhow!(
                     "No values returned"
@@ -113,6 +114,7 @@ pub async fn create_new_questions(
 
             let it: &SurrealQuestionMC = &res[0];
 
+            // -- Save Question ID into Quiz
             let _: Option<SurrealRecord> = db
                 .client
                 .update(&quiz_id)
@@ -125,6 +127,5 @@ pub async fn create_new_questions(
         }
     };
 
-    // Dummy response to shut up linter
     Ok(HttpResponse::Created().json(json_val))
 }
