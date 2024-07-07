@@ -10,6 +10,14 @@ pub struct Thing {
     pub tb: String,
     pub id: Id,
 }
+impl Thing {
+    pub fn to_raw(&self) -> String {
+        match &self.id {
+            Id::String(it) => format!("{}:{}", self.tb, it),
+            Id::Number(it) => format!("{}:{}", self.tb, it),
+        }
+    }
+}
 
 /// The Id type held by Thing
 /// this application will try to keep it to String
