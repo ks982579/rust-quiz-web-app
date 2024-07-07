@@ -1,0 +1,43 @@
+body {
+  background-color: grey;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+.toggle-password {
+  cursor: pointer;
+}
+.toggle-password:before {
+  content: "\1F611";
+}
+.toggle-password.show:before {
+  content: "\1FAE3";
+}
+.split-screen {
+  display: flex;
+  width: 100%;
+}
+.sidebar {
+  width: 20rem;
+}
+.main-content {
+  flex: 1;
+  border: 0.25rem solid black;
+  padding: 3rem;
+  margin: 1rem;
+  overflow-y: auto;
+  display: flex;
+  flex-flow: column;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.make-quiz-form {
+  border: solid 2px blue;
+  display: flex;
+  flex-flow: column;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}

@@ -1,7 +1,8 @@
 [package]
 name = "backend"
-version = "0.3.0"
 edition = "2021"
+version.workspace = true
+authors.workspace = true
 
 [dependencies]
 actix-cors = "0.7.0"

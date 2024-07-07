@@ -2,7 +2,7 @@
 
 use crate::utils::{spawn_app, TestApp};
 use models::GeneralUser;
-use reqwest::{Client, Response};
+use reqwest::Response;
 
 trait CreateUser<Body>
 where
@@ -29,7 +29,6 @@ where
 async fn test_create_user_200() {
     // Arrange
     let test_app: TestApp = spawn_app().await;
-    // let client: Client = Client::new();
 
     let info: serde_json::Value = serde_json::json!({
         "name": "Joe Bob",
@@ -115,7 +114,7 @@ async fn test_create_user_400_incomplete_data() {
     let qry = r#"
     SELECT count() FROM general_user
     "#;
-    let mut response_res = test_app.database.client.query(qry).await;
+    let response_res = test_app.database.client.query(qry).await;
     let count = if let Ok(mut surreal_res) = response_res {
         if let Ok(gen_user_cnt_opt) = surreal_res.take(0) {
             if let Some(gen_user_count) = gen_user_cnt_opt {

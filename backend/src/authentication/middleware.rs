@@ -8,11 +8,9 @@ use actix_session::SessionExt;
 use actix_web::{
     body::{BoxBody, MessageBody},
     dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
-    http::StatusCode,
     HttpMessage, HttpResponse,
 };
 use models::UserID;
-use std::task::{Context, Poll};
 use std::{boxed::Box, pin::Pin};
 
 /// Returns HTTP Status 500 and preserves root cause for logging
@@ -66,12 +64,24 @@ where
     forward_ready!(service);
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
-        // println!("Hi from start. You requested: {}", req.path());
-
         // Creating our Session Wrapper
-        // if let Some(session) = http_request.get_session() {
         let this_session = SessionWrapper::wrap(req.get_session());
-        let user_id = this_session.get_user_id(); //.map(Rc::new);
+        let user_id_res = this_session.get_user_id();
+
+        // If there's an error, we say it is Internal Server Error
+        let user_id = if let Ok(id) = user_id_res {
+            id
+        } else {
+            let (http_req, _) = req.into_parts();
+            let unauth_response = HttpResponse::InternalServerError().finish();
+            let service_response = ServiceResponse::new(http_req, unauth_response);
+            return Box::pin(async {
+                // After much fighting with borrow checker this is what works best
+                // forget the original requestion and return a clean slate
+                let _err = anyhow::anyhow!("Internal Error");
+                Ok(service_response)
+            });
+        };
 
         if let Some(userid) = user_id {
             req.extensions_mut().insert(UserID(userid.to_string()));
@@ -89,12 +99,6 @@ where
                 // forget the original requestion and return a clean slate
                 let _err = anyhow::anyhow!("User not logged in");
                 Ok(service_response)
-                // Err(actix_web::error::InternalError::from_response(
-                //     err,
-                //     HttpResponse::Unauthorized().finish(),
-                // )
-                // .into())
-                // Err(actix_web::error::InternalError::new(err, StatusCode::UNAUTHORIZED).into())
             })
         }
     }

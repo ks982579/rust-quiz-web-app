@@ -1,10 +1,21 @@
 use serde::{Deserialize, Serialize};
+use surrealdb::sql::Thing;
+use surrealize_macro::Surrealize;
+
+pub mod model_errors;
+pub mod questions;
+pub mod quiz;
+
+#[derive(Debug, Deserialize, Serialize, PartialEq, PartialOrd, Clone)]
+pub struct SurrealRecord {
+    pub id: Thing,
+}
 
 /// Struct to how user UUID, to pass from middleware
 #[derive(Debug, Deserialize, Serialize, PartialEq, PartialOrd, Clone)]
 pub struct UserID(pub String);
 
-#[derive(Debug, Deserialize, Serialize, PartialEq, PartialOrd, Clone)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, PartialOrd, Clone, Surrealize)]
 pub struct GeneralUser {
     pub uuid: String,
     pub name: String,

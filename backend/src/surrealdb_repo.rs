@@ -277,6 +277,7 @@ impl SessionStore for Database {
     }
 
     async fn delete(&self, session_key: &SessionKey) -> Result<(), anyhow::Error> {
+        dbg!("Deleting Session");
         let token_info: Thing = Thing {
             tb: "sessions".to_string(),
             id: Id::String(session_key.as_ref().to_owned()),

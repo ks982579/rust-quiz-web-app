@@ -6,8 +6,10 @@ use backend::{
     surrealdb_repo::Database,
     telemetry::{get_subscriber, init_subscriber},
 };
-use reqwest::{Client, Response};
+use reqwest::{cookie::Cookie, Client, Response};
+use serde_json::Value;
 use std::sync::OnceLock;
+use surrealdb::sql::Thing;
 use wiremock::MockServer;
 
 // Can only be written to **ONCE**
@@ -18,6 +20,73 @@ pub struct TestApp {
     pub port: u16,
     pub api_client: Client,
     pub database: Database,
+}
+trait CreateQuiz<Body>
+where
+    Body: serde::Serialize,
+{
+    async fn post_create_quiz(&self, json: &Body) -> Response;
+}
+
+impl<Body> CreateQuiz<Body> for TestApp
+where
+    Body: serde::Serialize,
+{
+    async fn post_create_quiz(&self, json: &Body) -> Response {
+        self.api_client
+            .post(&format!("{}/quiz-nexus", &self.address))
+            .json(json)
+            .send()
+            .await
+            .expect("Failed to execute POST Request")
+    }
+}
+
+/// Some helper function for the `TestApp`
+/// Be sure to initialize an instance with `spawn_app()` before using these methods.
+impl TestApp {
+    /// Assuming user not created, Cleans out test database and creates a new test user.
+    pub async fn create_new_test_user(&self) -> Response {
+        dbg!(String::from("Clearing database"));
+        // Clear out users
+        let _: surrealdb::Result<Vec<Thing>> = self.database.client.delete("general_user").await;
+        // Clear out session tokens
+        let _: surrealdb::Result<Vec<Thing>> = self.database.client.delete("sessions").await;
+
+        dbg!(String::from("Database cleared"));
+
+        // Test User Data
+        let user_data: Value = serde_json::json!({
+            "name": "Test User",
+            "username": "testuser123",
+            "password": "Password@1234"
+        });
+        dbg!(String::from("JSON Test User"));
+
+        dbg!("Trying to create test user");
+        // Creating User via API
+        self.api_client
+            .post(&format!("{}/create-user", &self.address))
+            .json(&user_data)
+            .send()
+            .await
+            .expect("Failed to create user")
+    }
+
+    /// Assuming user is created in Database, Helper method attempts to log user into application
+    pub async fn log_in_test_user(&self) -> Response {
+        let login_data: Value = serde_json::json!({
+            "username": "testuser123",
+            "password": "Password@1234"
+        });
+
+        self.api_client
+            .post(&format!("{}/user-login", &self.address))
+            .json(&login_data)
+            .send()
+            .await
+            .expect("Failed to send login data")
+    }
 }
 
 /// Setup function for the Test Application

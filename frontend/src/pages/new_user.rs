@@ -2,9 +2,10 @@
 //! Holds component for registering a new user.
 use leptos::*;
 use leptos_router::{use_navigate, NavigateOptions};
-use models::JsonMsg;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
+
+use crate::utils::JsonMsg;
 
 use wasm_bindgen::JsValue;
 use wasm_bindgen_futures::JsFuture;

@@ -1,7 +1,7 @@
 //! frontend/src/router.rs
 //! This holds the logic for defining url routes
 use leptos::*;
-use leptos_router::{Route, Router, Routes, A};
+use leptos_router::{Route, Router, Routes};
 
 use crate::pages::*;
 

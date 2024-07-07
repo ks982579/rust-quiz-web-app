@@ -4,20 +4,18 @@
 //! That is why it is implemented here.
 //! If it becomes its own page one day, it can (and should) be moved.
 use crate::pages::Dashboard;
+use crate::utils::{JsonMsg, PartialUser};
 use leptos::ev::SubmitEvent;
-use leptos::logging::*;
 use leptos::*;
 use leptos_dom::logging::console_log;
-use leptos_router::{use_navigate, NavigateOptions, A};
-use models::{JsonMsg, PartialUser};
-use std::rc::Rc;
+use leptos_router::A;
 use web_sys::{Headers, RequestMode, Response};
 
 use crate::store::{AppSettings, AuthState};
-use crate::Fetcher;
+use crate::utils::Fetcher;
 
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
-enum AuthStatus {
+pub enum AuthStatus {
     Loading,
     Authenticated,
     Unauthenticated,
@@ -43,30 +41,51 @@ pub fn HomePage() -> impl IntoView {
         use_context::<AppSettings>().expect("AppSettings context not found");
 
     create_effect(move |_| {
+        console_log("Running check-login");
+
         let headers: Headers = Headers::new().unwrap();
         headers
             .set("Content-Type", "application/json;charset=UTF-8")
             .unwrap();
         headers.set("Access-Control-Allow-Origin", "true").unwrap();
+
         let fetcher: Fetcher = Fetcher::init()
             .set_url(app_settings.backend_url.to_string() + "check-login")
             .set_method("GET")
             .set_headers(headers)
             .set_mode(RequestMode::Cors)
             .build();
-        spawn_local(async move {
-            let response: Response = fetcher.fetch(None).await;
-            if response.status() == 200 {
-                let user: PartialUser = Fetcher::response_to_struct(&response).await;
-                // Putting PartialUser into Context
-                provide_context(user);
-                auth_state.set_authenticated(true);
-                set_auth_status.set(AuthStatus::Authenticated);
-            } else {
-                auth_state.set_authenticated(false);
-                set_auth_status.set(AuthStatus::Unauthenticated);
-            }
-        });
+
+        // Do not set state if it is the same, causes infinite loop
+        if !auth_state.is_authenticated() {
+            spawn_local(async move {
+                let response: Response = fetcher.fetch(None).await;
+                if response.status() == 200 {
+                    let user: PartialUser = Fetcher::response_to_struct(&response).await;
+                    // Putting PartialUser into Context
+                    provide_context(user);
+                    auth_state.set_authenticated(true);
+                    set_auth_status.set(AuthStatus::Authenticated);
+                    console_log("Everything should be set");
+                } else {
+                    set_auth_status.set(AuthStatus::Unauthenticated);
+                }
+            });
+        } else {
+            spawn_local(async move {
+                let response: Response = fetcher.fetch(None).await;
+                if response.status() == 200 {
+                    let user: PartialUser = Fetcher::response_to_struct(&response).await;
+                    // Putting PartialUser into Context
+                    provide_context(user);
+                    set_auth_status.set(AuthStatus::Authenticated);
+                    console_log("Everything should be set");
+                } else {
+                    set_auth_status.set(AuthStatus::Unauthenticated);
+                    auth_state.set_authenticated(false);
+                }
+            });
+        }
     });
 
     view! {
@@ -132,10 +151,6 @@ fn LogIn() -> impl IntoView {
     let app_settings: AppSettings =
         use_context::<AppSettings>().expect("AppSettings context not found");
 
-    // Create Navigator
-    let navigator = use_navigate();
-    let navigator_rc = Rc::new(navigator);
-
     // Create signals for component
     let (err_msg, set_err_msg): (ReadSignal<Option<String>>, WriteSignal<Option<String>>) =
         create_signal(None);
@@ -170,19 +185,19 @@ fn LogIn() -> impl IntoView {
         // let request: Request =
         //     Request::new_with_str_and_init("http://127.0.0.1:8000/user-login", &options).unwrap();
 
-        let navigator_clone = Rc::clone(&navigator_rc);
+        // let navigator_clone = Rc::clone(&navigator_rc);
 
         async move {
             let response: Response = fetcher.fetch(Some(pckg)).await;
 
             if response.status() == 200 {
                 auth_state.set_authenticated(true);
-                navigator_clone("/dashboard", NavigateOptions::default());
+                // navigator_clone("/dashboard", NavigateOptions::default());
+            } else {
+                let deserialized: JsonMsg = Fetcher::response_to_struct(&response).await;
+
+                set_err_msg.set(deserialized.msg.clone());
             }
-
-            let deserialized: JsonMsg = Fetcher::response_to_struct(&response).await;
-
-            set_err_msg.set(deserialized.msg.clone());
         }
     });
 
