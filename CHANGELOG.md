@@ -10,13 +10,16 @@
 
 ### Adding
 
-- v0.3 User Login Feature
+- v0.5 User ability to Edit Quizzes and Questions
+- v0.5 User ability to take a quiz
+- v0.6 Application updates to be suitable for hosting on cloud platform
 
 ### Changing
 
-- UI design of user creation
-- UI design for user dashboard
-- On successful user creation, the user should be redirected to login page or Logged-in.
+- v0.6 UI design of user creation
+- v0.6 UI design for user dashboard
+- v0.6 UI design for quiz creation
+- v0.6 UI design for question creation
 
 ### Decprecating
 
@@ -33,6 +36,25 @@ No bugs currently logged.
 ### Security
 
 No known security vulnerabilities reported as of yet.
+
+## [0.4.0] - 2023-07-06
+
+### Added
+
+- v0.4 Back-end API to create quizzes
+- v0.4 Back-end API to create questions for quizzes
+- v0.4 Back-end API to handle user log out request
+- v0.4 Front-end Dashboard has UI to create quizzes
+- v0.4 Front-end Dashboard has UI to create questions for quizzes
+- v0.4 Front-end Dashboard has button to log user out of application
+- v0.4 Front-end has "models" directory to mimic the "models" workspace
+- v0.4 Create a macro to recreate a struct that includes SurrealDB ID.
+
+### Changed
+
+- In an attempt to import SurrealDB's `Thing` struct, updated Leptos to 0.6.11
+- Removed "models" workspace from front-end because incorporating SurrealDB caused WASM compilation errors.
+- Moved CSS styling out of index.html file and into its own style sheet. I could not find an easy to use tool for modular CSS.
 
 ## [0.3.0] - 2024-06-23
 

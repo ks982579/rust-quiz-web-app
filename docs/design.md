@@ -261,6 +261,267 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 ```
 
+#### GET /user-logout
+
+```yaml
+openapi: 3.1.0
+info:
+  title: Log out user from application
+  version: 0.1.0
+  description: API for logging a user out of the quiz application
+
+servers:
+  - url: http://api.example.com/v1
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionId
+
+paths:
+  /user-logout:
+    get:
+      summary: Logs user out of application
+      description: Checks database for a session token and removes it, then sends reponse to browser to remove cookie
+      responses:
+        "200":
+          description: User is no longer, or was never, logged in
+          content:
+            application/json: {}
+        "500":
+          description: Internal server error
+          content:
+            application/json: {}
+```
+
+#### POST /quiz-nexus
+
+```yaml
+openapi: 3.1.0
+info:
+  title: Quiz Nexus
+  version: 0.1.0
+  description: Handling CRUD operations for quizzes
+
+servers:
+  - url: http://api.example.com/v1
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionId
+  schemas:
+    Thing:
+      type: object
+      properties:
+        id:
+          type: object
+          properties:
+            tb:
+              type: string
+              example: quizzes
+            id:
+              type: string
+              example: String::<abc-123>
+    QuizRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+    GoodResponse:
+      type: object
+      properties:
+        id:
+          type: object
+          $ref: "#/components/schemas/Thing"
+        name:
+          type: string
+          example: Algorithms
+        description:
+          type: string
+          example: description of quiz
+        author_id:
+          type: string
+        questions_mc:
+          type: array
+          items:
+            type: object
+            $ref: "#/components/schemas/Thing"
+    ErrorResponse:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: Unknown Error
+
+paths:
+  /quiz-nexus:
+    post:
+      summary: Create new Quiz
+      description: Given correct information, this will save a new quiz to the database
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuizRequest"
+      responses:
+        "200":
+          description: (Should be 201) Indicates the quiz was successfully created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GoodResponse"
+        "400":
+          description: can be returned if error validating information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized (No or Invalid session cookie)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+```
+
+#### POST /question-forge
+
+```yaml
+openapi: 3.1.0
+info:
+  title: Question Forge
+  version: 0.1.0
+  description: Handling CRUD operations for questions
+
+servers:
+  - url: http://api.example.com/v1
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionId
+  schemas:
+    Thing:
+      type: object
+      properties:
+        id:
+          type: object
+          properties:
+            tb:
+              type: string
+              example: quizzes
+            id:
+              type: string
+              example: String::<abc-123>
+    MultipleChoiceRequest:
+      type: object
+      properties:
+        MultipleChoice:
+          type: object
+          properties:
+            question:
+              type: string
+            hint:
+              type: string
+            answer:
+              type: string
+            choices:
+              type: array
+              items:
+                type: string
+    QuestionRequest:
+      type: object
+      properties:
+        quiz_id:
+          type: object
+          $ref: "#/components/schemas/Thing"
+        question:
+          type: object
+          oneOf:
+            - $ref: "#/components/schemas/MultipleChoiceRequest"
+    GoodResponse:
+      type: object
+      properties:
+        id:
+          type: object
+          $ref: "#/components/schemas/Thing"
+        question:
+          type: string
+          example: Algorithms
+        hint:
+          type: string
+        author_id:
+          type: string
+        parent_quiz:
+          type: object
+          $ref: "#/components/schemas/Thing"
+        answer:
+          type: string
+        choices:
+          type: array
+          items:
+            type: string
+    ErrorResponse:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: Unknown Error
+
+paths:
+  /question-forge:
+    post:
+      summary: Create new Question
+      description: Given correct information, this will save a new question for a given quiz
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuestionRequest"
+      responses:
+        "201":
+          description: Indicates the question was successfully created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GoodResponse"
+        "400":
+          description: can be returned if error validating information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized (No or Invalid session cookie)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+```
+
 ---
 
 Unsure where to put this for now, but the session token in the database looks like:

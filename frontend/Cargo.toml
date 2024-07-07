@@ -1,7 +1,8 @@
 [package]
 name = "frontend"
-version = "0.3.0"
 edition = "2021"
+version.workspace = true
+authors.workspace = true
 
 [dependencies]
 leptos = { version = "0.6.12", features = ["csr"] }
