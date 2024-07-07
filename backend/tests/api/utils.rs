@@ -8,6 +8,7 @@ use backend::{
 };
 use reqwest::{cookie::Cookie, Client, Response};
 use serde_json::Value;
+use std::future::Future;
 use std::sync::OnceLock;
 use surrealdb::sql::Thing;
 use wiremock::MockServer;
@@ -57,12 +58,50 @@ impl GetQuiz for TestApp {
     }
 }
 
+pub trait CreateQuestions<Body>
+where
+    Body: serde::Serialize,
+{
+    fn post_create_questions(&self, json: &Body) -> impl Future<Output = Response>;
+}
+
+impl<Body> CreateQuestions<Body> for TestApp
+where
+    Body: serde::Serialize,
+{
+    async fn post_create_questions(&self, json: &Body) -> Response {
+        self.api_client
+            .post(&format!("{}/question-forge", &self.address))
+            .json(json)
+            .send()
+            .await
+            .expect("Failed to execute POST Request")
+    }
+}
+
+pub trait GetQuestion {
+    fn get_questions(&self, quiz_id: String) -> impl Future<Output = Response>;
+}
+
+impl GetQuestion for TestApp {
+    async fn get_questions(&self, quiz_id: String) -> Response {
+        self.api_client
+            .get(&format!(
+                "{}/question-forge?quiz={}",
+                &self.address, quiz_id
+            ))
+            .send()
+            .await
+            .expect("Failed to execute GET Request")
+    }
+}
+
 /// Some helper function for the `TestApp`
 /// Be sure to initialize an instance with `spawn_app()` before using these methods.
 impl TestApp {
     /// Assuming user not created, Cleans out test database and creates a new test user.
     pub async fn create_new_test_user(&self) -> Response {
-        dbg!(String::from("Clearing database"));
+        dbg!(String::from("Cquiz.id.to_string()learing database"));
         // Clear out users
         let _: surrealdb::Result<Vec<Thing>> = self.database.client.delete("general_user").await;
         // Clear out session tokens

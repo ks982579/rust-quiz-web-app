@@ -41,7 +41,7 @@ impl ResponseError for GetQuizError {
 }
 
 #[tracing::instrument(name = "Request to Get Quizzes by User", skip(db, session))]
-pub async fn get_quizzes(
+pub async fn get_my_quizzes(
     req: HttpRequest,
     session: SessionWrapper,
     db: web::Data<Database>,
