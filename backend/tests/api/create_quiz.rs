@@ -1,29 +1,8 @@
 //! backend/tests/api/create_quiz.rs
-use crate::utils::{spawn_app, TestApp};
+use crate::utils::{spawn_app, CreateQuiz, TestApp};
 use reqwest::Response;
 use serde::{Deserialize, Serialize};
 use surrealdb::sql::Thing;
-
-trait CreateQuiz<Body>
-where
-    Body: serde::Serialize,
-{
-    async fn post_create_quiz(&self, json: &Body) -> Response;
-}
-
-impl<Body> CreateQuiz<Body> for TestApp
-where
-    Body: serde::Serialize,
-{
-    async fn post_create_quiz(&self, json: &Body) -> Response {
-        self.api_client
-            .post(&format!("{}/quiz-nexus", &self.address))
-            .json(json)
-            .send()
-            .await
-            .expect("Failed to execute POST Request")
-    }
-}
 
 #[derive(Debug, Deserialize, Serialize)]
 struct SurrealRecord {

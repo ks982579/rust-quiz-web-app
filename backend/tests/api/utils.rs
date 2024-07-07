@@ -21,7 +21,8 @@ pub struct TestApp {
     pub api_client: Client,
     pub database: Database,
 }
-trait CreateQuiz<Body>
+
+pub trait CreateQuiz<Body>
 where
     Body: serde::Serialize,
 {
@@ -39,6 +40,20 @@ where
             .send()
             .await
             .expect("Failed to execute POST Request")
+    }
+}
+
+pub trait GetQuiz {
+    async fn get_quizzes(&self) -> Response;
+}
+
+impl GetQuiz for TestApp {
+    async fn get_quizzes(&self) -> Response {
+        self.api_client
+            .get(&format!("{}/quiz-nexus", &self.address))
+            .send()
+            .await
+            .expect("Failed to execute GET Request")
     }
 }
 

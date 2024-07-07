@@ -4,6 +4,7 @@
 mod create_questions;
 mod create_quiz;
 mod create_user;
+mod get_quiz;
 mod health_check;
 mod log_out_users;
 mod loggin_user;

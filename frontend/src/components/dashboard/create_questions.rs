@@ -77,3 +77,6 @@ pub fn QuestionForge(
         </>
     }
 }
+
+#[cfg(test)]
+mod tests {}
