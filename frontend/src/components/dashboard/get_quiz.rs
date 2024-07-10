@@ -8,6 +8,7 @@ use crate::{
     utils::{DashDisplay, Fetcher, JsonMsg},
 };
 use leptos::*;
+use leptos_dom::logging::console_log;
 use serde::{Deserialize, Serialize};
 use web_sys::{Headers, RequestMode, Response};
 
@@ -84,22 +85,20 @@ pub fn QuizShowCase(
                 key=|q| q.id.to_raw()
                 children=move |this| view! {
                     // Card has to be in the Exhibit to obtain information.
-                    <Card on_click=None>
-                        <p>"Name: "{this.name}</p>
-                        <p>{this.description}</p>
-                        <button data-note="unimplemented">"Take Quiz"</button>
-                        <button data-note="unimplemented">"Edit"</button>
-                        <button data-note="unimplemented">"Calibrate"</button>
-                        <button data-note="unimplemented">"Delete Quiz"</button>
-                    </Card>
+                    <QuizExhibit
+                        surreal_quiz=this
+                        quiz_selector=quiz_selector
+                    />
                 }
             />
         </div>
     }
 }
 
+#[component]
 pub fn QuizExhibit(surreal_quiz: SurrealQuiz, quiz_selector: Callback<Thing>) -> impl IntoView {
     let take_quiz_closure = move |_| {
+        console_log(&format!("thing: {:?}", surreal_quiz.id.clone()));
         quiz_selector.call(surreal_quiz.id.clone());
     };
     view! {
