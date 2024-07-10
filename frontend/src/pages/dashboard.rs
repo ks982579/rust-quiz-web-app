@@ -5,7 +5,7 @@ use web_sys::{Headers, RequestMode, Response};
 
 use crate::{
     components::{
-        dashboard::{MakeQuiz, QuestionForge, QuizShowCase},
+        dashboard::{ExamRoom, MakeQuiz, QuestionForge, QuizShowCase},
         Card,
     },
     models::mimic_surreal::{SurrealQuiz, Thing},
@@ -142,7 +142,8 @@ pub fn Dashboard() -> impl IntoView {
         },
         DashDisplay::TakeQuiz => view! {
             <>
-                <h3>"I hate quizzes"</h3>
+                <h3>"I Love quizzes"</h3>
+                <ExamRoom />
             </>
         },
     };
