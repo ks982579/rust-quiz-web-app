@@ -135,4 +135,5 @@ pub enum DashDisplay {
     MyQuizzes,
     MakeQuizzes,
     MakeQuestions,
+    TakeQuiz,
 }

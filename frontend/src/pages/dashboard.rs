@@ -8,7 +8,7 @@ use crate::{
         dashboard::{MakeQuiz, QuestionForge, QuizShowCase},
         Card,
     },
-    models::mimic_surreal::SurrealQuiz,
+    models::mimic_surreal::{SurrealQuiz, Thing},
     store::{AppSettings, AuthState},
     utils::{DashDisplay, Fetcher, JsonMsg, PartialUser},
 };
@@ -53,6 +53,7 @@ pub fn Dashboard() -> impl IntoView {
     // -- Create Signals --
     let (read_display, write_display): (ReadSignal<DashDisplay>, WriteSignal<DashDisplay>) =
         create_signal(DashDisplay::default());
+    let current_quiz_rw: RwSignal<Option<Thing>> = create_rw_signal(None);
     // - for holding Json data between components (like creating quiz)
     let (quiz_data, set_quiz_data): (
         ReadSignal<Option<SurrealQuiz>>,
@@ -66,6 +67,11 @@ pub fn Dashboard() -> impl IntoView {
     // -- Call backs --
     let set_display_make_quiz = Callback::new(move |_click: ev::MouseEvent| {
         write_display.set(DashDisplay::MakeQuizzes);
+    });
+    // Callback to setup quiz to take
+    let choose_quiz_to_take = Callback::new(move |quiz_id: Thing| {
+        current_quiz_rw.set(Some(quiz_id));
+        write_display.set(DashDisplay::TakeQuiz);
     });
 
     // TODO: Make request for current tests
@@ -116,7 +122,12 @@ pub fn Dashboard() -> impl IntoView {
 
     let main_screen = move || match read_display.get() {
         DashDisplay::MyQuizzes => view! {
-            <><QuizShowCase quiz_list=quiz_list /></>
+            <>
+                <QuizShowCase
+                    quiz_list=quiz_list
+                    quiz_selector=choose_quiz_to_take
+                />
+            </>
         },
         DashDisplay::MakeQuizzes => view! {
             <><MakeQuiz display_settings=write_display response_setter=set_quiz_data/></>
@@ -127,6 +138,11 @@ pub fn Dashboard() -> impl IntoView {
                     display_settings=write_display
                     quiz_data=quiz_data
                 />
+            </>
+        },
+        DashDisplay::TakeQuiz => view! {
+            <>
+                <h3>"I hate quizzes"</h3>
             </>
         },
     };

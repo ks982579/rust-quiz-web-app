@@ -3,7 +3,7 @@
 //! user to the making questions screen.
 use crate::{
     components::Card,
-    models::mimic_surreal::SurrealQuiz,
+    models::mimic_surreal::{SurrealQuiz, Thing},
     store::AppSettings,
     utils::{DashDisplay, Fetcher, JsonMsg},
 };
@@ -18,7 +18,10 @@ pub struct QuizJsonPkg {
 }
 
 #[component]
-pub fn QuizShowCase(quiz_list: RwSignal<Vec<SurrealQuiz>>) -> impl IntoView {
+pub fn QuizShowCase(
+    quiz_list: RwSignal<Vec<SurrealQuiz>>,
+    quiz_selector: Callback<Thing>,
+) -> impl IntoView {
     //  -- Create Signals --
     let (err_msg, set_err_msg): (ReadSignal<Option<String>>, WriteSignal<Option<String>>) =
         create_signal(None);
@@ -92,5 +95,21 @@ pub fn QuizShowCase(quiz_list: RwSignal<Vec<SurrealQuiz>>) -> impl IntoView {
                 }
             />
         </div>
+    }
+}
+
+pub fn QuizExhibit(surreal_quiz: SurrealQuiz, quiz_selector: Callback<Thing>) -> impl IntoView {
+    let take_quiz_closure = move |_| {
+        quiz_selector.call(surreal_quiz.id.clone());
+    };
+    view! {
+        <Card on_click=None>
+            <p>"Name: "{surreal_quiz.name}</p>
+            <p>{surreal_quiz.description}</p>
+            <button data-note="unimplemented" on:click=take_quiz_closure>"Take Quiz"</button>
+            <button data-note="unimplemented">"Edit"</button>
+            <button data-note="unimplemented">"Calibrate"</button>
+            <button data-note="unimplemented">"Delete Quiz"</button>
+        </Card>
     }
 }
