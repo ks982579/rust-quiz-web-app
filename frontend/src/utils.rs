@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use wasm_bindgen_futures::JsFuture;
 use web_sys::js_sys::Uint8Array;
+use web_sys::UrlSearchParams;
 use web_sys::{wasm_bindgen::prelude::*, Headers, RequestInit, RequestMode};
 
 // Should be a builder whose finish is a fetch that returns JSON or something.
@@ -15,6 +16,7 @@ pub struct Fetcher {
     headers: Headers,
     mode: RequestMode,
     url: String,
+    query_params: Option<UrlSearchParams>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -43,9 +45,14 @@ impl Fetcher {
             options.body(Some(&JsValue::from_str(&pckg)));
         }
 
-        let request: web_sys::Request =
-            web_sys::Request::new_with_str_and_init(&self.url, &options)
-                .expect("Failed to create request");
+        let req_url: String = match &self.query_params {
+            None => self.url.clone(),
+            // Not checking if last char is '/' so don't put it there
+            Some(qp) => format!("{}?{}", &self.url, qp.to_string()),
+        };
+
+        let request: web_sys::Request = web_sys::Request::new_with_str_and_init(&req_url, &options)
+            .expect("Failed to create request");
 
         let window: web_sys::Window = web_sys::window().expect("Failed to get Window Object");
         JsFuture::from(window.fetch_with_request(&request))
@@ -77,6 +84,7 @@ pub struct FetchBuilder {
     headers: Headers,
     mode: RequestMode,
     url: String,
+    query_params: Option<UrlSearchParams>,
 }
 
 /// This implements builder design pattern (I think)
@@ -97,12 +105,23 @@ impl FetchBuilder {
         self.url = String::from(url);
         self
     }
+    pub fn add_query_param(mut self, key: &str, value: &str) -> Self {
+        if let None = &self.query_params {
+            // Should be safe to unwrap
+            self.query_params = Some(UrlSearchParams::new().unwrap())
+        }
+        if let Some(qp) = &self.query_params {
+            qp.append(key, value);
+        }
+        self
+    }
     pub fn build(self) -> Fetcher {
         Fetcher {
             method: self.method,
             headers: self.headers,
             mode: self.mode,
             url: self.url,
+            query_params: self.query_params,
         }
     }
 }
@@ -118,6 +137,7 @@ impl std::default::Default for FetchBuilder {
             headers: headers,
             mode: RequestMode::Cors,
             url: "http://127.0.0.1:8000/".to_string(),
+            query_params: None,
         }
     }
 }

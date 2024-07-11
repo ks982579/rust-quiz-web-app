@@ -53,7 +53,7 @@ pub fn Dashboard() -> impl IntoView {
     // -- Create Signals --
     let (read_display, write_display): (ReadSignal<DashDisplay>, WriteSignal<DashDisplay>) =
         create_signal(DashDisplay::default());
-    let current_quiz_rw: RwSignal<Option<Thing>> = create_rw_signal(None);
+    let current_quiz_rw: RwSignal<Option<SurrealQuiz>> = create_rw_signal(None);
     // - for holding Json data between components (like creating quiz)
     let (quiz_data, set_quiz_data): (
         ReadSignal<Option<SurrealQuiz>>,
@@ -69,8 +69,8 @@ pub fn Dashboard() -> impl IntoView {
         write_display.set(DashDisplay::MakeQuizzes);
     });
     // Callback to setup quiz to take
-    let choose_quiz_to_take = Callback::new(move |quiz_id: Thing| {
-        current_quiz_rw.set(Some(quiz_id));
+    let choose_quiz_to_take = Callback::new(move |quiz: SurrealQuiz| {
+        current_quiz_rw.set(Some(quiz));
         write_display.set(DashDisplay::TakeQuiz);
     });
 
@@ -143,7 +143,7 @@ pub fn Dashboard() -> impl IntoView {
         DashDisplay::TakeQuiz => view! {
             <>
                 <h3>"I Love quizzes"</h3>
-                <ExamRoom />
+                <ExamRoom some_quiz=current_quiz_rw.get()/>
             </>
         },
     };

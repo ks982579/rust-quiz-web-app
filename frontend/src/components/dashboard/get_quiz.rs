@@ -21,7 +21,7 @@ pub struct QuizJsonPkg {
 #[component]
 pub fn QuizShowCase(
     quiz_list: RwSignal<Vec<SurrealQuiz>>,
-    quiz_selector: Callback<Thing>,
+    quiz_selector: Callback<SurrealQuiz>,
 ) -> impl IntoView {
     //  -- Create Signals --
     let (err_msg, set_err_msg): (ReadSignal<Option<String>>, WriteSignal<Option<String>>) =
@@ -96,10 +96,14 @@ pub fn QuizShowCase(
 }
 
 #[component]
-pub fn QuizExhibit(surreal_quiz: SurrealQuiz, quiz_selector: Callback<Thing>) -> impl IntoView {
+pub fn QuizExhibit(
+    surreal_quiz: SurrealQuiz,
+    quiz_selector: Callback<SurrealQuiz>,
+) -> impl IntoView {
+    let mut cloned_quiz = surreal_quiz.clone();
     let take_quiz_closure = move |_| {
         console_log(&format!("thing: {:?}", surreal_quiz.id.clone()));
-        quiz_selector.call(surreal_quiz.id.clone());
+        quiz_selector.call(cloned_quiz.clone());
     };
     view! {
         <Card on_click=None>
