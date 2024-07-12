@@ -41,3 +41,9 @@ body {
   align-items: center;
   padding: 1rem;
 }
+
+.quest-case {
+  border: solid 3px darkblue;
+  border-radius: 10px;
+  width: 100%;
+}

@@ -25,6 +25,7 @@ use web_sys::{Headers, RequestMode, Response, UrlSearchParams};
 pub fn ExamRoom(some_quiz: Option<SurrealQuiz>) -> impl IntoView {
     // -- Create Signals --
     let mcquestions: RwSignal<Vec<SurrealQuestionMC>> = create_rw_signal(Vec::new());
+    let signal_to_grade: RwSignal<bool> = create_rw_signal(false);
     // Add more signals for additional question types
 
     // -- Use Context --
@@ -95,37 +96,70 @@ pub fn ExamRoom(some_quiz: Option<SurrealQuiz>) -> impl IntoView {
             each=move || shuffled_mc_questions()
             key=|q| q.id.to_raw()
             children=move |this| view! {
-                <MCQuestion sq=this />
+                <MCQuestion sq=this to_grade=signal_to_grade/>
             }
         />
+        <button>"Grade Quiz"</button>
     }
 }
 
 #[component]
-pub fn MCQuestion(sq: SurrealQuestionMC) -> impl IntoView {
-    let mut choices: Vec<String> = sq.choices.clone();
+pub fn MCQuestion(sq: SurrealQuestionMC, to_grade: RwSignal<bool>) -> impl IntoView {
+    // -- Create Signals --
+    let choices: RwSignal<Vec<(String, String)>> = create_rw_signal(Vec::new());
+    let is_correct: RwSignal<bool> = create_rw_signal(false);
+
+    let correct_key: String = generate_random_string(16);
+
+    // Pairing each choicec with random value
+    choices.set(
+        sq.choices
+            .iter()
+            .map(|c| (c.clone(), generate_random_string(16)))
+            .collect(),
+    );
     // If more than 3 choices, can randomly select 3 here
-    choices.push(sq.answer.clone());
+    // --
+    // Pairing the correct answer with correct_key
+    choices.update(|this| this.push((sq.answer.clone(), correct_key.clone())));
 
     // Shuffle Choices
-    let mut randrng = thread_rng();
-    choices.shuffle(&mut randrng);
+    choices.update(|this| {
+        let mut randrng = thread_rng();
+        this.shuffle(&mut randrng);
+    });
 
     // We can tuple (anw, t/f for r/w)
+    let radio_change = move |evnt: ev::Event| {
+        let val: String = event_target_value(&evnt);
+        if val == "answer" {
+            is_correct.set(true);
+        } else {
+            is_correct.set(false);
+        }
+    };
 
     view! {
-        <div>
+        <div class="quest-case">
             <p>{&sq.question}</p>
             <form>
-                <input type="radio" id="q1" name="question" value="interesting"/>
-                <label for="q1">{&choices[0]}</label><br />
-                <input type="radio" id="q2" name="question" value="interesting"/>
-                <label for="q2">{&choices[1]}</label><br />
-                <input type="radio" id="q3" name="question" value="interesting"/>
-                <label for="q3">{&choices[2]}</label><br />
-                <input type="radio" id="q4" name="question" value="interesting"/>
-                <label for="q4">{&choices[3]}</label><br />
+                <For
+                    each=move || choices.get()
+                    key=|c| c.1.clone()
+                    children=move |this| view! {
+                        <input type="radio" id=&this.1 name="question" value=&this.1 on:change=radio_change/>
+                        <label for=&this.1>{&this.0}</label><br />
+                    }
+                />
             </form>
         </div>
     }
+}
+
+fn generate_random_string(length: usize) -> String {
+    thread_rng()
+        .sample_iter(rand::distributions::Alphanumeric)
+        .take(length)
+        .map(char::from)
+        .collect()
 }
