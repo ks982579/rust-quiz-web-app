@@ -80,12 +80,19 @@ pub fn ExamRoom(some_quiz: Option<SurrealQuiz>) -> impl IntoView {
     });
 
     // Shuffle Questions too
+    let shuffled_mc_questions = move || {
+        let mut randrng = thread_rng();
+        let mut mcqs: Vec<SurrealQuestionMC> = mcquestions.get();
+        mcqs.shuffle(&mut randrng);
+        return mcqs;
+    };
 
+    // -- View --
     view! {
         <h2>"Quiz Name"</h2>
         <h3>"Taking an exam"</h3>
         <For
-            each=move || mcquestions.get()
+            each=move || shuffled_mc_questions()
             key=|q| q.id.to_raw()
             children=move |this| view! {
                 <MCQuestion sq=this />
