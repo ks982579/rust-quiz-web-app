@@ -80,6 +80,14 @@ pub fn ExamRoom(some_quiz: Option<SurrealQuiz>) -> impl IntoView {
         quizzes_resource.get();
     });
 
+    // Update quiz grading status
+    let click_grade = move |_ev: ev::MouseEvent| {
+        // Only changes to true
+        if !signal_to_grade.get() {
+            signal_to_grade.set(true);
+        };
+    };
+
     // Shuffle Questions too
     let shuffled_mc_questions = move || {
         let mut randrng = thread_rng();
@@ -99,7 +107,14 @@ pub fn ExamRoom(some_quiz: Option<SurrealQuiz>) -> impl IntoView {
                 <MCQuestion sq=this to_grade=signal_to_grade/>
             }
         />
-        <button>"Grade Quiz"</button>
+        {
+            move || {
+                match signal_to_grade.get() {
+                    true => None,
+                    false => Some(view! { <button on:click=click_grade>"Grade Quiz"</button> } ),
+                }
+            }
+        }
     }
 }
 
@@ -152,6 +167,8 @@ pub fn MCQuestion(sq: SurrealQuestionMC, to_grade: RwSignal<bool>) -> impl IntoV
                     }
                 />
             </form>
+            <button>":)"</button>
+            <button>":("</button>
         </div>
     }
 }

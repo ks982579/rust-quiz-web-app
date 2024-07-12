@@ -12,7 +12,7 @@ pub fn Card(children: Children, on_click: Option<Callback<ev::MouseEvent>>) -> i
                     callback.call(click);
                 }
             }
-            class="card"
+            class="gen-card"
         >
             {children()}
         </div>
