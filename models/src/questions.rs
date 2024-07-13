@@ -67,3 +67,12 @@ impl QuestionJsonPkg {
         Ok(())
     }
 }
+
+/// This struct is for transporting All questions of a quiz to a frontend in
+/// a standard format. You can add other fields for other lists of questions.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AllQuestions {
+    // mc = Multiple Choice
+    pub mc: Vec<SurrealQuestionMC>,
+    // To Come: sa = Short Answer; la = Long Answer
+}

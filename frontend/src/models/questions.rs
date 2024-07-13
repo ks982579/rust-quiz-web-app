@@ -3,6 +3,13 @@
 use crate::models::mimic_surreal::{SurrealQuestionMC, Thing};
 use serde::{Deserialize, Serialize};
 
+/// Struct from Models for transporting all questions for a quiz
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AllQuestions {
+    // mc = multiple choice
+    pub mc: Vec<SurrealQuestionMC>,
+}
+
 /// Existing Questions are now Quests
 /// Multiple Choice, Short Answer, Long Answer...
 #[derive(Debug, Serialize, Deserialize, Clone)]

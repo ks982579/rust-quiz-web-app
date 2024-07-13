@@ -13,3 +13,14 @@ Cargo.lock
 
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
+
+# For Python RobotFrameWork
+.venv*
+venv*
+log.html
+output.xml
+report.html
+browser/
+playwright-log.txt
+__pycache__
+*.pyc

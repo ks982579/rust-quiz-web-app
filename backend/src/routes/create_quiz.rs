@@ -79,13 +79,18 @@ pub async fn create_new_quiz(
     dbg!(&quiz_to_save);
     dbg!(Id::uuid().to_string());
 
-    let created: Option<SurrealQuiz> = db
+    let created: Vec<SurrealQuiz> = db
         .client
-        .create(("quizzes", Id::uuid().to_string()))
+        .create("quizzes")
         .content(&quiz_to_save)
         .await
         .map_err(|e| CreateQuizError::UnexpectedError(anyhow::anyhow!(e)))?;
 
-    // Dummy response to shut up linter
-    Ok(HttpResponse::Ok().json(&created))
+    if created.len() == 1 {
+        Ok(HttpResponse::Ok().json(&created[0]))
+    } else {
+        Err(CreateQuizError::UnexpectedError(anyhow::anyhow!(
+            "Unsure what happened in Database"
+        )))
+    }
 }
