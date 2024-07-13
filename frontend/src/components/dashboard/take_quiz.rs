@@ -26,6 +26,7 @@ pub fn ExamRoom(some_quiz: Option<SurrealQuiz>) -> impl IntoView {
     // -- Create Signals --
     let mcquestions: RwSignal<Vec<SurrealQuestionMC>> = create_rw_signal(Vec::new());
     let signal_to_grade: RwSignal<bool> = create_rw_signal(false);
+    let user_grade: RwSignal<usize> = create_rw_signal(0);
     // Add more signals for additional question types
 
     // -- Use Context --
@@ -88,6 +89,15 @@ pub fn ExamRoom(some_quiz: Option<SurrealQuiz>) -> impl IntoView {
         };
     };
 
+    // -- Callback
+    let score_callback: Callback<bool, ()> = Callback::new(move |correct: bool| {
+        if correct {
+            user_grade.update(|s| *s += 1)
+        } else {
+            user_grade.update(|s| *s -= 1)
+        }
+    });
+
     // Shuffle Questions too
     let shuffled_mc_questions = move || {
         let mut randrng = thread_rng();
@@ -104,7 +114,11 @@ pub fn ExamRoom(some_quiz: Option<SurrealQuiz>) -> impl IntoView {
             each=move || shuffled_mc_questions()
             key=|q| q.id.to_raw()
             children=move |this| view! {
-                <MCQuestion sq=this to_grade=signal_to_grade/>
+                <MCQuestion
+                    sq=this
+                    to_grade=signal_to_grade
+                    user_grade=score_callback
+                />
             }
         />
         {
@@ -115,16 +129,30 @@ pub fn ExamRoom(some_quiz: Option<SurrealQuiz>) -> impl IntoView {
                 }
             }
         }
+        {move || {
+            if signal_to_grade.get() {
+                Some(
+                    view! {
+                        <p>"Score: "{user_grade.get()}"/"{mcquestions.get().len()}</p>
+                    }
+                )
+            } else {
+                None
+            }
+        }}
     }
 }
 
 #[component]
-pub fn MCQuestion(sq: SurrealQuestionMC, to_grade: RwSignal<bool>) -> impl IntoView {
+pub fn MCQuestion(
+    sq: SurrealQuestionMC,
+    to_grade: RwSignal<bool>,
+    user_grade: Callback<bool, ()>,
+) -> impl IntoView {
     // -- Create Signals --
     let choices: RwSignal<Vec<(String, String)>> = create_rw_signal(Vec::new());
     let is_correct: RwSignal<bool> = create_rw_signal(false);
-
-    let correct_key: String = generate_random_string(16);
+    let correct_key: RwSignal<String> = create_rw_signal(generate_random_string(16));
 
     // Pairing each choicec with random value
     choices.set(
@@ -136,7 +164,7 @@ pub fn MCQuestion(sq: SurrealQuestionMC, to_grade: RwSignal<bool>) -> impl IntoV
     // If more than 3 choices, can randomly select 3 here
     // --
     // Pairing the correct answer with correct_key
-    choices.update(|this| this.push((sq.answer.clone(), correct_key.clone())));
+    choices.update(|this| this.push((sq.answer.clone(), correct_key.get().clone())));
 
     // Shuffle Choices
     choices.update(|this| {
@@ -147,28 +175,71 @@ pub fn MCQuestion(sq: SurrealQuestionMC, to_grade: RwSignal<bool>) -> impl IntoV
     // We can tuple (anw, t/f for r/w)
     let radio_change = move |evnt: ev::Event| {
         let val: String = event_target_value(&evnt);
-        if val == "answer" {
-            is_correct.set(true);
+        if val == correct_key.get() {
+            is_correct.update(|this| {
+                if *this {
+                    ()
+                } else {
+                    // this was false and is now true
+                    user_grade.call(true);
+                    *this = true;
+                }
+            })
         } else {
-            is_correct.set(false);
+            is_correct.update(|this| {
+                // wrong answer - if previously correct...
+                if *this {
+                    user_grade.call(false);
+                    *this = false;
+                }
+            })
         }
     };
+
+    // // -- This is a more precise `create_effect`
+    // let do_grading = watch(
+    //     move || to_grade.get(),
+    //     move |to_grade_val, _last_grade_val_opt, _what| {
+    //         user_grade.call(is_correct.get());
+    //     },
+    //     // run immediately?
+    //     false,
+    // );
 
     view! {
         <div class="quest-case">
             <p>{&sq.question}</p>
-            <form>
-                <For
-                    each=move || choices.get()
-                    key=|c| c.1.clone()
-                    children=move |this| view! {
-                        <input type="radio" id=&this.1 name="question" value=&this.1 on:change=radio_change/>
-                        <label for=&this.1>{&this.0}</label><br />
-                    }
-                />
-            </form>
-            <button>":)"</button>
-            <button>":("</button>
+            {move || {
+                if to_grade.get() {
+                    view! {
+                        <form>
+                            <For
+                                each=move || choices.get()
+                                key=|c| c.1.clone()
+                                children=move |this| view! {
+                                    <div>{&this.0}</div>
+                                }
+                            />
+                        </form>
+                        <button>":)"</button>
+                        <button>":("</button>
+                    }.into_view()
+                } else {
+                    view! {
+                        <form>
+                            <For
+                                each=move || choices.get()
+                                key=|c| c.1.clone()
+                                children=move |this| view! {
+                                    <input type="radio" id=&this.1 name="question" value=&this.1 on:change=radio_change/>
+                                    <label for=&this.1>{&this.0}</label><br />
+                                }
+                            />
+                        </form>
+                    }.into_view()
+                }
+            }
+        }
         </div>
     }
 }
