@@ -2,20 +2,17 @@
 //! This component will handle quiz making logic and pass
 //! user to the making questions screen.
 use crate::{
-    components::Card,
-    models::mimic_surreal::{SurrealQuestionMC, SurrealQuiz, Thing},
+    models::mimic_surreal::{SurrealQuestionMC, SurrealQuiz},
     models::questions::AllQuestions,
     store::AppSettings,
-    utils::{DashDisplay, Fetcher, JsonMsg},
+    utils::{Fetcher, JsonMsg},
 };
 use leptos::*;
-use leptos_dom::logging::console_log;
 use rand::{seq::SliceRandom, thread_rng, Rng};
-use serde::{Deserialize, Serialize};
 use std::boxed::Box;
 use std::future::Future;
 use std::pin::Pin;
-use web_sys::{Headers, RequestMode, Response, UrlSearchParams};
+use web_sys::{Headers, RequestMode, Response};
 
 /* Look at tests
 * Return AllQuestions { mc: Vec<SurrealQuestionMC>}
@@ -27,7 +24,12 @@ pub fn ExamRoom(some_quiz: Option<SurrealQuiz>) -> impl IntoView {
     let mcquestions: RwSignal<Vec<SurrealQuestionMC>> = create_rw_signal(Vec::new());
     let signal_to_grade: RwSignal<bool> = create_rw_signal(false);
     let user_grade: RwSignal<usize> = create_rw_signal(0);
+    let some_name: RwSignal<Option<String>> = create_rw_signal(None);
     // Add more signals for additional question types
+
+    if let Some(qn) = &some_quiz {
+        some_name.set(Some(qn.name.clone()));
+    };
 
     // -- Use Context --
     let app_settings: AppSettings =
@@ -64,6 +66,7 @@ pub fn ExamRoom(some_quiz: Option<SurrealQuiz>) -> impl IntoView {
                     // -- Update question signals below
                     mcquestions.set(data.mc);
                 } else {
+                    // Todo: display error message somewhere for failed fetch?
                     let deserialized: JsonMsg = Fetcher::response_to_struct(&response).await;
                     // set_err_msg.set(deserialized.msg.clone());
                 }
@@ -108,7 +111,7 @@ pub fn ExamRoom(some_quiz: Option<SurrealQuiz>) -> impl IntoView {
 
     // -- View --
     view! {
-        <h2>"Quiz Name"</h2>
+        <h2>{move || some_name.get()}</h2>
         <h3>"Taking an exam"</h3>
         <For
             each=move || shuffled_mc_questions()
@@ -196,24 +199,6 @@ pub fn MCQuestion(
                     *this = false;
                 }
             })
-        }
-    };
-
-    // // -- This is a more precise `create_effect`
-    // let do_grading = watch(
-    //     move || to_grade.get(),
-    //     move |to_grade_val, _last_grade_val_opt, _what| {
-    //         user_grade.call(is_correct.get());
-    //     },
-    //     // run immediately?
-    //     false,
-    // );
-
-    let graded_classes = move || {
-        if is_correct.get() {
-            "correct"
-        } else {
-            "incorrect"
         }
     };
 

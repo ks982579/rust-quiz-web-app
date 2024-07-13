@@ -65,6 +65,9 @@ pub fn Dashboard() -> impl IntoView {
         use_context::<AppSettings>().expect("AppSettings context not found");
 
     // -- Call backs --
+    let set_display_my_quizzes = Callback::new(move |_click: ev::MouseEvent| {
+        write_display.set(DashDisplay::MyQuizzes);
+    });
     let set_display_make_quiz = Callback::new(move |_click: ev::MouseEvent| {
         write_display.set(DashDisplay::MakeQuizzes);
     });
@@ -155,6 +158,9 @@ pub fn Dashboard() -> impl IntoView {
             <h1>"Welcome back "{user.name}</h1>
             <div class="split-screen">
                 <aside class="sidebar">
+                    <Card on_click=Some(set_display_my_quizzes)>
+                        "To Main Page - My Quizzes!"
+                    </Card>
                     <Card on_click=Some(set_display_make_quiz)>
                         "Make a New Quiz"
                     </Card>
