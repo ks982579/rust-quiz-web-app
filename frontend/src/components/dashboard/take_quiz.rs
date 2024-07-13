@@ -153,6 +153,8 @@ pub fn MCQuestion(
     let choices: RwSignal<Vec<(String, String)>> = create_rw_signal(Vec::new());
     let is_correct: RwSignal<bool> = create_rw_signal(false);
     let correct_key: RwSignal<String> = create_rw_signal(generate_random_string(16));
+    let correct_answer: RwSignal<String> = create_rw_signal(sq.answer.clone());
+    let radio_val: RwSignal<String> = create_rw_signal("".to_string());
 
     // Pairing each choicec with random value
     choices.set(
@@ -175,6 +177,7 @@ pub fn MCQuestion(
     // We can tuple (anw, t/f for r/w)
     let radio_change = move |evnt: ev::Event| {
         let val: String = event_target_value(&evnt);
+        radio_val.set(val.clone());
         if val == correct_key.get() {
             is_correct.update(|this| {
                 if *this {
@@ -206,8 +209,31 @@ pub fn MCQuestion(
     //     false,
     // );
 
+    let graded_classes = move || {
+        if is_correct.get() {
+            "correct"
+        } else {
+            "incorrect"
+        }
+    };
+
+    // For displaying answer
+    let answer_display = move || {
+        if is_correct.get() {
+            None
+        } else {
+            let p_tag = leptos::html::p();
+            p_tag.set_inner_text(&format!("Answer: {}", correct_answer.get()));
+            Some(p_tag)
+        }
+    };
+
     view! {
-        <div class="quest-case">
+        <div
+            class:quest-case=true
+            class:correct=move || is_correct.get() && to_grade.get()
+            class:incorrect=move || !is_correct.get() && to_grade.get()
+        >
             <p>{&sq.question}</p>
             {move || {
                 if to_grade.get() {
@@ -216,13 +242,24 @@ pub fn MCQuestion(
                             <For
                                 each=move || choices.get()
                                 key=|c| c.1.clone()
-                                children=move |this| view! {
-                                    <div>{&this.0}</div>
+                                children=move |this| {
+                                    let is_checked = &this.1 == &radio_val.get();
+                                    view! {
+                                        <input
+                                            type="radio"
+                                            id=&this.1
+                                            name="question"
+                                            value=&this.1
+                                            on:change=radio_change
+                                            disabled=true
+                                            checked=is_checked
+                                        />
+                                        <label for=&this.1>{&this.0}</label><br />
+                                    }
                                 }
                             />
                         </form>
-                        <button>":)"</button>
-                        <button>":("</button>
+                        {answer_display}
                     }.into_view()
                 } else {
                     view! {
@@ -236,6 +273,8 @@ pub fn MCQuestion(
                                 }
                             />
                         </form>
+                        <button>":)"</button>
+                        <button>":("</button>
                     }.into_view()
                 }
             }

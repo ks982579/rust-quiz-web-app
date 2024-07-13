@@ -93,3 +93,11 @@ input[type="radio"] {
   border-radius: 10px;
   width: 100%;
 }
+
+.correct {
+  background-color: #65ff88;
+}
+
+.incorrect {
+  background-color: #ff6564;
+}
