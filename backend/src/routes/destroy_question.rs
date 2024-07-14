@@ -7,7 +7,7 @@ use actix_web::http::{header::ContentType, StatusCode};
 use actix_web::web;
 use actix_web::{HttpRequest, HttpResponse, ResponseError};
 use anyhow::Context;
-use models::questions::SurrealQuestionMC;
+use models::questions::{GenericQuestionData, SurrealGenericQuestionData, SurrealQuestionMC};
 use models::{model_errors::ModelErrors, quiz::SurrealQuiz};
 use serde::{Deserialize, Serialize};
 use surrealdb::sql::{thing, Thing};
@@ -96,7 +96,7 @@ pub async fn destroy_my_quest(
         .map_err(|err| DestroyQuestError::ValidationError(err))?;
 
     // Checking  -- Error returned from database indicates no ID exists.
-    let surreal_quest: Option<SurrealQuestionMC> = db
+    let surreal_quest: Option<SurrealGenericQuestionData> = db
         .client
         .select(&quest_id)
         .await

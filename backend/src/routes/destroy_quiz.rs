@@ -38,7 +38,7 @@ impl ResponseError for DestroyQuizError {
             DestroyQuizError::UnexpectedError(_) => {
                 HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR)
                     .insert_header(ContentType::json())
-                    .json(serde_json::json!({"msg": "Unknown Error"}))
+                    .json(serde_json::json!({"msg": "errUnknown Error"}))
             }
             DestroyQuizError::AuthorizationError(msg) => {
                 HttpResponse::build(StatusCode::UNAUTHORIZED)

@@ -5,6 +5,16 @@ use serde::{Deserialize, Serialize};
 use surrealdb::sql::{Id, Thing};
 use surrealize_macro::Surrealize;
 
+/// Currently for deleting questions generically
+/// All questions must have this Generic Data to be processed correctly
+/// in all endpoints.
+#[derive(Serialize, Deserialize, Debug, Surrealize)]
+pub struct GenericQuestionData {
+    pub question: String,
+    pub author_id: String,
+    pub parent_quiz: Thing,
+}
+
 // pub struct QuestionType {}
 pub enum QuestionType {
     MultipleChoice(QuestionMC),

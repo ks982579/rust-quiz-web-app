@@ -83,6 +83,7 @@ async fn test_user_delete_quest_200() {
 
     // Act
     let test_res: Response = test_app.destroy_question(query_param).await;
+    dbg!(&test_res);
     assert!(test_res.status().as_u16() == 200);
 
     // Assert
@@ -271,6 +272,7 @@ async fn test_other_user_delete_quest_403() {
 
     // Act
     let test_res: Response = test_app.destroy_question(query_param).await;
+    dbg!(&test_res);
     assert!(test_res.status().as_u16() == 403);
 
     // Assert
