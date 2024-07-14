@@ -4,6 +4,7 @@
 mod create_questions;
 mod create_quiz;
 mod create_user;
+mod destroy_question;
 mod destroy_quiz;
 mod get_questions;
 mod get_quiz;

@@ -2,6 +2,7 @@
 mod create_questions;
 mod create_quiz;
 mod create_user;
+mod destroy_question;
 mod destroy_quiz;
 mod get_question;
 mod get_quiz;
@@ -13,6 +14,7 @@ mod user_logout;
 pub use create_questions::*;
 pub use create_quiz::*;
 pub use create_user::*;
+pub use destroy_question::*;
 pub use destroy_quiz::*;
 pub use get_question::*;
 pub use get_quiz::*;

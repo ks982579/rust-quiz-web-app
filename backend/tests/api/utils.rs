@@ -110,6 +110,23 @@ impl GetQuestion for TestApp {
     }
 }
 
+pub trait DestroyQuestion {
+    fn destroy_question(&self, quest_id: String) -> impl Future<Output = Response>;
+}
+
+impl DestroyQuestion for TestApp {
+    async fn destroy_question(&self, quest_id: String) -> Response {
+        self.api_client
+            .get(&format!(
+                "{}/question-forge?quest={}",
+                &self.address, quest_id
+            ))
+            .send()
+            .await
+            .expect("Failed to execute GET Request")
+    }
+}
+
 /// Some helper function for the `TestApp`
 /// Be sure to initialize an instance with `spawn_app()` before using these methods.
 impl TestApp {
