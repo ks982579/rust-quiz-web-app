@@ -3,22 +3,14 @@ use crate::utils::{spawn_app, CreateQuestions, CreateQuiz, DestroyQuiz, TestApp}
 use models::{
     questions::{JsonQuestion, JsonQuestionMC, QuestionJsonPkg, SurrealQuestionMC},
     quiz::SurrealQuiz,
+    SurrealRecord,
 };
 use reqwest::Response;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use surrealdb::sql::Thing;
 
-#[derive(Debug, Deserialize, Serialize)]
-struct SurrealRecord {
-    id: Thing,
-}
-
-#[tokio::test]
-async fn test_user_delete_quiz_200() {
-    // -- Arrange
-    let test_app: TestApp = spawn_app().await;
-
+async fn cleanup_db(test_app: &TestApp) {
     // clean up database
     let _: Vec<SurrealQuiz> = test_app.database.client.delete("quizzes").await.unwrap();
     let _: Vec<SurrealQuestionMC> = test_app
@@ -28,14 +20,23 @@ async fn test_user_delete_quiz_200() {
         .await
         .unwrap();
     // Clear out users
-    let _: Vec<Thing> = test_app
+    let _: Vec<SurrealRecord> = test_app
         .database
         .client
         .delete("general_user")
         .await
         .unwrap();
     // Clear out session tokens
-    let _: Vec<Thing> = test_app.database.client.delete("sessions").await.unwrap();
+    let _: Vec<SurrealRecord> = test_app.database.client.delete("sessions").await.unwrap();
+}
+
+#[tokio::test]
+async fn test_user_delete_quiz_200() {
+    // -- Arrange
+    let test_app: TestApp = spawn_app().await;
+
+    // clean up database
+    cleanup_db(&test_app).await;
 
     // create user for testing
     let mut test_app_response = test_app.create_new_test_user().await;
@@ -94,8 +95,8 @@ async fn test_user_delete_quiz_200() {
         .unwrap();
     assert!(1 > actual_quest.len());
 
-    // Clean up
-    let _: Vec<SurrealRecord> = test_app.database.client.delete("quizzes").await.unwrap();
+    // clean up database
+    cleanup_db(&test_app).await;
 }
 
 #[tokio::test]
@@ -104,11 +105,7 @@ async fn test_anon_user_delete_quiz_401() {
     let test_app: TestApp = spawn_app().await;
 
     // clean up database
-    let _: Vec<SurrealRecord> = test_app.database.client.delete("quizzes").await.unwrap();
-    // Clear out users
-    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("general_user").await;
-    // Clear out session tokens
-    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("sessions").await;
+    cleanup_db(&test_app).await;
 
     // create user for testing
     let mut test_app_response = test_app.create_new_test_user().await;
@@ -139,18 +136,14 @@ async fn test_anon_user_delete_quiz_401() {
 
     // Act
     let test_res: Response = test_app.destroy_quiz(query_param).await;
-    assert!(test_res.status().as_u16() == 403);
+    assert!(test_res.status().as_u16() == 401);
 
     // Assert
     let actual: Vec<SurrealQuiz> = test_app.database.client.select("quizzes").await.unwrap();
     assert!(1 == actual.len());
 
     // clean up database
-    let _: Vec<SurrealRecord> = test_app.database.client.delete("quizzes").await.unwrap();
-    // Clear out users
-    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("general_user").await;
-    // Clear out session tokens
-    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("sessions").await;
+    cleanup_db(&test_app).await;
 }
 
 #[tokio::test]
@@ -159,11 +152,7 @@ async fn test_other_user_delete_quiz_403() {
     let test_app: TestApp = spawn_app().await;
 
     // clean up database
-    let _: Vec<SurrealRecord> = test_app.database.client.delete("quizzes").await.unwrap();
-    // Clear out users
-    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("general_user").await;
-    // Clear out session tokens
-    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("sessions").await;
+    cleanup_db(&test_app).await;
 
     // Test User Data
     let user_data: Value = serde_json::json!({
@@ -183,7 +172,7 @@ async fn test_other_user_delete_quiz_403() {
     assert!(response01.status().is_success());
 
     let login_data: Value = serde_json::json!({
-        "username": "testuser123",
+        "username": "dummy123",
         "password": "Password@1234"
     });
 
@@ -195,6 +184,7 @@ async fn test_other_user_delete_quiz_403() {
         .send()
         .await
         .expect("Failed to send login data");
+    dbg!(&response02);
     assert!(response02.status().is_success());
 
     // Create Quiz as Dummy User
@@ -233,11 +223,7 @@ async fn test_other_user_delete_quiz_403() {
     assert!(1 == actual.len());
 
     // clean up database
-    let _: Vec<SurrealRecord> = test_app.database.client.delete("quizzes").await.unwrap();
-    // Clear out users
-    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("general_user").await;
-    // Clear out session tokens
-    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("sessions").await;
+    cleanup_db(&test_app).await;
 }
 
 #[tokio::test]
@@ -246,11 +232,7 @@ async fn test_create_quiz_400() {
     let test_app: TestApp = spawn_app().await;
 
     // clean up database
-    let _: Vec<SurrealRecord> = test_app.database.client.delete("quizzes").await.unwrap();
-    // Clear out users
-    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("general_user").await;
-    // Clear out session tokens
-    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("sessions").await;
+    cleanup_db(&test_app).await;
 
     // create user for testing
     let mut test_app_response = test_app.create_new_test_user().await;
@@ -266,24 +248,22 @@ async fn test_create_quiz_400() {
     });
     let response: Response = test_app.post_create_quiz(&info).await;
     assert!(response.status().is_success());
-    // let quiz: SurrealQuiz = response.json().await.unwrap();
+    let quiz: SurrealQuiz = response.json().await.unwrap();
 
     // Setting up query param
     // let query_param: String = urlencoding::encode(&quiz.id.to_raw()).to_string();
     let query_param: String = urlencoding::encode("quizzes:not-real-id-123").to_string();
 
     // Act
+    // NOTE: Currently the DB returns an error that is converted to a 500.
     let test_res: Response = test_app.destroy_quiz(query_param).await;
-    assert!(test_res.status().as_u16() == 200);
+    assert!(test_res.status() == 400);
 
     // Assert
     let actual: Vec<SurrealQuiz> = test_app.database.client.select("quizzes").await.unwrap();
-    assert!(1 > actual.len());
+    dbg!(&actual);
+    assert!(0 < actual.len());
 
     // clean up database
-    let _: Vec<SurrealRecord> = test_app.database.client.delete("quizzes").await.unwrap();
-    // Clear out users
-    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("general_user").await;
-    // Clear out session tokens
-    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("sessions").await;
+    cleanup_db(&test_app).await;
 }

@@ -73,7 +73,6 @@ pub async fn destroy_my_quiz(
     let some_user_id: Option<Uuid> = session
         .get_user_id()
         .map_err(|_| DestroyQuizError::UnexpectedError(anyhow::anyhow!("A SessionGetError")))?;
-    dbg!(&some_user_id);
 
     // Middleware should catch unauthorized users, but just in case
     let user_id: String = if let Some(id) = some_user_id {
@@ -89,13 +88,20 @@ pub async fn destroy_my_quiz(
     let decoded_query_str: String = urlencoding::decode(&quiz_query_str)
         .expect("UTF-8")
         .into_owned();
-    let quiz_id: Thing = thing(&decoded_query_str).context("Unable to parse query")?;
 
+    // If cannot be parsed, it cannot be in database
+    let quiz_id: Thing = thing(&decoded_query_str)
+        .context("Unable to parse query")
+        .map_err(|err| DestroyQuizError::ValidationError(err))?;
+
+    // Checking  -- Error returned from database indicates no ID exists.
     let mut surreal_quiz: Option<SurrealQuiz> = db
         .client
         .select(&quiz_id)
         .await
-        .map_err(|err| DestroyQuizError::UnexpectedError(anyhow::anyhow!(err)))?;
+        .map_err(|err| DestroyQuizError::ValidationError(anyhow::anyhow!(err)))?;
+
+    dbg!(&surreal_quiz);
 
     // Sanity checks
     match &surreal_quiz {
@@ -113,8 +119,10 @@ pub async fn destroy_my_quiz(
         }
     }
 
+    dbg!(&surreal_quiz);
+
     // Delete Quiz
-    let deleted_quiz: Option<SurrealQuiz> = db
+    let _deleted_quiz: Option<SurrealQuiz> = db
         .client
         .delete(&quiz_id)
         .await
