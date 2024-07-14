@@ -58,6 +58,20 @@ impl GetQuiz for TestApp {
     }
 }
 
+pub trait DestroyQuiz {
+    async fn destroy_quiz(&self, quiz_id: String) -> Response;
+}
+
+impl DestroyQuiz for TestApp {
+    async fn destroy_quiz(&self, quiz_id: String) -> Response {
+        self.api_client
+            .delete(&format!("{}/quiz-nexus?quiz={}", &self.address, quiz_id))
+            .send()
+            .await
+            .expect("Failed to execute GET Request")
+    }
+}
+
 pub trait CreateQuestions<Body>
 where
     Body: serde::Serialize,
@@ -99,9 +113,9 @@ impl GetQuestion for TestApp {
 /// Some helper function for the `TestApp`
 /// Be sure to initialize an instance with `spawn_app()` before using these methods.
 impl TestApp {
+    // TODO: Maybe make into Builder like function to take in credentials or default
     /// Assuming user not created, Cleans out test database and creates a new test user.
     pub async fn create_new_test_user(&self) -> Response {
-        dbg!(String::from("Cquiz.id.to_string()learing database"));
         // Clear out users
         let _: surrealdb::Result<Vec<Thing>> = self.database.client.delete("general_user").await;
         // Clear out session tokens

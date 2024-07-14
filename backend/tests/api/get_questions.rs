@@ -31,7 +31,6 @@ async fn test_get_questions_200() {
         test_app_response.status().is_success(),
         "Failed to log user in"
     );
-    // let client: Client = Client::new();
 
     // Quiz Structure
     let info: serde_json::Value = serde_json::json!({
