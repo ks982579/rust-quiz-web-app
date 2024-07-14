@@ -2,6 +2,7 @@
 //! This component will handle quiz making logic and pass
 //! user to the making questions screen.
 use leptos::*;
+use leptos_dom::logging::console_log;
 use serde::{Deserialize, Serialize};
 use web_sys::{Headers, RequestMode, Response};
 
@@ -68,20 +69,16 @@ pub fn QuizExhibit(
         quiz_selector.call(quiz_sig.get());
     };
 
-    // Action To destroy Quiz
-    let destroy_quiz_closure = move |_| {
-        quiz_selector.call(quiz_sig.get());
-    };
-
     // -- Create Actions --
-    let destroy_quiz_action = create_action(move |quiz_id: &String| {
+    let destroy_quiz_action = create_action(move |_| {
+        console_log(&quiz_sig.get().id.to_raw());
         let headers: Headers = Headers::new().unwrap();
         headers
             .set("Content-Type", "application/json;charset=UTF-8")
             .unwrap();
         let fetcher: Fetcher = Fetcher::init()
             .set_url(app_settings.backend_url.to_string() + "quiz-nexus")
-            .add_query_param("quiz", &quiz_id)
+            .add_query_param("quiz", &quiz_sig.get().id.to_raw())
             .set_method("DELETE")
             .set_headers(headers)
             .set_mode(RequestMode::Cors)
@@ -102,7 +99,10 @@ pub fn QuizExhibit(
             <button data-note="unimplemented" on:click=take_quiz_closure>"Take Quiz"</button>
             <button data-note="unimplemented">"Edit"</button>
             <button data-note="unimplemented">"Calibrate"</button>
-            <button data-note="unimplemented" on:click=destroy_quiz_closure>"Delete Quiz"</button>
+            <button
+                data-note="unimplemented"
+                on:click=move |_| destroy_quiz_action.dispatch(())
+            >"Delete Quiz"</button>
         </Card>
     }
 }
