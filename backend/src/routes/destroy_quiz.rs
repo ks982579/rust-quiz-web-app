@@ -122,7 +122,7 @@ pub async fn destroy_my_quiz(
     dbg!(&surreal_quiz);
 
     // Delete Quiz
-    let _deleted_quiz: Option<SurrealQuiz> = db
+    let deleted_quiz: Option<SurrealQuiz> = db
         .client
         .delete(&quiz_id)
         .await
@@ -131,7 +131,7 @@ pub async fn destroy_my_quiz(
 
     // Delete from MC table
     let surreal_ql = "DELETE type::table($table) WHERE author_id = $user_id";
-    let mut surreal_response: surrealdb::Response = db
+    let surreal_response: surrealdb::Response = db
         .client
         .query(surreal_ql)
         .bind(("table", "questions_mc"))
@@ -139,9 +139,5 @@ pub async fn destroy_my_quiz(
         .await
         .map_err(|err| DestroyQuizError::UnexpectedError(anyhow::anyhow!(err)))?;
 
-    let quizzes: Vec<SurrealQuiz> = surreal_response
-        .take(0)
-        .map_err(|err| DestroyQuizError::UnexpectedError(anyhow::anyhow!(err)))?;
-
-    Ok(HttpResponse::Ok().json(quizzes))
+    Ok(HttpResponse::Ok().json(deleted_quiz))
 }

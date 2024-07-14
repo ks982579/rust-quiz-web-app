@@ -7,6 +7,7 @@ use actix_web::http::{header::ContentType, StatusCode};
 use actix_web::web;
 use actix_web::{HttpRequest, HttpResponse, ResponseError};
 use anyhow::Context;
+use models::questions::SurrealQuestionMC;
 use models::{model_errors::ModelErrors, quiz::SurrealQuiz};
 use serde::{Deserialize, Serialize};
 use surrealdb::sql::{thing, Thing};
@@ -85,63 +86,46 @@ pub async fn destroy_my_quest(
 
     // Decode Query String
     let quest_query_string: String = quest.into_inner().quest;
-    let decoded_query_str: String = urlencoding::decode(&quiz_query_str)
+    let decoded_query_str: String = urlencoding::decode(&quest_query_string)
         .expect("UTF-8")
         .into_owned();
 
     // If cannot be parsed, it cannot be in database
-    let quiz_id: Thing = thing(&decoded_query_str)
+    let quest_id: Thing = thing(&decoded_query_str)
         .context("Unable to parse query")
         .map_err(|err| DestroyQuestError::ValidationError(err))?;
 
     // Checking  -- Error returned from database indicates no ID exists.
-    let mut surreal_quiz: Option<SurrealQuiz> = db
+    let surreal_quest: Option<SurrealQuestionMC> = db
         .client
-        .select(&quiz_id)
+        .select(&quest_id)
         .await
         .map_err(|err| DestroyQuestError::ValidationError(anyhow::anyhow!(err)))?;
 
-    dbg!(&surreal_quiz);
-
     // Sanity checks
-    match &surreal_quiz {
+    match &surreal_quest {
         None => {
             return Err(DestroyQuestError::ValidationError(anyhow::anyhow!(
-                "Quiz does not exist"
+                "Question does not exist"
             )));
         }
         Some(qz) => {
             if qz.author_id != user_id {
                 return Err(DestroyQuestError::OwnershipError(anyhow::anyhow!(
-                    "User does not own quiz"
+                    "User does not own question"
                 )));
             }
         }
     }
 
-    dbg!(&surreal_quiz);
-
     // Delete Quiz
-    let _deleted_quiz: Option<SurrealQuiz> = db
+    let deleted_quest: Option<SurrealQuestionMC> = db
         .client
-        .delete(&quiz_id)
-        .await
-        .map_err(|err| DestroyQuestError::UnexpectedError(anyhow::anyhow!(err)))?;
-    // Delete related questions
-
-    // Delete from MC table
-    let surreal_ql = "DELETE type::table($table) WHERE author_id = $user_id";
-    let mut surreal_response: surrealdb::Response = db
-        .client
-        .query(surreal_ql)
-        .bind(("table", "questions_mc"))
-        .bind(("user_id", user_id))
+        .delete(&quest_id)
         .await
         .map_err(|err| DestroyQuestError::UnexpectedError(anyhow::anyhow!(err)))?;
 
-    let quizzes: Vec<SurrealQuiz> = surreal_response
-        .take(0)
-        .map_err(|err| DestroyQuestError::UnexpectedError(anyhow::anyhow!(err)))?;
+    // After removing vector to track questions on Quiz, nothing more to do
 
-    Ok(HttpResponse::Ok().json(quizzes))
+    Ok(HttpResponse::Ok().json(deleted_quest))
 }

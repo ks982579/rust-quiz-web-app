@@ -114,13 +114,14 @@ pub async fn create_new_questions(
 
             let it: &SurrealQuestionMC = &res[0];
 
+            // Cut this out of workflow as it isn't being used
             // -- Save Question ID into Quiz
-            let _: Option<SurrealRecord> = db
-                .client
-                .update(&quiz_id)
-                .patch(PatchOp::add("/questions_mc", it.id.clone()))
-                .await
-                .map_err(|e| CreateQuestionError::UnexpectedError(anyhow::anyhow!(e)))?;
+            // let _: Option<SurrealRecord> = db
+            //     .client
+            //     .update(&quiz_id)
+            //     .patch(PatchOp::add("/questions_mc", it.id.clone()))
+            //     .await
+            //     .map_err(|e| CreateQuestionError::UnexpectedError(anyhow::anyhow!(e)))?;
 
             serde_json::to_value(it)
                 .map_err(|e| CreateQuestionError::UnexpectedError(anyhow::anyhow!(e)))?

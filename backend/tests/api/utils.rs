@@ -117,7 +117,7 @@ pub trait DestroyQuestion {
 impl DestroyQuestion for TestApp {
     async fn destroy_question(&self, quest_id: String) -> Response {
         self.api_client
-            .get(&format!(
+            .delete(&format!(
                 "{}/question-forge?quest={}",
                 &self.address, quest_id
             ))

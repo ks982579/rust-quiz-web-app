@@ -45,5 +45,5 @@ pub struct SurrealQuiz {
     pub name: String,
     pub description: String,
     pub author_id: String,
-    pub questions_mc: Vec<Thing>,
+    // pub questions_mc: Vec<Thing>,
 }
