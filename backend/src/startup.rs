@@ -1,13 +1,7 @@
 //! backend/src/startup.rs
 //! Holds application level information and functions.
 use crate::{
-    authentication::AuthCookie,
-    configuration::AllSettings,
-    routes::{
-        check_login, create_new_questions, create_new_quiz, create_user, get_my_quizzes,
-        get_questions, health_check, user_login, user_logout,
-    },
-    surrealdb_repo::Database,
+    authentication::AuthCookie, configuration::AllSettings, routes::*, surrealdb_repo::Database,
 };
 use actix_cors::Cors;
 use actix_session::{config::PersistentSession, SessionMiddleware};
@@ -90,6 +84,7 @@ pub async fn run(
                     // This is for making and fetching quizzes
                     .route("/quiz-nexus", web::get().to(get_my_quizzes))
                     .route("/quiz-nexus", web::post().to(create_new_quiz))
+                    .route("/quiz-nexus", web::delete().to(destroy_my_quiz))
                     .route("/question-forge", web::get().to(get_questions))
                     .route("/question-forge", web::post().to(create_new_questions)),
                 // Below I think will be for making questions

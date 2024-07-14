@@ -1,6 +1,9 @@
 //! backend/tests/api/create_quiz.rs
-use crate::utils::{spawn_app, CreateQuiz, DestroyQuiz, TestApp};
-use models::quiz::SurrealQuiz;
+use crate::utils::{spawn_app, CreateQuestions, CreateQuiz, DestroyQuiz, TestApp};
+use models::{
+    questions::{JsonQuestion, JsonQuestionMC, QuestionJsonPkg, SurrealQuestionMC},
+    quiz::SurrealQuiz,
+};
 use reqwest::Response;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -17,7 +20,22 @@ async fn test_user_delete_quiz_200() {
     let test_app: TestApp = spawn_app().await;
 
     // clean up database
-    let _: Vec<SurrealRecord> = test_app.database.client.delete("quizzes").await.unwrap();
+    let _: Vec<SurrealQuiz> = test_app.database.client.delete("quizzes").await.unwrap();
+    let _: Vec<SurrealQuestionMC> = test_app
+        .database
+        .client
+        .delete("questions_mc")
+        .await
+        .unwrap();
+    // Clear out users
+    let _: Vec<Thing> = test_app
+        .database
+        .client
+        .delete("general_user")
+        .await
+        .unwrap();
+    // Clear out session tokens
+    let _: Vec<Thing> = test_app.database.client.delete("sessions").await.unwrap();
 
     // create user for testing
     let mut test_app_response = test_app.create_new_test_user().await;
@@ -35,6 +53,29 @@ async fn test_user_delete_quiz_200() {
     assert!(response.status().is_success());
     let quiz: SurrealQuiz = response.json().await.unwrap();
 
+    // Creating Question!
+    let q1 = JsonQuestion::MultipleChoice(JsonQuestionMC {
+        question: String::from(
+            "Which sorting algorithm has an average and worst-case time complexity of O(n log(n))?",
+        ),
+        hint: Some(String::from(
+            "This algorithm uses a divide-and-conquer strategy and is often implement recursively.",
+        )),
+        answer: String::from("Merge Sort"),
+        choices: vec![
+            String::from("Bubble Sort"),
+            String::from("Quick Sort"),
+            String::from("Selection Sort"),
+        ],
+    });
+
+    let mut package: QuestionJsonPkg = QuestionJsonPkg {
+        quiz_id: quiz.id.clone(),
+        question: q1,
+    };
+    let question_response: Response = test_app.post_create_questions(&package).await;
+    assert!(question_response.status() == 201);
+
     // Setting up query param
     let query_param: String = urlencoding::encode(&quiz.id.to_raw()).to_string();
 
@@ -45,6 +86,13 @@ async fn test_user_delete_quiz_200() {
     // Assert
     let actual: Vec<SurrealQuiz> = test_app.database.client.select("quizzes").await.unwrap();
     assert!(1 > actual.len());
+    let actual_quest: Vec<SurrealQuestionMC> = test_app
+        .database
+        .client
+        .select("questions_mc")
+        .await
+        .unwrap();
+    assert!(1 > actual_quest.len());
 
     // Clean up
     let _: Vec<SurrealRecord> = test_app.database.client.delete("quizzes").await.unwrap();
