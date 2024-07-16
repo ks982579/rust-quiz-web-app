@@ -2,15 +2,14 @@
 //! This component will handle quiz making logic and pass
 //! user to the making questions screen.
 use leptos::*;
-use leptos_dom::logging::console_log;
 use serde::{Deserialize, Serialize};
 use web_sys::{Headers, RequestMode, Response};
 
 use crate::{
     components::Card,
     models::mimic_surreal::{SurrealQuiz, Thing},
-    store::{AppSettings, AuthState},
-    utils::{DashDisplay, Fetcher, JsonMsg, PartialUser},
+    store::AppSettings,
+    utils::Fetcher,
 };
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -71,7 +70,6 @@ pub fn QuizExhibit(
 
     // -- Create Actions --
     let destroy_quiz_action = create_action(move |_| {
-        console_log(&quiz_sig.get().id.to_raw());
         let headers: Headers = Headers::new().unwrap();
         headers
             .set("Content-Type", "application/json;charset=UTF-8")
@@ -96,11 +94,14 @@ pub fn QuizExhibit(
         <Card on_click=None>
             <p>"Name: "{move || quiz_sig.get().name}</p>
             <p>{move || quiz_sig.get().description}</p>
-            <button data-note="unimplemented" on:click=take_quiz_closure>"Take Quiz"</button>
+            <button
+                data-note="take_quiz_button"
+                on:click=take_quiz_closure
+            >"Take Quiz"</button>
             <button data-note="unimplemented">"Edit"</button>
             <button data-note="unimplemented">"Calibrate"</button>
             <button
-                data-note="unimplemented"
+                data-note="delete_quiz_button"
                 on:click=move |_| destroy_quiz_action.dispatch(())
             >"Delete Quiz"</button>
         </Card>

@@ -19,6 +19,15 @@ pub enum QuestType {
     SA,
 }
 
+impl QuestType {
+    pub fn get_id(&self) -> Thing {
+        match &self {
+            QuestType::MC(quest) => quest.id.clone(),
+            _ => unimplemented!(),
+        }
+    }
+}
+
 /// Struct for allowing Quests to be rendered by <For />
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Quest {

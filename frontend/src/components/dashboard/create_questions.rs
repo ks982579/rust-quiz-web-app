@@ -2,8 +2,10 @@
 //! This component will handle the initial question making procecss
 use crate::{
     components::dashboard::{QuestionMold, QuestionShowcase},
-    models::mimic_surreal::SurrealQuiz,
-    models::questions::{JsonQuestion, QLInternals, Quest, QuestType},
+    models::{
+        mimic_surreal::{SurrealQuestionMC, SurrealQuiz},
+        questions::{JsonQuestion, QLInternals, Quest, QuestType},
+    },
     utils::DashDisplay,
 };
 use leptos::*;
@@ -46,6 +48,9 @@ pub fn QuestionForge(
             *val = *val + 1;
         });
     });
+    let remove_quest_mc: Callback<QuestType> = Callback::new(move |dead_quest: QuestType| {
+        quest_signal.update(|this| this.retain(|qst| qst.quest.get_id() != dead_quest.get_id()));
+    });
 
     view! {
         <>
@@ -57,6 +62,7 @@ pub fn QuestionForge(
                 children=move |thing| view!{
                     <QuestionShowcase
                         quest=thing
+                        pop_quest=remove_quest_mc
                     />
                 }
             />
@@ -76,6 +82,3 @@ pub fn QuestionForge(
         </>
     }
 }
-
-#[cfg(test)]
-mod tests {}
