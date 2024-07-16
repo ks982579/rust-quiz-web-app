@@ -31,7 +31,6 @@ async fn test_get_questions_200() {
         test_app_response.status().is_success(),
         "Failed to log user in"
     );
-    // let client: Client = Client::new();
 
     // Quiz Structure
     let info: serde_json::Value = serde_json::json!({
@@ -117,8 +116,8 @@ async fn test_get_questions_200() {
 
     // Assert
     assert!(res.status() == 200);
-    let actual: Vec<SurrealQuestionMC> = res.json().await.unwrap();
-    assert!(actual.len() == 3);
+    let everything: AllQuestions = res.json().await.unwrap();
+    assert!(everything.mc.len() == 3);
 
     // dbg!(this);
     // TODO: Also want to compare `response.json().await` to database query.

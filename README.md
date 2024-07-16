@@ -91,6 +91,13 @@ When you run tests, use the following:
 cargo test -- --test-threads=1
 ```
 
+If tests are failing and you see an error there are "too many open files",
+especially on Linux:
+
+```bash
+ulimit -n 10000
+```
+
 ### End to End Testing
 
 Working with Python and [RobotFrameWork](https://robotframework.org) as I am familiar with this tool.

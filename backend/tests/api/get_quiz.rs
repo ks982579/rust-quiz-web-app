@@ -57,7 +57,7 @@ async fn test_get_quiz_200() {
     // Make a quiz
     let quiz_info2: serde_json::Value = serde_json::json!({
         "name": "Rust",
-        "description": "An Rust quiz"
+        "description": "A Rust quiz"
     });
 
     let response: Response = test_app.post_create_quiz(&quiz_info2).await;

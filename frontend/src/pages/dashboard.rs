@@ -59,6 +59,8 @@ pub fn Dashboard() -> impl IntoView {
         ReadSignal<Option<SurrealQuiz>>,
         WriteSignal<Option<SurrealQuiz>>,
     ) = create_signal(None);
+    let quiz_list = create_rw_signal(Vec::new());
+
     // -- Use Context --
     let user: PartialUser = use_context().expect("PartialUser Context not set");
     let app_settings: AppSettings =
@@ -80,7 +82,6 @@ pub fn Dashboard() -> impl IntoView {
     // TODO: Make request for current tests
     // try `create_local_resource`
     // or `create_render_effect`
-    let quiz_list = create_rw_signal(Vec::new());
     // let settings_rc = std::rc::Rc::new(app_settings);
     let quizzes_resource = create_resource(
         || (), // only render once
@@ -113,9 +114,9 @@ pub fn Dashboard() -> impl IntoView {
     let add_quiz = move |new_quiz: SurrealQuiz| {
         quiz_list.update(|quizzes| quizzes.push(new_quiz));
     };
-    let remove_quiz = move |dead_quiz: SurrealQuiz| {
+    let remove_quiz: Callback<SurrealQuiz> = Callback::new(move |dead_quiz: SurrealQuiz| {
         quiz_list.update(|q| q.retain(|qz| qz.id != dead_quiz.id));
-    };
+    });
     create_effect(move |_| {
         // if let Some(Ok(fetched_quizzes)) = quizzes_resource.get() {
         //     quiz_list.set(fetched_quizzes);
@@ -129,6 +130,7 @@ pub fn Dashboard() -> impl IntoView {
                 <QuizShowCase
                     quiz_list=quiz_list
                     quiz_selector=choose_quiz_to_take
+                    pop_quiz=remove_quiz
                 />
             </>
         },
@@ -145,7 +147,6 @@ pub fn Dashboard() -> impl IntoView {
         },
         DashDisplay::TakeQuiz => view! {
             <>
-                <h3>"I Love quizzes"</h3>
                 <ExamRoom some_quiz=current_quiz_rw.get()/>
             </>
         },
