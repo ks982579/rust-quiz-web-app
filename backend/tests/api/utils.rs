@@ -6,6 +6,7 @@ use backend::{
     surrealdb_repo::Database,
     telemetry::{get_subscriber, init_subscriber},
 };
+use models::SurrealRecord;
 use reqwest::{cookie::Cookie, Client, Response};
 use serde_json::Value;
 use std::future::Future;
@@ -171,6 +172,17 @@ impl TestApp {
             .send()
             .await
             .expect("Failed to send login data")
+    }
+
+    /// To clean out database automatically
+    pub async fn cleanup_db(&self) {
+        // clean up database
+        let _: Vec<SurrealRecord> = self.database.client.delete("quizzes").await.unwrap();
+        let _: Vec<SurrealRecord> = self.database.client.delete("questions_mc").await.unwrap();
+        // Clear out users
+        let _: Vec<SurrealRecord> = self.database.client.delete("general_user").await.unwrap();
+        // Clear out session tokens
+        let _: Vec<SurrealRecord> = self.database.client.delete("sessions").await.unwrap();
     }
 }
 

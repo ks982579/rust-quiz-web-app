@@ -36,7 +36,7 @@ async fn test_user_delete_quest_200() {
     let test_app: TestApp = spawn_app().await;
 
     // clean up database
-    cleanup_db(&test_app).await;
+    test_app.cleanup_db().await;
 
     // create user for testing
     let mut test_app_response = test_app.create_new_test_user().await;
