@@ -59,6 +59,27 @@ impl GetQuiz for TestApp {
     }
 }
 
+pub trait EditQuiz<Body>
+where
+    Body: serde::Serialize,
+{
+    async fn edit_quiz(&self, quiz_id: String, json: &Body) -> Response;
+}
+
+impl<Body> EditQuiz<Body> for TestApp
+where
+    Body: serde::Serialize,
+{
+    async fn edit_quiz(&self, quiz_id: String, json: &Body) -> Response {
+        self.api_client
+            .put(&format!("{}/quiz-nexus?quiz={}", &self.address, quiz_id))
+            .json(json)
+            .send()
+            .await
+            .expect("Failed to execute GET Request")
+    }
+}
+
 pub trait DestroyQuiz {
     async fn destroy_quiz(&self, quiz_id: String) -> Response;
 }

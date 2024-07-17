@@ -99,7 +99,7 @@ async fn test_user_delete_quest_200() {
     assert!(1 > actual_quest.len());
 
     // clean up database
-    cleanup_db(&test_app).await;
+    test_app.cleanup_db().await;
 }
 
 #[tokio::test]
@@ -108,7 +108,7 @@ async fn test_anon_user_delete_quest_401() {
     let test_app: TestApp = spawn_app().await;
 
     // clean up database
-    cleanup_db(&test_app).await;
+    test_app.cleanup_db().await;
 
     // create user for testing
     let mut test_app_response = test_app.create_new_test_user().await;
@@ -175,7 +175,7 @@ async fn test_anon_user_delete_quest_401() {
     assert!(1 == actual.len());
 
     // clean up database
-    cleanup_db(&test_app).await;
+    test_app.cleanup_db().await;
 }
 
 #[tokio::test]
@@ -184,7 +184,7 @@ async fn test_other_user_delete_quest_403() {
     let test_app: TestApp = spawn_app().await;
 
     // clean up database
-    cleanup_db(&test_app).await;
+    test_app.cleanup_db().await;
 
     // Test User Data
     let user_data: Value = serde_json::json!({
@@ -285,7 +285,7 @@ async fn test_other_user_delete_quest_403() {
     assert!(1 == actual.len());
 
     // clean up database
-    cleanup_db(&test_app).await;
+    test_app.cleanup_db().await;
 }
 
 #[tokio::test]
@@ -294,7 +294,7 @@ async fn test_create_quest_400() {
     let test_app: TestApp = spawn_app().await;
 
     // clean up database
-    cleanup_db(&test_app).await;
+    test_app.cleanup_db().await;
 
     // create user for testing
     let mut test_app_response = test_app.create_new_test_user().await;
@@ -356,5 +356,5 @@ async fn test_create_quest_400() {
     assert!(0 < actual.len());
 
     // clean up database
-    cleanup_db(&test_app).await;
+    test_app.cleanup_db().await;
 }

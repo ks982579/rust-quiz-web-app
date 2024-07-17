@@ -36,7 +36,7 @@ async fn test_user_delete_quiz_200() {
     let test_app: TestApp = spawn_app().await;
 
     // clean up database
-    cleanup_db(&test_app).await;
+    test_app.cleanup_db().await;
 
     // create user for testing
     let mut test_app_response = test_app.create_new_test_user().await;
@@ -45,7 +45,7 @@ async fn test_user_delete_quiz_200() {
     test_app_response = test_app.log_in_test_user().await;
     assert!(test_app_response.status().is_success());
 
-    // Quiz Structure - Hopefully no questions starts and empty vector
+    // Quiz Structure
     let info: serde_json::Value = serde_json::json!({
         "name": "Algorithms",
         "description": "An algorithms quiz"
@@ -99,6 +99,7 @@ async fn test_user_delete_quiz_200() {
     cleanup_db(&test_app).await;
 }
 
+/// Test an anonymous user cannot delete quizzes.
 #[tokio::test]
 async fn test_anon_user_delete_quiz_401() {
     // -- Arrange
