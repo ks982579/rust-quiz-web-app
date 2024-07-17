@@ -81,12 +81,13 @@ pub async fn run(
                     .wrap(AuthCookie)
                     .route("/check-login", web::get().to(check_login))
                     .route("/user-logout", web::get().to(user_logout))
-                    // This is for making and fetching quizzes
                     .route("/quiz-nexus", web::get().to(get_my_quizzes))
                     .route("/quiz-nexus", web::post().to(create_new_quiz))
+                    .route("/quiz-nexus", web::put().to(edit_quiz))
                     .route("/quiz-nexus", web::delete().to(destroy_my_quiz))
                     .route("/question-forge", web::get().to(get_questions))
                     .route("/question-forge", web::post().to(create_new_questions))
+                    .route("/question-forge", web::put().to(edit_question))
                     .route("/question-forge", web::delete().to(destroy_my_quest)),
                 // Below I think will be for making questions
                 // .route("/query-forge", web::get().to(?)),
