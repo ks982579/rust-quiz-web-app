@@ -1,4 +1,4 @@
-//! backend/tests/api/create_quiz.rs
+//! backend/tests/api/edit_quiz.rs
 use crate::utils::{spawn_app, CreateQuestions, CreateQuiz, EditQuiz, TestApp};
 use models::{
     questions::{JsonQuestion, JsonQuestionMC, QuestionJsonPkg, SurrealQuestionMC},
@@ -73,14 +73,17 @@ async fn test_edit_quiz_200() {
 
     // Assert
     let actual: Vec<SurrealQuiz> = test_app.database.client.select("quizzes").await.unwrap();
-    assert!(1 > actual.len());
+    assert!(1 == actual.len());
     let actual_quest: Vec<SurrealQuestionMC> = test_app
         .database
         .client
         .select("questions_mc")
         .await
         .unwrap();
-    assert!(1 > actual_quest.len(), "Something happened to the question");
+    assert!(
+        1 == actual_quest.len(),
+        "Something happened to the question"
+    );
 
     assert!(
         actual[0].name == "Algorithms",

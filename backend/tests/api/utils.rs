@@ -132,6 +132,27 @@ impl GetQuestion for TestApp {
     }
 }
 
+pub trait EditQuestion<Body>
+where
+    Body: serde::Serialize,
+{
+    fn edit_question(&self, quest_id: String, json: &Body) -> impl Future<Output = Response>;
+}
+
+impl<Body> EditQuestion<Body> for TestApp
+where
+    Body: serde::Serialize,
+{
+    async fn edit_question(&self, quest_id: String, json: &Body) -> Response {
+        self.api_client
+            .put(&format!("{}/question-forge", &self.address))
+            .json(json)
+            .send()
+            .await
+            .expect("Failed to execute POST Request")
+    }
+}
+
 pub trait DestroyQuestion {
     fn destroy_question(&self, quest_id: String) -> impl Future<Output = Response>;
 }
