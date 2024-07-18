@@ -1,7 +1,9 @@
 //! backend/tests/api/edit_question.rs
 use crate::utils::{spawn_app, CreateQuestions, CreateQuiz, EditQuestion, TestApp};
 use models::{
-    questions::{JsonQuestion, JsonQuestionMC, QuestionJsonPkg, SurrealQuestionMC},
+    questions::{
+        EditQuestionJsonPkg, JsonQuestion, JsonQuestionMC, QuestionJsonPkg, SurrealQuestionMC,
+    },
     quiz::SurrealQuiz,
     SurrealRecord,
 };
@@ -75,9 +77,12 @@ async fn test_edit_question_200() {
             String::from("Selection Sort"),
         ],
     });
+    let updated_pkg = EditQuestionJsonPkg {
+        question: updated_quest,
+    };
 
     // Act
-    let test_res: Response = test_app.edit_question(query_param, &updated_quest).await;
+    let test_res: Response = test_app.edit_question(query_param, &updated_pkg).await;
     assert!(test_res.status().as_u16() == 200);
 
     // Assert

@@ -103,6 +103,27 @@ pub async fn edit_quiz(
         .context("Unable to parse query")
         .map_err(|err| EditQuizError::ValidationError(err))?;
 
+    let surreal_quiz: Option<SurrealQuiz> = db
+        .client
+        .select(&quiz_id)
+        .await
+        .map_err(|err| EditQuizError::ValidationError(anyhow::anyhow!(err)))?;
+
+    match &surreal_quiz {
+        None => {
+            return Err(EditQuizError::ValidationError(anyhow::anyhow!(
+                "Quiz does not exist"
+            )));
+        }
+        Some(qz) => {
+            if qz.author_id != user_id {
+                return Err(EditQuizError::OwnershipError(anyhow::anyhow!(
+                    "User does not own quiz"
+                )));
+            }
+        }
+    }
+
     // Not changing author_id or ID of record
     // let quiz_to_save: Quiz = Quiz::new(quiz_data.name, quiz_data.description, user_id);
     // dbg!(&quiz_to_save);
