@@ -145,7 +145,10 @@ where
 {
     async fn edit_question(&self, quest_id: String, json: &Body) -> Response {
         self.api_client
-            .put(&format!("{}/question-forge", &self.address))
+            .put(&format!(
+                "{}/question-forge?quest={}",
+                &self.address, quest_id
+            ))
             .json(json)
             .send()
             .await

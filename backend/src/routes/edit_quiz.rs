@@ -1,97 +1,125 @@
-//! backend/src/routes/create_quiz.rs
+//! backend/src/routes/edit_quiz.rs
+//! Endpoint to edit quiz information.
 use crate::{error_chain_helper, session_wrapper::SessionWrapper, surrealdb_repo::Database};
 use actix_web::http::{header::ContentType, StatusCode};
 use actix_web::{web, HttpRequest, HttpResponse, ResponseError};
+use anyhow::Context;
 use models::{
     model_errors::ModelErrors,
     quiz::{Quiz, QuizJsonPkg, SurrealQuiz},
 };
-use surrealdb::sql::Id;
+use serde::Deserialize;
+use surrealdb::sql::{thing, Id, Thing};
 use uuid::Uuid;
 
 // Errors
 #[derive(thiserror::Error)]
-pub enum CreateQuizError {
-    #[error(transparent)]
-    ValidationError(#[from] ModelErrors),
+pub enum EditQuizError {
+    #[error("{0}")]
+    ValidationError(#[source] anyhow::Error),
     #[error("{0}")]
     AuthorizationError(String),
+    #[error("{0}")]
+    OwnershipError(#[source] anyhow::Error),
     #[error(transparent)]
     UnexpectedError(#[from] anyhow::Error),
 }
 
-impl std::fmt::Debug for CreateQuizError {
+impl std::fmt::Debug for EditQuizError {
     /// Custom implementation to display root cause of errors
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         error_chain_helper(self, f)
     }
 }
 
-impl ResponseError for CreateQuizError {
+impl ResponseError for EditQuizError {
     fn error_response(&self) -> HttpResponse<actix_web::body::BoxBody> {
         match self {
-            CreateQuizError::UnexpectedError(_) => {
+            EditQuizError::UnexpectedError(_) => {
                 HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR)
                     .insert_header(ContentType::json())
                     .json(serde_json::json!({"msg": "Unknown Error"}))
             }
-            CreateQuizError::ValidationError(err) => HttpResponse::build(StatusCode::BAD_REQUEST)
+            EditQuizError::ValidationError(err) => HttpResponse::build(StatusCode::BAD_REQUEST)
                 .insert_header(ContentType::json())
                 .json(serde_json::json!({ "msg": err.to_string() })),
-            CreateQuizError::AuthorizationError(msg) => {
-                HttpResponse::build(StatusCode::UNAUTHORIZED)
-                    .insert_header(ContentType::json())
-                    .json(serde_json::json!({ "msg": msg }))
-            }
+            EditQuizError::OwnershipError(anywho) => HttpResponse::build(StatusCode::FORBIDDEN)
+                .insert_header(ContentType::json())
+                .json(serde_json::json!({ "msg": anywho.to_string() })),
+            EditQuizError::AuthorizationError(msg) => HttpResponse::build(StatusCode::UNAUTHORIZED)
+                .insert_header(ContentType::json())
+                .json(serde_json::json!({ "msg": msg })),
         }
     }
 }
 
+#[derive(Deserialize, Debug, Clone)]
+pub struct QuizEditorQueryString {
+    quiz: String,
+}
+
 /// ToDo: Documentation
 #[tracing::instrument(
-    name = "Request to Create Quiz"
+    name = "Request to Edit Quiz"
     skip(db, session)
 )]
 pub async fn edit_quiz(
     req: HttpRequest,
     session: SessionWrapper,
     db: web::Data<Database>,
+    quiz: web::Query<QuizEditorQueryString>,
     quiz_pkg_pt: web::Json<QuizJsonPkg>,
-) -> Result<HttpResponse, CreateQuizError> {
+) -> Result<HttpResponse, EditQuizError> {
     let quiz_data: QuizJsonPkg = quiz_pkg_pt.into_inner();
-    quiz_data.validate_field()?;
+
+    // I don't like transforming ModelError -> Anyhow::Error -> ValidationError
+    quiz_data
+        .validate_field()
+        .context("Validation error")
+        .map_err(|err| EditQuizError::ValidationError(err))?;
 
     let some_user_id: Option<Uuid> = session
         .get_user_id()
-        .map_err(|_| CreateQuizError::UnexpectedError(anyhow::anyhow!("A SessionGetError")))?;
+        .map_err(|_| EditQuizError::UnexpectedError(anyhow::anyhow!("A SessionGetError")))?;
     dbg!(&some_user_id);
 
     // Middleware should catch unauthorized users, but just in case
     let user_id: String = if let Some(id) = some_user_id {
         id.to_string()
     } else {
-        return Err(CreateQuizError::AuthorizationError(
+        return Err(EditQuizError::AuthorizationError(
             "Session Token not found".to_string(),
         ));
     };
 
-    let quiz_to_save: Quiz = Quiz::new(quiz_data.name, quiz_data.description, user_id);
-    dbg!(&quiz_to_save);
-    dbg!(Id::uuid().to_string());
+    // Decode Query String
+    let quiz_query_string: String = quiz.into_inner().quiz;
+    let decoded_query_string: String = urlencoding::decode(&quiz_query_string)
+        .expect("UTF-8")
+        .into_owned();
 
-    let created: Vec<SurrealQuiz> = db
+    // If cannot be parsed, it cannot be in database
+    let quiz_id: Thing = thing(&decoded_query_string)
+        .context("Unable to parse query")
+        .map_err(|err| EditQuizError::ValidationError(err))?;
+
+    // Not changing author_id or ID of record
+    // let quiz_to_save: Quiz = Quiz::new(quiz_data.name, quiz_data.description, user_id);
+    // dbg!(&quiz_to_save);
+    // dbg!(Id::uuid().to_string());
+
+    let created: Option<SurrealQuiz> = db
         .client
-        .create("quizzes")
-        .content(&quiz_to_save)
+        .update(quiz_id)
+        .merge(&quiz_data)
         .await
-        .map_err(|e| CreateQuizError::UnexpectedError(anyhow::anyhow!(e)))?;
+        .map_err(|e| EditQuizError::UnexpectedError(anyhow::anyhow!(e)))?;
 
-    if created.len() == 1 {
-        Ok(HttpResponse::Ok().json(&created[0]))
+    if let Some(qz) = created {
+        Ok(HttpResponse::Ok().json(&qz))
     } else {
-        Err(CreateQuizError::UnexpectedError(anyhow::anyhow!(
+        Err(EditQuizError::UnexpectedError(anyhow::anyhow!(
             "Unsure what happened in Database"
         )))
     }
 }
-
