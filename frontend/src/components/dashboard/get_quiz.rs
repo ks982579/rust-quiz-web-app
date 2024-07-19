@@ -23,6 +23,7 @@ pub fn QuizShowCase(
     quiz_list: RwSignal<Vec<SurrealQuiz>>,
     quiz_selector: Callback<SurrealQuiz>,
     pop_quiz: Callback<SurrealQuiz>,
+    quiz_updater: Callback<SurrealQuiz>,
 ) -> impl IntoView {
     //  -- Create Signals --
     //  -- Create References --
@@ -43,6 +44,7 @@ pub fn QuizShowCase(
                         surreal_quiz=this
                         quiz_selector=quiz_selector
                         pop_quiz=pop_quiz
+                        quiz_updater=quiz_updater
                     />
                 }
             />
@@ -55,6 +57,7 @@ pub fn QuizExhibit(
     surreal_quiz: SurrealQuiz,
     quiz_selector: Callback<SurrealQuiz>,
     pop_quiz: Callback<SurrealQuiz>,
+    quiz_updater: Callback<SurrealQuiz>,
 ) -> impl IntoView {
     // -- Create Signals --
     let quiz_sig: RwSignal<SurrealQuiz> = create_rw_signal(surreal_quiz);
@@ -66,6 +69,9 @@ pub fn QuizExhibit(
     // -- Create Closures
     let take_quiz_closure = move |_| {
         quiz_selector.call(quiz_sig.get());
+    };
+    let update_quiz_closure = move |_| {
+        quiz_updater.call(quiz_sig.get());
     };
 
     // -- Create Actions --
@@ -98,7 +104,10 @@ pub fn QuizExhibit(
                 data-note="take_quiz_button"
                 on:click=take_quiz_closure
             >"Take Quiz"</button>
-            <button data-note="unimplemented">"Edit"</button>
+            <button
+                data-note="update_quiz_button"
+                on:click=update_quiz_closure
+            >"Edit"</button>
             <button data-note="unimplemented">"Calibrate"</button>
             <button
                 data-note="delete_quiz_button"

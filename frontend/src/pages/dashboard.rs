@@ -1,11 +1,12 @@
 //! frontend/src/pages/dashboard.rs
 //! This is dashboard that appears for logged in users.
 use leptos::*;
+use std::cmp::Ordering;
 use web_sys::{Headers, RequestMode, Response};
 
 use crate::{
     components::{
-        dashboard::{ExamRoom, MakeQuiz, QuestionForge, QuizShowCase},
+        dashboard::{ExamRoom, MakeQuiz, QuestionForge, QuizShowCase, UpdateQuiz},
         Card,
     },
     models::mimic_surreal::{SurrealQuiz, Thing},
@@ -71,12 +72,17 @@ pub fn Dashboard() -> impl IntoView {
         write_display.set(DashDisplay::MyQuizzes);
     });
     let set_display_make_quiz = Callback::new(move |_click: ev::MouseEvent| {
+        current_quiz_rw.set(None);
         write_display.set(DashDisplay::MakeQuizzes);
     });
     // Callback to setup quiz to take
     let choose_quiz_to_take = Callback::new(move |quiz: SurrealQuiz| {
         current_quiz_rw.set(Some(quiz));
         write_display.set(DashDisplay::TakeQuiz);
+    });
+    let choose_quiz_to_update = Callback::new(move |qz: SurrealQuiz| {
+        current_quiz_rw.set(Some(qz));
+        write_display.set(DashDisplay::UpdateQuiz);
     });
 
     // TODO: Make request for current tests
@@ -111,9 +117,12 @@ pub fn Dashboard() -> impl IntoView {
             }
         },
     );
-    let add_quiz = move |new_quiz: SurrealQuiz| {
-        quiz_list.update(|quizzes| quizzes.push(new_quiz));
-    };
+    let add_quiz: Callback<SurrealQuiz> = Callback::new(move |new_quiz: SurrealQuiz| {
+        quiz_list.update(|quizzes| {
+            quizzes.push(new_quiz);
+            quizzes.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+        });
+    });
     let remove_quiz: Callback<SurrealQuiz> = Callback::new(move |dead_quiz: SurrealQuiz| {
         quiz_list.update(|q| q.retain(|qz| qz.id != dead_quiz.id));
     });
@@ -131,6 +140,7 @@ pub fn Dashboard() -> impl IntoView {
                     quiz_list=quiz_list
                     quiz_selector=choose_quiz_to_take
                     pop_quiz=remove_quiz
+                    quiz_updater=choose_quiz_to_update
                 />
             </>
         },
@@ -150,6 +160,16 @@ pub fn Dashboard() -> impl IntoView {
                 <ExamRoom some_quiz=current_quiz_rw.get()/>
             </>
         },
+        DashDisplay::UpdateQuiz => view! {
+            <>
+                <UpdateQuiz
+                    display_settings=write_display
+                    push_quiz=add_quiz
+                    pop_quiz=remove_quiz
+                    quiz_rw=current_quiz_rw
+                />
+            </>
+        },
     };
 
     view! {
@@ -165,11 +185,12 @@ pub fn Dashboard() -> impl IntoView {
                     <Card on_click=Some(set_display_make_quiz)>
                         "Make a New Quiz"
                     </Card>
-                    <ul>
-                        <li>"Make a New Quiz"</li>
-                        <li>"Saved Quizzes"</li>
-                        <li>"Search Quizzes"</li>
-                    </ul>
+                    <Card on_click=None>
+                        "Saved Quizzes"
+                    </Card>
+                    <Card on_click=None>
+                        "Search Quizzes"
+                    </Card>
                 </aside>
                 <section class="main-content">
                     {main_screen}
