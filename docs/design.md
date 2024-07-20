@@ -296,13 +296,13 @@ paths:
             application/json: {}
 ```
 
-#### POST /quiz-nexus
+#### /quiz-nexus
 
 ```yaml
 openapi: 3.1.0
 info:
   title: Quiz Nexus
-  version: 0.1.0
+  version: 0.2.0
   description: Handling CRUD operations for quizzes
 
 servers:
@@ -348,11 +348,11 @@ components:
           example: description of quiz
         author_id:
           type: string
-        questions_mc:
-          type: array
-          items:
-            type: object
-            $ref: "#/components/schemas/Thing"
+    GoodResponseList:
+      type: array
+      items:
+        type: object
+        $ref: "#/components/schemas/GoodResponse"
     ErrorResponse:
       type: object
       properties:
@@ -396,15 +396,125 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+    get:
+      summary: Fetch list of quizzes by user.
+      description: Given correct information, this will return a list of quizzes owned by the user.
+      responses:
+        "200":
+          description: Indicates the quizzes were successfully fetched
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GoodResponseList"
+        "401":
+          description: Unauthorized (No or Invalid session cookie)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      summary: Update quiz information
+      description: Given correct information, this will update the provided quiz information.
+      parameters:
+        - in: query
+          name: quiz
+          required: true
+          schema:
+            type: string
+          description: The raw Thing ID for the quiz record.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuizRequest"
+      responses:
+        "200":
+          description: Indicates the quiz was successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GoodResponse"
+        "400":
+          description: can be returned if error validating information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized (No or Invalid session cookie)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden (Quiz is not owned by user)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      summary: Delete existing Quiz
+      description: Given correct information, this will delete a quiz that is owned by the user.
+      parameters:
+        - in: query
+          name: quiz
+          required: true
+          schema:
+            type: string
+          description: The raw Thing ID for the quiz record.
+      responses:
+        "200":
+          description: Indicates the quizzes were successfully deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GoodResponse"
+        "400":
+          description: Bad Request (bad query parameter)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized (No or Invalid session cookie)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden (Returned if user is not owner)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 ```
 
-#### POST /question-forge
+#### /question-forge
 
 ```yaml
 openapi: 3.1.0
 info:
   title: Question Forge
-  version: 0.1.0
+  version: 0.2.0
   description: Handling CRUD operations for questions
 
 servers:
@@ -455,7 +565,7 @@ components:
           type: object
           oneOf:
             - $ref: "#/components/schemas/MultipleChoiceRequest"
-    GoodResponse:
+    SurrealQuestionMC:
       type: object
       properties:
         id:
@@ -477,6 +587,14 @@ components:
           type: array
           items:
             type: string
+    AllQuestions:
+      type: object
+      properties:
+        mc:
+          type: array
+          items:
+            type: object
+            $ref: "#/components/schemas/SurrealQuestionMC"
     ErrorResponse:
       type: object
       properties:
@@ -501,7 +619,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GoodResponse"
+                $ref: "#/components/schemas/SurrealQuestionMC"
         "400":
           description: can be returned if error validating information
           content:
@@ -510,6 +628,118 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         "401":
           description: Unauthorized (No or Invalid session cookie)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    get:
+      summary: Get Questions for a quiz
+      description: Given correct information, this will return a list of questions for a quiz.
+      parameters:
+        - in: query
+          name: quiz
+          required: true
+          schema:
+            type: string
+          description: The raw Thing ID for the quiz record.
+      responses:
+        "200":
+          description: Indicates the questions were successfully fetched
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AllQuestions"
+        "401":
+          description: Unauthorized (No or Invalid session cookie)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      summary: Update existing Question
+      description: Given correct information, this will update a question for a given quiz.
+      parameters:
+        - in: query
+          name: quest
+          required: true
+          schema:
+            type: string
+          description: The raw Thing ID for the question record.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuestionRequest"
+      responses:
+        "201":
+          description: Indicates the question was successfully created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SurrealQuestionMC"
+        "400":
+          description: can be returned if error validating information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized (No or Invalid session cookie)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden (Returned if user is now owner)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      summary: delete a question
+      description: Given correct information, this will delete a question.
+      parameters:
+        - in: query
+          name: quest
+          required: true
+          schema:
+            type: string
+          description: The raw Thing ID for the question record.
+      responses:
+        "200":
+          description: Indicates the questions were successfully fetched
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/SurrealQuestionMC"
+        "401":
+          description: Unauthorized (No or Invalid session cookie)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden (Returned if user is not owner)
           content:
             application/json:
               schema:
