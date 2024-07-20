@@ -12,33 +12,6 @@ use leptos::*;
 use leptos_dom::logging::console_log;
 use web_sys::{Headers, RequestMode, Response};
 
-/// The Workshop is a generic placeholder for all question to be Calibrated.
-#[component]
-pub fn QuestionWorkshop(
-    question: QLInternals,
-    new_quest_rw: RwSignal<Vec<QLInternals>>,
-    quest_callback: Callback<QuestType>,
-    quiz_data: ReadSignal<Option<SurrealQuiz>>,
-) -> impl IntoView {
-    view! {
-        <div>
-            <p>"Only Multiple Choice at the moment"</p>
-        //     {move || {
-        //         match question.data {
-        //             JsonQuestion::MultipleChoice(_) => view! {
-        //                 <QuestionCastMC
-        //                     question=question.to_owned()
-        //                     quiz_data=quiz_data
-        //                     rw=new_quest_rw
-        //                     quest_callback=quest_callback
-        //                 />
-        //             }
-        //     }
-        // }}
-        </div>
-    }
-}
-
 /// Calibrate a Multiple Choice question (from a mold)
 #[component]
 pub fn QuestionCalibrateMC(
@@ -63,9 +36,6 @@ pub fn QuestionCalibrateMC(
     // -- Use Context --
     let app_settings: AppSettings =
         use_context::<AppSettings>().expect("AppSettings context not found");
-
-    // --- updates
-    // let update_question = move |ev| ();
 
     // -- Create Question Action for Submitting --
     let create_question = create_action(move |pkg: &String| {

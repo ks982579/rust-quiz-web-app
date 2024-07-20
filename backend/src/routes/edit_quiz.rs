@@ -4,12 +4,9 @@ use crate::{error_chain_helper, session_wrapper::SessionWrapper, surrealdb_repo:
 use actix_web::http::{header::ContentType, StatusCode};
 use actix_web::{web, HttpRequest, HttpResponse, ResponseError};
 use anyhow::Context;
-use models::{
-    model_errors::ModelErrors,
-    quiz::{Quiz, QuizJsonPkg, SurrealQuiz},
-};
+use models::quiz::{QuizJsonPkg, SurrealQuiz};
 use serde::Deserialize;
-use surrealdb::sql::{thing, Id, Thing};
+use surrealdb::sql::{thing, Thing};
 use uuid::Uuid;
 
 // Errors
@@ -72,7 +69,6 @@ pub async fn edit_quiz(
 ) -> Result<HttpResponse, EditQuizError> {
     let quiz_data: QuizJsonPkg = quiz_pkg_pt.into_inner();
 
-    // I don't like transforming ModelError -> Anyhow::Error -> ValidationError
     quiz_data
         .validate_field()
         .context("Validation error")
@@ -123,11 +119,6 @@ pub async fn edit_quiz(
             }
         }
     }
-
-    // Not changing author_id or ID of record
-    // let quiz_to_save: Quiz = Quiz::new(quiz_data.name, quiz_data.description, user_id);
-    // dbg!(&quiz_to_save);
-    // dbg!(Id::uuid().to_string());
 
     let created: Option<SurrealQuiz> = db
         .client

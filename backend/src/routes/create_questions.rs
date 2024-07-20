@@ -7,9 +7,7 @@ use models::questions::SurrealQuestionMC;
 use models::{
     model_errors::ModelErrors,
     questions::{JsonQuestion, QuestionJsonPkg, QuestionMC},
-    SurrealRecord,
 };
-use surrealdb::opt::PatchOp;
 use surrealdb::sql::Thing;
 use uuid::Uuid;
 
@@ -86,8 +84,6 @@ pub async fn create_new_questions(
         ));
     };
 
-    // Lists of certain question types here to have data pushed to.
-
     // If you have more questions, put into more lists
     let json_val: serde_json::Value = match question {
         JsonQuestion::MultipleChoice(what) => {
@@ -113,15 +109,6 @@ pub async fn create_new_questions(
             }
 
             let it: &SurrealQuestionMC = &res[0];
-
-            // Cut this out of workflow as it isn't being used
-            // -- Save Question ID into Quiz
-            // let _: Option<SurrealRecord> = db
-            //     .client
-            //     .update(&quiz_id)
-            //     .patch(PatchOp::add("/questions_mc", it.id.clone()))
-            //     .await
-            //     .map_err(|e| CreateQuestionError::UnexpectedError(anyhow::anyhow!(e)))?;
 
             serde_json::to_value(it)
                 .map_err(|e| CreateQuestionError::UnexpectedError(anyhow::anyhow!(e)))?

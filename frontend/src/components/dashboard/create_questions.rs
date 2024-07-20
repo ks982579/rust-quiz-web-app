@@ -3,8 +3,8 @@
 use crate::{
     components::dashboard::{QuestionMold, QuestionShowcase},
     models::{
-        mimic_surreal::{SurrealQuestionMC, SurrealQuiz},
-        questions::{AllQuestions, JsonQuestion, QLInternals, Quest, QuestType},
+        mimic_surreal::SurrealQuiz,
+        questions::{AllQuestions, JsonQuestion, QLInternals, QuestType},
     },
     store::AppSettings,
     utils::DashDisplay,
@@ -26,20 +26,6 @@ pub fn QuestionForge(
     let quest_signal = create_rw_signal(Vec::<QuestType>::new());
     let new_question_signal = create_rw_signal(Vec::<QLInternals>::new());
     let bin_count: RwSignal<usize> = create_rw_signal(0);
-    let quest_count: RwSignal<usize> = create_rw_signal(0);
-    let mcquestions: RwSignal<Vec<SurrealQuestionMC>> = create_rw_signal(Vec::new());
-
-    // TODO: Make Request to get already made questions
-
-    // -- Create Signals --
-    let signal_to_grade: RwSignal<bool> = create_rw_signal(false);
-    let user_grade: RwSignal<usize> = create_rw_signal(0);
-    let some_name: RwSignal<Option<String>> = create_rw_signal(None);
-    // Add more signals for additional question types
-
-    // if let Some(qn) = &some_quiz {
-    //     some_name.set(Some(qn.name.clone()));
-    // };
 
     // -- Use Context --
     let app_settings: AppSettings =
@@ -98,12 +84,9 @@ pub fn QuestionForge(
                     let mut data: AllQuestions = Fetcher::response_to_struct(&response).await;
                     // Sorting is In Order
                     data.mc.sort_by(|a, b| a.id.to_raw().cmp(&b.id.to_raw()));
-                    // response_setter.set(Some(data));
-                    // display_settings.set(DashDisplay::MakeQuestions);
-                    // -- Update question signals below
+                    // Must get data into correct type
                     for surreal_quest_mc in data.mc {
                         console_log(&serde_json::to_string(&surreal_quest_mc).unwrap());
-                        // add_quest.call(QuestType::MC(surreal_quest_mc));
                         quest_signal.update(|this| this.push(QuestType::MC(surreal_quest_mc)));
                     }
                     console_log("Request complete");
