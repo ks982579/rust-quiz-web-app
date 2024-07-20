@@ -1,7 +1,6 @@
 //! models/src/quiz.rs
 use crate::model_errors::ModelErrors;
 use serde::{Deserialize, Serialize};
-use surrealdb::sql::Thing;
 use surrealize_macro::Surrealize;
 
 #[derive(Serialize, Deserialize, Debug, Surrealize)]
@@ -9,7 +8,6 @@ pub struct Quiz {
     pub name: String,
     pub description: String,
     pub author_id: String,
-    pub questions_mc: Vec<Thing>,
 }
 
 impl Quiz {
@@ -18,7 +16,6 @@ impl Quiz {
             name,
             description,
             author_id,
-            questions_mc: Vec::new(),
         }
     }
 }

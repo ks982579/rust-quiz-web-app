@@ -60,6 +60,8 @@ Adding notes so I do not forget command.
 
 ## Testing
 
+### Integration Testing
+
 If you are running all back-end tests together, they must be run sequentially.
 I could spin up a new database for each test case, but that also sounds like a lot of work.
 There's also a `serial_test` crate to provide a `#[serial]` macro you stick under the `#[test]` macro
@@ -88,6 +90,46 @@ When you run tests, use the following:
 ```bash
 cargo test -- --test-threads=1
 ```
+
+If tests are failing and you see an error there are "too many open files",
+especially on Linux:
+
+```bash
+ulimit -n 10000
+```
+
+### End to End Testing
+
+Working with Python and [RobotFrameWork](https://robotframework.org) as I am familiar with this tool.
+Instead of working with Selenium I am choosing to work with [Playwright](https://playwright.dev) because I have read good things about this tool.
+The [Browser Library](https://robotframework-browser.org) library is powered by Playwright.
+So far, I have merely created a virtual environment in Python, my machine has version 3.10.
+The documentation also state a requirement for Nodejs.
+I have Node Version Manager (nvm) and just installed the latest long term support (lts) v20.15.1.
+
+Now run:
+
+```
+python -m venv .venv
+source ./.venv/bin/activate
+pip install robotframework
+pip install robotframework-browser
+rfbrowser init
+```
+
+That should install the packages / libraries and tools required to run the end to end tests.
+It is customary to setup a `run.py` file that sets up requirements for testing.
+However, I will try to keep this very simple to start.
+Run simple end-to-end tests with:
+
+```
+robot ./e2e/testsuites
+```
+
+It's actually recommended to be in the "e2e" folder because Robot will create a results directory where you run the tests,
+unless specified to store them elsewhere.
+The console will print results and there's a wonderful report generated as well.
+RobotFrameWork is a batteries included test framework.
 
 ## Logging
 

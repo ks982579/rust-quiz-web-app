@@ -220,6 +220,9 @@ fn LogIn() -> impl IntoView {
     };
 
     view! {
+        <header>
+            <h1>"Kev's Quiz Web App"</h1>
+        </header>
         <p><b>{move || { err_msg.get() } }</b></p>
         <form  on:submit=on_submit >
             <label for="username">Username:</label>
@@ -249,5 +252,6 @@ fn LogIn() -> impl IntoView {
             <input type="submit" value="Log In"/>
             <br/>
         </form>
+        <footer>"&copy; 2024 Kev's Quiz Web App"</footer>
     }
 }

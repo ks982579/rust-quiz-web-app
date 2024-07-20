@@ -3,6 +3,13 @@
 use crate::models::mimic_surreal::{SurrealQuestionMC, Thing};
 use serde::{Deserialize, Serialize};
 
+/// Struct from Models for transporting all questions for a quiz
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AllQuestions {
+    // mc = multiple choice
+    pub mc: Vec<SurrealQuestionMC>,
+}
+
 /// Existing Questions are now Quests
 /// Multiple Choice, Short Answer, Long Answer...
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -10,6 +17,15 @@ pub enum QuestType {
     MC(SurrealQuestionMC),
     LA,
     SA,
+}
+
+impl QuestType {
+    pub fn get_id(&self) -> Thing {
+        match &self {
+            QuestType::MC(quest) => quest.id.clone(),
+            _ => unimplemented!(),
+        }
+    }
 }
 
 /// Struct for allowing Quests to be rendered by <For />
@@ -54,3 +70,35 @@ pub struct QLInternals {
     pub id: usize,
     pub data: JsonQuestion,
 }
+
+// -- For Editing Questions --
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct EditQuestionJsonPkg {
+    pub question: JsonQuestion,
+}
+
+// impl EditQuestionJsonPkg {
+//     pub fn validate_fields(&self) -> Result<(), ModelErrors> {
+//         // The type system ensures quiz_id isn't empty
+//         use JsonQuestion::*;
+//         match &self.question {
+//             MultipleChoice(qmc) => {
+//                 if qmc.question.trim().len() < 1 {
+//                     return Err(ModelErrors::JsonValidation(format!(
+//                         "Question cannot be empty",
+//                     )));
+//                 } else if qmc.answer.trim().len() < 1 {
+//                     return Err(ModelErrors::JsonValidation(format!(
+//                         "Question needs valid answer",
+//                     )));
+//                 } else if qmc.choices.len() < 1 {
+//                     return Err(ModelErrors::JsonValidation(format!(
+//                         "Question needs at least one additional choice",
+//                     )));
+//                 }
+//                 // Could loop through choices to ensure they are also not blank
+//             }
+//         }
+//         Ok(())
+//     }
+// }

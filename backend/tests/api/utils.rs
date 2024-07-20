@@ -6,8 +6,10 @@ use backend::{
     surrealdb_repo::Database,
     telemetry::{get_subscriber, init_subscriber},
 };
+use models::SurrealRecord;
 use reqwest::{cookie::Cookie, Client, Response};
 use serde_json::Value;
+use std::future::Future;
 use std::sync::OnceLock;
 use surrealdb::sql::Thing;
 use wiremock::MockServer;
@@ -21,7 +23,8 @@ pub struct TestApp {
     pub api_client: Client,
     pub database: Database,
 }
-trait CreateQuiz<Body>
+
+pub trait CreateQuiz<Body>
 where
     Body: serde::Serialize,
 {
@@ -42,12 +45,140 @@ where
     }
 }
 
+pub trait GetQuiz {
+    async fn get_quizzes(&self) -> Response;
+}
+
+impl GetQuiz for TestApp {
+    async fn get_quizzes(&self) -> Response {
+        self.api_client
+            .get(&format!("{}/quiz-nexus", &self.address))
+            .send()
+            .await
+            .expect("Failed to execute GET Request")
+    }
+}
+
+pub trait EditQuiz<Body>
+where
+    Body: serde::Serialize,
+{
+    async fn edit_quiz(&self, quiz_id: String, json: &Body) -> Response;
+}
+
+impl<Body> EditQuiz<Body> for TestApp
+where
+    Body: serde::Serialize,
+{
+    async fn edit_quiz(&self, quiz_id: String, json: &Body) -> Response {
+        self.api_client
+            .put(&format!("{}/quiz-nexus?quiz={}", &self.address, quiz_id))
+            .json(json)
+            .send()
+            .await
+            .expect("Failed to execute GET Request")
+    }
+}
+
+pub trait DestroyQuiz {
+    async fn destroy_quiz(&self, quiz_id: String) -> Response;
+}
+
+impl DestroyQuiz for TestApp {
+    async fn destroy_quiz(&self, quiz_id: String) -> Response {
+        self.api_client
+            .delete(&format!("{}/quiz-nexus?quiz={}", &self.address, quiz_id))
+            .send()
+            .await
+            .expect("Failed to execute GET Request")
+    }
+}
+
+pub trait CreateQuestions<Body>
+where
+    Body: serde::Serialize,
+{
+    fn post_create_questions(&self, json: &Body) -> impl Future<Output = Response>;
+}
+
+impl<Body> CreateQuestions<Body> for TestApp
+where
+    Body: serde::Serialize,
+{
+    async fn post_create_questions(&self, json: &Body) -> Response {
+        self.api_client
+            .post(&format!("{}/question-forge", &self.address))
+            .json(json)
+            .send()
+            .await
+            .expect("Failed to execute POST Request")
+    }
+}
+
+pub trait GetQuestion {
+    fn get_questions(&self, quiz_id: String) -> impl Future<Output = Response>;
+}
+
+impl GetQuestion for TestApp {
+    async fn get_questions(&self, quiz_id: String) -> Response {
+        self.api_client
+            .get(&format!(
+                "{}/question-forge?quiz={}",
+                &self.address, quiz_id
+            ))
+            .send()
+            .await
+            .expect("Failed to execute GET Request")
+    }
+}
+
+pub trait EditQuestion<Body>
+where
+    Body: serde::Serialize,
+{
+    fn edit_question(&self, quest_id: String, json: &Body) -> impl Future<Output = Response>;
+}
+
+impl<Body> EditQuestion<Body> for TestApp
+where
+    Body: serde::Serialize,
+{
+    async fn edit_question(&self, quest_id: String, json: &Body) -> Response {
+        self.api_client
+            .put(&format!(
+                "{}/question-forge?quest={}",
+                &self.address, quest_id
+            ))
+            .json(json)
+            .send()
+            .await
+            .expect("Failed to execute POST Request")
+    }
+}
+
+pub trait DestroyQuestion {
+    fn destroy_question(&self, quest_id: String) -> impl Future<Output = Response>;
+}
+
+impl DestroyQuestion for TestApp {
+    async fn destroy_question(&self, quest_id: String) -> Response {
+        self.api_client
+            .delete(&format!(
+                "{}/question-forge?quest={}",
+                &self.address, quest_id
+            ))
+            .send()
+            .await
+            .expect("Failed to execute GET Request")
+    }
+}
+
 /// Some helper function for the `TestApp`
 /// Be sure to initialize an instance with `spawn_app()` before using these methods.
 impl TestApp {
+    // TODO: Maybe make into Builder like function to take in credentials or default
     /// Assuming user not created, Cleans out test database and creates a new test user.
     pub async fn create_new_test_user(&self) -> Response {
-        dbg!(String::from("Clearing database"));
         // Clear out users
         let _: surrealdb::Result<Vec<Thing>> = self.database.client.delete("general_user").await;
         // Clear out session tokens
@@ -86,6 +217,17 @@ impl TestApp {
             .send()
             .await
             .expect("Failed to send login data")
+    }
+
+    /// To clean out database automatically
+    pub async fn cleanup_db(&self) {
+        // clean up database
+        let _: Vec<SurrealRecord> = self.database.client.delete("quizzes").await.unwrap();
+        let _: Vec<SurrealRecord> = self.database.client.delete("questions_mc").await.unwrap();
+        // Clear out users
+        let _: Vec<SurrealRecord> = self.database.client.delete("general_user").await.unwrap();
+        // Clear out session tokens
+        let _: Vec<SurrealRecord> = self.database.client.delete("sessions").await.unwrap();
     }
 }
 
