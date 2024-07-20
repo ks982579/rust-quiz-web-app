@@ -78,10 +78,13 @@ pub fn MakeQuiz(
 
     // -- Render View --
     view! {
-        <div data-test="id123">
+        <div
+            data-test="id123"
+            class:quiz-make-container=true
+        >
             <h2>"Making Quizzes"</h2>
             <h5>{move || { err_msg.get() }}</h5>
-            <form class="make-quiz-form" on:submit=on_submit>
+            <form on:submit=on_submit>
                 <input type="text" id="quiz-title" placeholder="Quiz Title" node_ref=quiz_title required/>
                 <textarea id="quiz-description" placeholder="Description..." node_ref=quiz_description required />
                 <input type="submit" value="Create Quiz!" />

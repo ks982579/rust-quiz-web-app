@@ -161,7 +161,7 @@ pub fn QuestionCastMC(
 
     view! {
         <form on:submit=on_submit>
-            <h4>"new question"</h4>
+            <h4>"New Question"</h4>
             <h4>{move || err_msg.get() }</h4>
             <input type="text" placeholder="question" node_ref=question_ref required/>
             <input type="text" placeholder="hint" node_ref=hint_ref/>

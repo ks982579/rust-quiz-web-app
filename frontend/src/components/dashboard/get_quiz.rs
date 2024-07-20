@@ -34,7 +34,10 @@ pub fn QuizShowCase(
 
     // -- Render View --
     view! {
-        <div data-test="id123">
+        <div
+            data-test="id123"
+            class:quiz-showcase-container=true
+        >
             <h2>"My Quizzes!"</h2>
             <For
                 each=move || quiz_list.get()
@@ -104,23 +107,27 @@ pub fn QuizExhibit(
 
     view! {
         <Card on_click=None>
-            <p>"Name: "{move || quiz_sig.get().name}</p>
+            <h3>"Name: "{move || quiz_sig.get().name}</h3>
             <p>{move || quiz_sig.get().description}</p>
-            <button
-                data-note="take_quiz_button"
-                on:click=take_quiz_closure
-            >"Take Quiz"</button>
-            <button
-                data-note="update_quiz_button"
-                on:click=update_quiz_closure
-            >"Edit"</button>
-            <button data-note="calibratte_button"
-                on:click=calibrate_closure
-            >"Calibrate"</button>
-            <button
-                data-note="delete_quiz_button"
-                on:click=move |_| destroy_quiz_action.dispatch(())
-            >"Delete Quiz"</button>
+            <div
+                class:horizontal-even=true
+            >
+                <button
+                    data-note="take_quiz_button"
+                    on:click=take_quiz_closure
+                >"Take Quiz"</button>
+                <button
+                    data-note="update_quiz_button"
+                    on:click=update_quiz_closure
+                >"Edit"</button>
+                <button data-note="calibratte_button"
+                    on:click=calibrate_closure
+                >"Calibrate"</button>
+                <button
+                    data-note="delete_quiz_button"
+                    on:click=move |_| destroy_quiz_action.dispatch(())
+                >"Delete Quiz"</button>
+            </div>
         </Card>
     }
 }

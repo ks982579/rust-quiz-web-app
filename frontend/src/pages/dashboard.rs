@@ -178,11 +178,15 @@ pub fn Dashboard() -> impl IntoView {
     };
 
     view! {
-        <>
-            <LogoutButton />
-            <nav>"left: Kev's Quiz App | Right: Find People  Notifications  Profile"</nav>
-            <h1>"Welcome back "{user.name}</h1>
-            <div class="split-screen">
+        <div
+            class:fill-screen=true
+        >
+            <header>
+                <LogoutButton />
+                <nav>"left: Kev's Quiz App | Right: Find People  Notifications  Profile"</nav>
+                <h1>"Welcome back "{user.name}</h1>
+            </header>
+            <main class="split-screen">
                 <aside class="sidebar">
                     <Card on_click=Some(set_display_my_quizzes)>
                         "To Main Page - My Quizzes!"
@@ -198,9 +202,14 @@ pub fn Dashboard() -> impl IntoView {
                     </Card>
                 </aside>
                 <section class="main-content">
-                    {main_screen}
+                    <div
+                        class:main-content-container=true
+                    >
+                        {main_screen}
+                    </div>
                 </section>
-            </div>
-        </>
+            </main>
+            <footer>"&copy; 2024 Kev's Quiz Web App"</footer>
+        </div>
     }
 }

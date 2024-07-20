@@ -104,7 +104,9 @@ pub fn QuestionExhibitMC(
         }
     });
     view! {
-        <div>
+        <div
+            class="quest-case"
+        >
             <p>"Q: "{move || quest_signal.get().question}</p>
             <p>"Hint: "{move || quest_signal.get().hint}</p>
             <p>"A: "{move || quest_signal.get().answer}</p>
@@ -115,14 +117,18 @@ pub fn QuestionExhibitMC(
                     <p>"Wrong: "{it}</p>
                 }
             />
-            <button
-                data-note="edit_quest_button"
-                on:click=move |_| click_edit.call(())
-            >"Edit"</button>
-            <button
-                data-note="delete_quest_button"
-                on:click=move |_| destroy_quest_action.dispatch(())
-            >"Delete"</button>
+            <div
+                class="horizontal-even"
+            >
+                <button
+                    data-note="edit_quest_button"
+                    on:click=move |_| click_edit.call(())
+                >"Edit"</button>
+                <button
+                    data-note="delete_quest_button"
+                    on:click=move |_| destroy_quest_action.dispatch(())
+                >"Delete"</button>
+            </div>
         </div>
     }
 }

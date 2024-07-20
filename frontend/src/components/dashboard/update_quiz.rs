@@ -124,7 +124,10 @@ pub fn UpdateQuiz(
 
     // -- Render View --
     view! {
-        <div data-test="id123">
+        <div
+            data-test="id123"
+            class:quiz-make-container=true
+        >
             <h2>"Updating Quiz"</h2>
             <h5>{move || { err_msg.get() }}</h5>
             <form class="make-quiz-form" on:submit=on_submit>
@@ -140,7 +143,7 @@ pub fn UpdateQuiz(
                     placeholder="Description..."
                     node_ref=quiz_description required
                 >{get_quiz_description}</textarea>
-                <input type="submit" value="Create Quiz!" />
+                <input type="submit" value="Update Quiz!" />
             </form>
         </div>
     }
