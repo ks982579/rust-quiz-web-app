@@ -1,6 +1,7 @@
 //! frontend/src/components/dashboard/display_questions.rs
 //! This component will handle the question rendering procecss for viewing and editing Questions
 use crate::{
+    components::dashboard::QuestionCalibrateMC,
     models::mimic_surreal::SurrealQuestionMC,
     models::questions::{Quest, QuestType},
     store::AppSettings,
@@ -9,32 +10,71 @@ use crate::{
 use leptos::*;
 use web_sys::{Headers, RequestMode, Response};
 
-/// Component to display questions, for review or to be edited.
-/// This component should not perform the editing.
-#[component]
-pub fn QuestionShowcase(quest: Quest, pop_quest: Callback<QuestType>) -> impl IntoView {
-    // -- Create Signals
-    // Probably need a signal to change between Exhibit and Calibrate
-    let tomorrow: i32 = 0;
-
-    // -- Call backs --
-    if let 0 = tomorrow {
-        match quest.quest {
-            QuestType::MC(data) => view! {<QuestionExhibitMC data=data pop_quest=pop_quest/>},
-            _ => view! {<Unimplemented />},
-        }
-    } else {
-        view! {<Unimplemented />}
-    }
-}
-
+/// A Dummy Component that should never be rendered
 #[component]
 fn Unimplemented() -> impl IntoView {
     view! {<div>"Not Implemented"</div>}
 }
 
+/// Component to display questions, for review or to be edited.
+/// This component should not perform the editing.
 #[component]
-pub fn QuestionExhibitMC(data: SurrealQuestionMC, pop_quest: Callback<QuestType>) -> impl IntoView {
+pub fn QuestionShowcase(
+    quest_type: QuestType,
+    add_quest: Callback<QuestType>,
+    pop_quest: Callback<QuestType>,
+) -> impl IntoView {
+    // -- Create Signals
+    let edit_sig = create_rw_signal(false);
+
+    // -- Call backs --
+    let choose_edit: Callback<()> = Callback::new(move |_| {
+        edit_sig.set(true);
+    });
+    let unchoose_edit: Callback<()> = Callback::new(move |_| {
+        edit_sig.set(false);
+    });
+
+    view! {
+        {move || {
+            if edit_sig.get() {
+                match &quest_type {
+                    QuestType::MC(data) => {
+                        view! {
+                            <QuestionCalibrateMC
+                                quest_mc=data.to_owned()
+                                add_quest=add_quest
+                                pop_quest=pop_quest
+                                cancel_edit=unchoose_edit
+                            />
+                        }
+                    }
+                    _ => view! {<Unimplemented />},
+                }
+            } else {
+                match &quest_type {
+                    QuestType::MC(data) => {
+                        view! {
+                            <QuestionExhibitMC
+                                data=data.to_owned()
+                                click_edit=choose_edit
+                                pop_quest=pop_quest
+                            />
+                        }
+                    }
+                    _ => view! {<Unimplemented />},
+                }
+            }
+        }}
+    }
+}
+
+#[component]
+pub fn QuestionExhibitMC(
+    data: SurrealQuestionMC,
+    click_edit: Callback<()>,
+    pop_quest: Callback<QuestType>,
+) -> impl IntoView {
     // -- Create Signals --
     let quest_signal: RwSignal<SurrealQuestionMC> = create_rw_signal(data);
 
@@ -75,7 +115,10 @@ pub fn QuestionExhibitMC(data: SurrealQuestionMC, pop_quest: Callback<QuestType>
                     <p>"Wrong: "{it}</p>
                 }
             />
-            <button>"Edit"</button>
+            <button
+                data-note="edit_quest_button"
+                on:click=move |_| click_edit.call(())
+            >"Edit"</button>
             <button
                 data-note="delete_quest_button"
                 on:click=move |_| destroy_quest_action.dispatch(())
