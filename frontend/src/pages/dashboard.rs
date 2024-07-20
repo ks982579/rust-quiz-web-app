@@ -84,6 +84,10 @@ pub fn Dashboard() -> impl IntoView {
         current_quiz_rw.set(Some(qz));
         write_display.set(DashDisplay::UpdateQuiz);
     });
+    let reforge_questions = Callback::new(move |qz: SurrealQuiz| {
+        set_quiz_data.set(Some(qz));
+        write_display.set(DashDisplay::MakeQuestions);
+    });
 
     // TODO: Make request for current tests
     // try `create_local_resource`
@@ -141,6 +145,7 @@ pub fn Dashboard() -> impl IntoView {
                     quiz_selector=choose_quiz_to_take
                     pop_quiz=remove_quiz
                     quiz_updater=choose_quiz_to_update
+                    quest_calibrate=reforge_questions
                 />
             </>
         },
