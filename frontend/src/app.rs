@@ -18,17 +18,6 @@ pub fn App() -> impl IntoView {
     console_log("AppSettings created");
 
     view! {
-        <>
-            <header>
-                <h1>"Kev's Quiz Web App"</h1>
-                <nav>
-                    <h3>"Just the Navbar section here"</h3>
-                </nav>
-            </header>
-            <main>
-                <AppRouter />
-            </main>
-            <footer>"&copy; 2024 Kev's Quiz Web App"</footer>
-        </>
+        <AppRouter />
     }
 }

@@ -69,7 +69,7 @@ pub async fn destroy_my_quest(
     req: HttpRequest,
     session: SessionWrapper,
     db: web::Data<Database>,
-    quest: web::Query<QuestDestroyerQueryString>,
+    quest_qp: web::Query<QuestDestroyerQueryString>,
 ) -> Result<HttpResponse, DestroyQuestError> {
     let some_user_id: Option<Uuid> = session
         .get_user_id()
@@ -85,7 +85,7 @@ pub async fn destroy_my_quest(
     };
 
     // Decode Query String
-    let quest_query_string: String = quest.into_inner().quest;
+    let quest_query_string: String = quest_qp.into_inner().quest;
     let decoded_query_str: String = urlencoding::decode(&quest_query_string)
         .expect("UTF-8")
         .into_owned();

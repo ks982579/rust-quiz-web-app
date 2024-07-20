@@ -4,10 +4,31 @@ body {
   margin: 0;
   padding: 0;
 }
+            
+.fill-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  header {
+    flex-shrink: 0;
+  }
+  footer {
+    flex-shrink: 0;
+  }
+  main {
+    flex: 1 0 auto;
+  }
+}
 
 input[type="radio"] {
   width: 1.25rem;
   height: 1.25rem;
+}
+
+button, input[type="submit"]{
+  border-radius: .5rem;
+  padding: 0.3rem 1rem;
+  cursor: pointer;
 }
 
 .toggle-password {
@@ -29,14 +50,29 @@ input[type="radio"] {
 .main-content {
   flex: 1;
   border: 0.25rem solid black;
+  border-radius: 1rem;
   padding: 3rem;
   margin: 1rem;
-  overflow-y: auto;
+  /* overflow-y: auto; */
   display: flex;
   flex-flow: column;
   flex-wrap: wrap;
   justify-content: flex-start;
   align-items: center;
+}
+
+.main-content-container {
+  flex: 1;
+  padding: 0;
+  margin: 0;
+  /* overflow: visible; */
+  display: flex;
+  flex-flow: column;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  width:100%;
+  max-width: 55rem;
 }
 
 /* -- Generics -- */
@@ -78,20 +114,67 @@ input[type="radio"] {
   }
 }
 
-.make-quiz-form {
-  border: solid 2px blue;
-  display: flex;
-  flex-flow: column;
-  justify-content: center;
-  align-items: center;
-  padding: 1rem;
+/* -- Quiz Styling -- */
+.quiz-showcase-container {
+  width: 100%;
+}
+
+
+.quiz-make-container {
+  border-radius: .8rem;
+  box-shadow: 0 0 1rem 0.3rem #00000088;
+  width: 100%;
+  padding: 1rem 2rem;
+  form {
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    width: 100%;
+    input[type="text"] {
+      width:100%;
+      font-size: 1.3rem;
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      margin: 0.3rem;
+    }
+    textarea {
+      width: 100%;
+      height: 5rem;
+      resize: vertical;
+      padding: 0.5rem;
+      margin: .3rem;
+      border-radius: 0.5rem;
+    }
+  }
 }
 
 /* -- Questions -- */
 .quest-case {
-  border: solid 3px darkblue;
-  border-radius: 10px;
+  border-radius: .8rem;
+  box-shadow: 0 0 1rem 0.3rem #00000088;
   width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  button {
+    border-radius: .5rem;
+    padding: 0.3rem 1rem;
+  }
+  p {
+    padding: .5rem;
+    background-color: ghostwhite;
+    box-shadow: 0 0 1rem 0.3rem #00000088;
+    border-radius: 1rem;
+  }
+}
+
+.horizontal-even {
+  display: flex;
+  flex-flow: row;
+  justify-content: space-around;
+  align-items: center;
+  padding: 1rem;
 }
 
 .correct {

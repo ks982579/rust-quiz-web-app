@@ -1,8 +1,10 @@
-//! frontend/src/components/dashboard/create_questions.rs
+//! frontend/src/components/dashboard/edit_questions.rs
 //! This component will handle the initial question making procecss
 use crate::{
     models::mimic_surreal::{SurrealQuestionMC, SurrealQuiz},
-    models::questions::{JsonQuestion, JsonQuestionMC, QLInternals, QuestType, QuestionJsonPkg},
+    models::questions::{
+        EditQuestionJsonPkg, JsonQuestion, JsonQuestionMC, QLInternals, QuestType, QuestionJsonPkg,
+    },
     store::AppSettings,
     utils::{Fetcher, JsonMsg},
 };
@@ -10,44 +12,18 @@ use leptos::*;
 use leptos_dom::logging::console_log;
 use web_sys::{Headers, RequestMode, Response};
 
-/// The Mold is a generic placeholder for all question to be Cast.
+/// Calibrate a Multiple Choice question (from a mold)
 #[component]
-pub fn QuestionMold(
-    question: QLInternals,
-    new_quest_rw: RwSignal<Vec<QLInternals>>,
-    quest_callback: Callback<QuestType>,
-    quiz_data: ReadSignal<Option<SurrealQuiz>>,
-) -> impl IntoView {
-    view! {
-        <div>
-            <p>"Only Multiple Choice at the moment"</p>
-            {move || {
-                match question.data {
-                    JsonQuestion::MultipleChoice(_) => view! {
-                        <QuestionCastMC
-                            question=question.to_owned()
-                            quiz_data=quiz_data
-                            rw=new_quest_rw
-                            quest_callback=quest_callback
-                        />
-                    }
-            }
-        }}
-        </div>
-    }
-}
-
-/// Casting a Multiple Choice question (from a mold)
-#[component]
-pub fn QuestionCastMC(
-    question: QLInternals,
-    rw: RwSignal<Vec<QLInternals>>,
-    quest_callback: Callback<QuestType>,
-    quiz_data: ReadSignal<Option<SurrealQuiz>>,
+pub fn QuestionCalibrateMC(
+    quest_mc: SurrealQuestionMC,
+    add_quest: Callback<QuestType>,
+    pop_quest: Callback<QuestType>,
+    cancel_edit: Callback<()>,
 ) -> impl IntoView {
     //  -- Create Signals --
     let (err_msg, set_err_msg): (ReadSignal<Option<String>>, WriteSignal<Option<String>>) =
         create_signal(None);
+    let quest_sig: RwSignal<SurrealQuestionMC> = create_rw_signal(quest_mc);
 
     //  -- Create References --
     let question_ref: NodeRef<html::Input> = create_node_ref();
@@ -61,9 +37,6 @@ pub fn QuestionCastMC(
     let app_settings: AppSettings =
         use_context::<AppSettings>().expect("AppSettings context not found");
 
-    // --- updates
-    // let update_question = move |ev| ();
-
     // -- Create Question Action for Submitting --
     let create_question = create_action(move |pkg: &String| {
         let pkg_clone = pkg.clone();
@@ -73,7 +46,8 @@ pub fn QuestionCastMC(
             .unwrap();
         let fetcher: Fetcher = Fetcher::init()
             .set_url(app_settings.backend_url.to_string() + "question-forge")
-            .set_method("POST")
+            .add_query_param("quest", &quest_sig.get().id.to_raw())
+            .set_method("PUT")
             .set_headers(headers)
             .set_mode(RequestMode::Cors)
             .build();
@@ -82,21 +56,10 @@ pub fn QuestionCastMC(
             console_log(&response.status().to_string());
             if response.status() >= 200 && response.status() < 300 {
                 let data: SurrealQuestionMC = Fetcher::response_to_struct(&response).await;
-
-                // Add component as a Quest
-                // quest_rw.update(|this| this.push(Quest::MC(data)));
-
-                quest_callback.call(QuestType::MC(data));
-
-                // Remove Component since it has been saved
-                rw.update(|this| {
-                    if let Some(index) = this.iter().position(|comp| comp.id == question.id) {
-                        this.remove(index);
-                    }
-                })
-
-                // response_setter.set(Some(hack_data));
-                // display_settings.set(DashDisplay::MakeQuestions);
+                // Pop and Add the Updated Quest
+                // Sorting happens in add_quest, so should be OK
+                pop_quest.call(QuestType::MC(data.clone()));
+                add_quest.call(QuestType::MC(data));
             } else {
                 let deserialized: JsonMsg = Fetcher::response_to_struct(&response).await;
                 set_err_msg.set(deserialized.msg.clone());
@@ -138,15 +101,7 @@ pub fn QuestionCastMC(
             ],
         });
 
-        let owned_quiz_data = if let Some(surreal_quiz) = quiz_data.get() {
-            surreal_quiz
-        } else {
-            set_err_msg.set(Some(String::from("Parent quiz data not provied")));
-            return ();
-        };
-
-        let pre_pkg: QuestionJsonPkg = QuestionJsonPkg {
-            quiz_id: owned_quiz_data.id,
+        let pre_pkg: EditQuestionJsonPkg = EditQuestionJsonPkg {
             question: pre_pre_pkg,
         };
 
@@ -161,15 +116,49 @@ pub fn QuestionCastMC(
 
     view! {
         <form on:submit=on_submit>
-            <h4>"New Question"</h4>
+            <h4>"Question Calibration"</h4>
             <h4>{move || err_msg.get() }</h4>
-            <input type="text" placeholder="question" node_ref=question_ref required/>
-            <input type="text" placeholder="hint" node_ref=hint_ref/>
-            <input type="text" placeholder="answer" node_ref=answer_ref required/>
-            <input type="text" placeholder="wrong choice" node_ref=wrong1_ref required/>
-            <input type="text" placeholder="wrong choice" node_ref=wrong2_ref required/>
-            <input type="text" placeholder="wrong choice" node_ref=wrong3_ref required/>
+            <input
+                type="text"
+                placeholder="question"
+                node_ref=question_ref required
+                value=move || quest_sig.get().question
+            />
+            <input
+                type="text"
+                placeholder="hint"
+                node_ref=hint_ref
+                value=move || quest_sig.get().hint
+            />
+            <input
+                type="text"
+                placeholder="answer"
+                node_ref=answer_ref required
+                value=move || quest_sig.get().answer
+            />
+            <input
+                type="text"
+                placeholder="wrong choice"
+                node_ref=wrong1_ref
+                value=move || quest_sig.get().choices[0].clone()
+                required
+            />
+            <input
+                type="text"
+                placeholder="wrong choice"
+                node_ref=wrong2_ref
+                value=move || quest_sig.get().choices[1].clone()
+                required
+            />
+            <input
+                type="text"
+                placeholder="wrong choice"
+                node_ref=wrong3_ref
+                value=move || quest_sig.get().choices[2].clone()
+                required
+            />
             <input type="submit" value="Save" />
+            <button on:click=move |_| cancel_edit.call(())>"Cancel"</button>
         </form>
     }
 }

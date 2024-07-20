@@ -70,3 +70,35 @@ pub struct QLInternals {
     pub id: usize,
     pub data: JsonQuestion,
 }
+
+// -- For Editing Questions --
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct EditQuestionJsonPkg {
+    pub question: JsonQuestion,
+}
+
+// impl EditQuestionJsonPkg {
+//     pub fn validate_fields(&self) -> Result<(), ModelErrors> {
+//         // The type system ensures quiz_id isn't empty
+//         use JsonQuestion::*;
+//         match &self.question {
+//             MultipleChoice(qmc) => {
+//                 if qmc.question.trim().len() < 1 {
+//                     return Err(ModelErrors::JsonValidation(format!(
+//                         "Question cannot be empty",
+//                     )));
+//                 } else if qmc.answer.trim().len() < 1 {
+//                     return Err(ModelErrors::JsonValidation(format!(
+//                         "Question needs valid answer",
+//                     )));
+//                 } else if qmc.choices.len() < 1 {
+//                     return Err(ModelErrors::JsonValidation(format!(
+//                         "Question needs at least one additional choice",
+//                     )));
+//                 }
+//                 // Could loop through choices to ensure they are also not blank
+//             }
+//         }
+//         Ok(())
+//     }
+// }
