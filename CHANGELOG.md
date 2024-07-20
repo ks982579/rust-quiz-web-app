@@ -37,7 +37,37 @@ No bugs currently logged.
 
 No known security vulnerabilities reported as of yet.
 
-## [0.4.0] - 2023-07-06
+## [0.5.0] - 2024-07-20
+
+### Added
+
+- v0.5 Back-end API to get quizzes owned by user.
+- v0.5 Back-end API to get questions for a particular quiz, owned by the user.
+- v0.5 Back-end API to delete quizzes.
+- v0.5 Back-end API to delete questions.
+- v0.5 Back-end API to edit quizzes.
+- v0.5 Back-end API to edit questions.
+- v0.5 Front-end UI to view existing quizzes owned by user.
+- v0.5 Front-end UI to take a quiz that the user has made.
+- v0.5 Front-end UI to delete a quiz owned by the user.
+- v0.5 Front-end UI to delete a question owned by the user.
+- v0.5 Front-end UI to edit quiz information owned by the user.
+- v0.5 Front-end UI to edit a question to a quiz owned by the user.
+- v0.5 Initialized the end-to-end Robot Framework test suite.
+
+### Changed
+
+- Refactored layout of components to improve the layout of the homepage.
+- Updated CSS to improve design of existing UI.
+- Updated the ID of quizzes from UUID to the default SurrealDB ID option.
+  - This makes it easier to send information via query parameters.
+
+### Removing
+
+- Removed a Quizzes knowledge of child questions in database model.
+  - It provided no benefit and complicated endpoints that updated questions.
+
+## [0.4.0] - 2024-07-06
 
 ### Added
 
