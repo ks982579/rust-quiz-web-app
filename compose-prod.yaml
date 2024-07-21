@@ -1,17 +1,39 @@
 name: quiz-web-application-prod
 services:
-  frontend:
+  # -- Frontend / NGINX
+  leptosfrontend:
+    restart: unless-stopped
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
       # NGINX listens on 80
       - 80:80
-  backend:
+      - 443:443
+    volumes:
+      #   - ./ssl:/ect/nginx/ssl
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    depends_on:
+      - actixbackend
+      - certbot
+  # -- Certbot to create Challenge Files
+  certbot:
+    image: certbot/certbot:latest
+    # volumes same as NGINX to communicate
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    command: certonly --webroot -w /var/www/certbot --force-renewal --email {email} -d {domain} --agree-tos
+  # -- Backend
+  actixbackend:
     # image: quiz-backend
     build:
-      context: ./backend
-      dockerfile: Dockerfile.dev
+      context: .
+      dockerfile: Dockerfile.backend.prod
+    depends_on:
+      - surrealdb
+  # -- DataBase
   surrealdb:
     image: surrealdb/surrealdb:latest
     volumes:

@@ -149,6 +149,18 @@ This project will follow the book's more complicated approach to logging.
 
 ### Production
 
+Set up the compose-prod.yaml file, which means our commands look like:
+
+```bash
+docker compose -f compose-prod.yaml up -d
+docker compose -f compose-prod.yaml build
+docker compose -f compose-prod.yaml down
+docker compose -f compose-prod.yaml logs
+docker compose -f compose-prod.yaml exec <service_name> <command>
+```
+
+Or, in a bash profile like file, we can specify `export COMPOSE_FILE=compose-prod.yaml`
+
 ## Used Crates
 
 ### FrontEnd
