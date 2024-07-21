@@ -1,0 +1,37 @@
+name: quiz-web-application-prod
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      # NGINX listens on 80
+      - 80:80
+  backend:
+    # image: quiz-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+  surrealdb:
+    image: surrealdb/surrealdb:latest
+    volumes:
+      # May require giving privileges to source directory
+      - type: bind
+        source: /var/lib/surrealquizdata
+        target: /data
+    ports:
+      - 8001:8000
+    # Set Environment Variables for Security
+    env_file:
+      - .env
+    entrypoint:
+      - /surreal
+      - start
+      - --auth
+      - --user
+      - $DB_USER
+      - --pass
+      - $DB_PASSWORD
+      - file:data/mydatabase.db
+# volumes:
+#   surrealdata:

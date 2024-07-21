@@ -1,0 +1,19 @@
+FROM rust:latest AS builder
+# ENV APP frontend
+RUN apt update && apt install lld clang -y
+RUN cargo install trunk
+RUN rustup target add wasm32-unknown-unknown
+# # ENV 
+# EXPOSE 8080
+# ENV TRUNK_SERVE_ADDRESS 0.0.0.0
+# ENV TRUNK_SERVE_PORT 8080
+WORKDIR /app
+COPY . .
+RUN trunk build --release
+# CMD ["trunk", "serve", "--port", "8080"]
+# CMD ["trunk", "serve"]
+
+
+FROM nginx:alpine
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/nginx.conf
