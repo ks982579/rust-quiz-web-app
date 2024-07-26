@@ -22,10 +22,10 @@ RUN cargo build --release --bin backend
 # -- RUNTIME STAGE
 FROM debian:bookworm-slim AS runtime
 # RUN apk add --no-cache libc6-compat
+WORKDIR /app
 COPY --from=builder /app/target/release/backend /app
 # Application should listen for what port to run on
 EXPOSE 8001
 ENV APP_ENVIRONMENT production
 ENV QUIZAPP_APPLICATION__HOST 0.0.0.0
-WORKDIR /app
 CMD ["backend"]

@@ -9,3 +9,5 @@ docs/
 CHANGELOG.MD
 LICENCE
 README.md
+.git/
+.dist/
