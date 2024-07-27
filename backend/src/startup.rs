@@ -72,25 +72,28 @@ pub async fn run(
             )
             // This checks if authorized
             .wrap(TracingLogger::default())
-            .route("/health-check", web::get().to(health_check))
-            .route("/create-user", web::post().to(create_user))
-            .route("/user-login", web::post().to(user_login))
             .service(
-                web::scope("")
-                    // .wrap(SessionMiddleware::new(database.clone(), secret_key.clone()))
-                    .wrap(AuthCookie)
-                    .route("/check-login", web::get().to(check_login))
-                    .route("/user-logout", web::get().to(user_logout))
-                    .route("/quiz-nexus", web::get().to(get_my_quizzes))
-                    .route("/quiz-nexus", web::post().to(create_new_quiz))
-                    .route("/quiz-nexus", web::put().to(edit_quiz))
-                    .route("/quiz-nexus", web::delete().to(destroy_my_quiz))
-                    .route("/question-forge", web::get().to(get_questions))
-                    .route("/question-forge", web::post().to(create_new_questions))
-                    .route("/question-forge", web::put().to(edit_question))
-                    .route("/question-forge", web::delete().to(destroy_my_quest)),
-                // Below I think will be for making questions
-                // .route("/query-forge", web::get().to(?)),
+                web::scope("/api/v01")
+                    .route("/health-check", web::get().to(health_check))
+                    .route("/create-user", web::post().to(create_user))
+                    .route("/user-login", web::post().to(user_login))
+                    .service(
+                        web::scope("")
+                            // .wrap(SessionMiddleware::new(database.clone(), secret_key.clone()))
+                            .wrap(AuthCookie)
+                            .route("/check-login", web::get().to(check_login))
+                            .route("/user-logout", web::get().to(user_logout))
+                            .route("/quiz-nexus", web::get().to(get_my_quizzes))
+                            .route("/quiz-nexus", web::post().to(create_new_quiz))
+                            .route("/quiz-nexus", web::put().to(edit_quiz))
+                            .route("/quiz-nexus", web::delete().to(destroy_my_quiz))
+                            .route("/question-forge", web::get().to(get_questions))
+                            .route("/question-forge", web::post().to(create_new_questions))
+                            .route("/question-forge", web::put().to(edit_question))
+                            .route("/question-forge", web::delete().to(destroy_my_quest)),
+                        // Below I think will be for making questions
+                        // .route("/query-forge", web::get().to(?)),
+                    ),
             )
             // setting
             .app_data(
@@ -114,9 +117,31 @@ impl Application {
     /// based on configuration setting from files or environment variables.
     pub async fn from_config(config: AllSettings) -> Result<Self, anyhow::Error> {
         // TODO: Set up proper configuration
-        let database: Database = Database::from_config(config.database)
-            .await // Result<Database, Error>
-            .expect("Unable to Connect to Database");
+
+        println!(
+            "Database on {:?}:{:?}",
+            &config.database.host, &config.database.port
+        );
+        let mut cnt = 1;
+        let database: Database = loop {
+            match Database::from_config(config.database.clone()).await {
+                Ok(db) => break db,
+                Err(e) => {
+                    println!("Error connecting to database");
+                    println!("{:?}", e);
+                    if cnt == 10 {
+                        return Err(anyhow::anyhow!(e));
+                    } else {
+                        cnt += 1;
+                        println!("Sleep for 5 seconds");
+                        tokio::time::sleep(tokio::time::Duration::new(5, 0)).await;
+                    }
+                }
+            }
+        };
+        // let database: Database = Database::from_config(config.database)
+        //     .await // Result<Database, Error>
+        //     .expect("Unable to Connect to Database");
 
         // Update port based on settings
         let address: String = format! {

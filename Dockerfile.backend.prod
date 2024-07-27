@@ -15,7 +15,7 @@
 FROM rust:latest AS builder
 RUN apt update && apt install lld clang -y
 WORKDIR /app
-RUN cargo init . --vcs none
+# RUN cargo init . --vcs none
 COPY . .
 RUN cargo build --release --bin backend
 
@@ -23,9 +23,11 @@ RUN cargo build --release --bin backend
 FROM debian:bookworm-slim AS runtime
 # RUN apk add --no-cache libc6-compat
 WORKDIR /app
+COPY --from=builder /app/backend/configuration /app/configuration
 COPY --from=builder /app/target/release/backend /app
 # Application should listen for what port to run on
-EXPOSE 8001
+EXPOSE 8002
 ENV APP_ENVIRONMENT production
 ENV QUIZAPP_APPLICATION__HOST 0.0.0.0
-CMD ["backend"]
+CMD ["./backend"]
+# needs configuration directory

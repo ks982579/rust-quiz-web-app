@@ -12,7 +12,6 @@ use serde_json::Value;
 use std::future::Future;
 use std::sync::OnceLock;
 use surrealdb::sql::Thing;
-use wiremock::MockServer;
 
 // Can only be written to **ONCE**
 static TRACING: OnceLock<()> = OnceLock::new();

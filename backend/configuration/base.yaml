@@ -1,5 +1,5 @@
 application:
-  port: 8001
+  port: 8002
   # Set as `APP_APPLICATION__HMAC_SECRET` in environment variables
   # Must be at least 64 bytes long
   hmac_secret: dVoa7ryWl3hL12zhnhXXistJ4Gxu0Vm270dJlS9YON7FVROQ2O9ztUpTBc94Xdfe

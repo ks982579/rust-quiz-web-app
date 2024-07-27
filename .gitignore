@@ -24,3 +24,5 @@ browser/
 playwright-log.txt
 __pycache__
 *.pyc
+
+certbot/

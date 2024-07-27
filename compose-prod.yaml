@@ -2,18 +2,20 @@ name: quiz-web-application-prod
 services:
   # -- Frontend / NGINX
   leptosfrontend:
-    restart: unless-stopped
+    restart: always
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Dockerfile.frontend.prod
     ports:
       # NGINX listens on 80
       - 80:80
       - 443:443
+    environment:
+      - APP__BACKEND_URL=/api
     volumes:
       #   - ./ssl:/ect/nginx/ssl
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt/:ro
+      - ./certbot/www:/var/www/certbot/:ro
     depends_on:
       - actixbackend
       - certbot
@@ -22,15 +24,19 @@ services:
     image: certbot/certbot:latest
     # volumes same as NGINX to communicate
     volumes:
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-    command: certonly --webroot -w /var/www/certbot --force-renewal --email {email} -d {domain} --agree-tos
+      - ./certbot/conf:/etc/letsencrypt/:rw
+      - ./certbot/www:/var/www/certbot/:rw
+      - ./certbot/log:/var/log/letsencrypt/:rw
+    # command: certonly -w /var/www/certbot --standalone -d quiztestapp.io --test-cert --email kasullivan@ymail.com --agree-tos -v
+    command: certonly --webroot -w /var/www/certbot --force-renewal --email kevin@example.com -d kevsquizapp.com --agree-tos
   # -- Backend
   actixbackend:
     # image: quiz-backend
     build:
       context: .
       dockerfile: Dockerfile.backend.prod
+    ports:
+      - 8002:8002
     depends_on:
       - surrealdb
   # -- DataBase
@@ -42,13 +48,15 @@ services:
         source: /var/lib/surrealquizdata
         target: /data
     ports:
-      - 8001:8000
+      - 8000:8000
     # Set Environment Variables for Security
     env_file:
       - .env
     entrypoint:
       - /surreal
       - start
+      - --log
+      - trace
       - --auth
       - --user
       - $DB_USER
