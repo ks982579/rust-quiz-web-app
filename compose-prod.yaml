@@ -11,7 +11,7 @@ services:
       - 80:80
       - 443:443
     environment:
-      - APP__BACKEND_URL=/api
+      - APP__BACKEND_URL="/api"
     volumes:
       #   - ./ssl:/ect/nginx/ssl
       - ./certbot/conf:/etc/letsencrypt/:ro
