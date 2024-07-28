@@ -27,8 +27,8 @@ services:
       - ./certbot/conf:/etc/letsencrypt/:rw
       - ./certbot/www:/var/www/certbot/:rw
       - ./certbot/log:/var/log/letsencrypt/:rw
-    # command: certonly -w /var/www/certbot --standalone -d quiztestapp.io --test-cert --email kasullivan@ymail.com --agree-tos -v
-    command: certonly --webroot -w /var/www/certbot --force-renewal --email kevin@example.com -d kevsquizapp.com --agree-tos
+    # command: certonly -w /var/www/certbot --standalone -d quiztestapp.io --test-cert --email kevin.sullivan@example.com --agree-tos -v
+    command: certonly --webroot -w /var/www/certbot --force-renewal --email kevin.sullivan@example.com -d kevsquizapp.com --agree-tos
   # -- Backend
   actixbackend:
     # image: quiz-backend
