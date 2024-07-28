@@ -7,7 +7,7 @@ use std::{
 };
 
 use leptos::*;
-use leptos_dom::logging::{console_error, console_log, console_warn};
+use leptos_dom::logging::console_warn;
 
 #[derive(Clone, Copy, Debug)]
 pub struct AuthState {
@@ -41,10 +41,9 @@ impl AppSettings {
         let mut settings = AppSettings {
             backend_url: "http://127.0.0.1:8002/".to_string(),
         };
-        console_log(&format!("1: {}", &settings.backend_url));
-        // Self::load_from_env(&mut settings);
-        settings.backend_url = env!("APP__BACKEND_URL").to_string();
-        console_log(&format!("3: {}", &settings.backend_url));
+        // -- Check Environment for URL
+        Self::load_from_env(&mut settings);
+        // settings.backend_url = env!("APP__BACKEND_URL").to_string();
 
         settings
     }
@@ -75,7 +74,6 @@ impl AppSettings {
     fn load_from_env(tmp_settings: &mut Self) {
         // Application cannot read env-vars at runtime
         if let Some(url) = option_env!("APP__BACKEND_URL") {
-            console_log(&format!("2: {}", &url));
             tmp_settings.backend_url = url.trim().to_string();
         } else {
             console_warn("APP__BACKEND_URL not set");

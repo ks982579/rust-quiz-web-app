@@ -11,7 +11,6 @@ use crate::{
     utils::{Fetcher, JsonMsg},
 };
 use leptos::*;
-use leptos_dom::logging::console_log;
 use std::{boxed::Box, future::Future, pin::Pin};
 use web_sys::{Headers, RequestMode, Response};
 
@@ -86,10 +85,8 @@ pub fn QuestionForge(
                     data.mc.sort_by(|a, b| a.id.to_raw().cmp(&b.id.to_raw()));
                     // Must get data into correct type
                     for surreal_quest_mc in data.mc {
-                        console_log(&serde_json::to_string(&surreal_quest_mc).unwrap());
                         quest_signal.update(|this| this.push(QuestType::MC(surreal_quest_mc)));
                     }
-                    console_log("Request complete");
                 } else {
                     // Todo: display error message somewhere for failed fetch?
                     let deserialized: JsonMsg = Fetcher::response_to_struct(&response).await;

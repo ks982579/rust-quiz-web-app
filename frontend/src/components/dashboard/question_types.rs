@@ -7,7 +7,6 @@ use crate::{
     utils::{Fetcher, JsonMsg},
 };
 use leptos::*;
-use leptos_dom::logging::console_log;
 use web_sys::{Headers, RequestMode, Response};
 
 /// The Mold is a generic placeholder for all question to be Cast.
@@ -79,7 +78,6 @@ pub fn QuestionCastMC(
             .build();
         async move {
             let response: Response = fetcher.fetch(Some(pkg_clone)).await;
-            console_log(&response.status().to_string());
             if response.status() >= 200 && response.status() < 300 {
                 let data: SurrealQuestionMC = Fetcher::response_to_struct(&response).await;
 
