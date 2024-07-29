@@ -26,13 +26,11 @@ fn LoadingScreen() -> impl IntoView {
 }
 
 /// Component of main home page.
+/// Checks if the user is logged in.
+/// If yes, send to dashboard.
+/// If no, render the login page
 #[component]
 pub fn HomePage() -> impl IntoView {
-    // TODO: Check if user is logged in
-    // If yes, send them to dashboard.
-    // If no, render this login.
-    // Maybe then we can have one homepage, and 2 nav bars,
-    // and conditionally render... probably not
     let (auth_status, set_auth_status) = create_signal(AuthStatus::Loading);
     let auth_state: AuthState = use_context::<AuthState>().expect("AuthState context not found?");
     let app_settings: AppSettings =

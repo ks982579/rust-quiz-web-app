@@ -39,7 +39,7 @@ impl AppSettings {
     pub fn init() -> Self {
         // let mut settings = Self::load_from_file();
         let mut settings = AppSettings {
-            backend_url: "http://127.0.0.1:8002/".to_string(),
+            backend_url: "http://127.0.0.1:8002/api/v01/".to_string(),
         };
         // -- Check Environment for URL
         Self::load_from_env(&mut settings);

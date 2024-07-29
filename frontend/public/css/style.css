@@ -31,6 +31,37 @@ button, input[type="submit"]{
   cursor: pointer;
 }
 
+/* -- For Unimplemented Buttons -- */
+.unimplemented-feature {
+    position: relative;
+    cursor: not-allowed;
+}
+
+.unimplemented-feature::after {
+    content: "TODO";
+    position: absolute;
+    background-color: #333;
+    color: white;
+    padding: 0.7rem 2rem;
+    border-radius: 0.7rem;
+    font-size: 1rem;
+    bottom: 70%;
+    left: 50%;
+    transform: translateX(-50%) translateY(1rem);
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+}
+
+.unimplemented-feature:hover::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+    z-index: 9990;
+}
+/* -- ------------------------- -- */
+
 .toggle-password {
   cursor: pointer;
 }
@@ -91,26 +122,11 @@ button, input[type="submit"]{
   -webkit-backdrop-filter: blur(7px);
   overflow: hidden;
   transition: .5s all;
-  ::before {
-    position: fixed;
-    content: "";
-    box-shadow:: 0 0 100px 40px #ffffff08;
-    top: -10%;
-    left: -100%;
-    transform: rotate(-45deg);
-    height: 60rem;
-    transition: .7s all;
-  }
   &:hover {
     border: 1px solid #ffffff44;
     box-shadow: 0 7px 50px 10px #000000aa;
     transform: scale(1.015);
     filter: brightness(1.3);
-    ::before {
-      filter: brightness(0.5);
-      top: -100%;
-      left: 200%;
-    }
   }
 }
 
