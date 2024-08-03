@@ -1,20 +1,15 @@
+# Container to build WASM bundle
 FROM rust:latest AS builder
-# ENV APP frontend
 RUN apt update && apt install lld clang -y
 RUN cargo install trunk
 RUN rustup target add wasm32-unknown-unknown
-# # ENV 
-# EXPOSE 8080
-# ENV TRUNK_SERVE_ADDRESS 0.0.0.0
-# ENV TRUNK_SERVE_PORT 8080
 WORKDIR /app
 COPY . .
+# Variable required during compilation
 ENV APP__BACKEND_URL="/api/v01/"
 RUN trunk build --release ./frontend/index.html
-# CMD ["trunk", "serve", "--port", "8080"]
-# CMD ["trunk", "serve"]
 
-
+# Small NGINX container to distribute WASM Bundle
 FROM nginx:alpine
 COPY --from=builder /app/frontend/dist /usr/share/nginx/html
 COPY ./frontend/nginx.conf /etc/nginx/nginx.conf

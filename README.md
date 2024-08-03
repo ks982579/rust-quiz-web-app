@@ -4,6 +4,8 @@
 
 ## Getting Set Up Locally
 
+> This is outdated. Next sprint will update documentation.
+
 Using Docker Compose is the easiest way to run this locally,
 unless you have SurrealDB installed locally and would like to configure it.
 
