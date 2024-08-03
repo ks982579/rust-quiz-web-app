@@ -27,7 +27,7 @@ async fn test_log_out_logged_in_user_200() {
     // Creating User via API
     let _ = test_app
         .api_client
-        .post(&format!("{}/create-user", &test_app.address))
+        .post(&format!("{}/v01/create-user", &test_app.address))
         .json(&user_data)
         .send()
         .await
@@ -41,7 +41,7 @@ async fn test_log_out_logged_in_user_200() {
     // Send Login Request
     let response: Response = test_app
         .api_client
-        .post(&format!("{}/user-login", &test_app.address))
+        .post(&format!("{}/v01/user-login", &test_app.address))
         .json(&login_data)
         .send()
         .await
@@ -56,7 +56,7 @@ async fn test_log_out_logged_in_user_200() {
     // Act
     let log_out_response: Response = test_app
         .api_client
-        .get(format!("{}/user-logout", &test_app.address))
+        .get(format!("{}/v01/user-logout", &test_app.address))
         .send()
         .await
         .expect("Failed to send log out request");
@@ -109,7 +109,7 @@ async fn test_log_out_anonymous_user_200() {
     // Creating User via API
     let _ = test_app
         .api_client
-        .post(&format!("{}/create-user", &test_app.address))
+        .post(&format!("{}/v01/create-user", &test_app.address))
         .json(&user_data)
         .send()
         .await
@@ -125,7 +125,7 @@ async fn test_log_out_anonymous_user_200() {
     // Act
     let log_out_response: Response = test_app
         .api_client
-        .get(format!("{}/user-logout", &test_app.address))
+        .get(format!("{}/v01/user-logout", &test_app.address))
         .send()
         .await
         .expect("Failed to send log out request");

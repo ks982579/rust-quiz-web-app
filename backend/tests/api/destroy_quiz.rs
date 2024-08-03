@@ -10,26 +10,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use surrealdb::sql::Thing;
 
-async fn cleanup_db(test_app: &TestApp) {
-    // clean up database
-    let _: Vec<SurrealQuiz> = test_app.database.client.delete("quizzes").await.unwrap();
-    let _: Vec<SurrealQuestionMC> = test_app
-        .database
-        .client
-        .delete("questions_mc")
-        .await
-        .unwrap();
-    // Clear out users
-    let _: Vec<SurrealRecord> = test_app
-        .database
-        .client
-        .delete("general_user")
-        .await
-        .unwrap();
-    // Clear out session tokens
-    let _: Vec<SurrealRecord> = test_app.database.client.delete("sessions").await.unwrap();
-}
-
 #[tokio::test]
 async fn test_user_delete_quiz_200() {
     // -- Arrange
@@ -96,7 +76,7 @@ async fn test_user_delete_quiz_200() {
     assert!(1 > actual_quest.len());
 
     // clean up database
-    cleanup_db(&test_app).await;
+    test_app.cleanup_db().await;
 }
 
 /// Test an anonymous user cannot delete quizzes.
@@ -106,7 +86,7 @@ async fn test_anon_user_delete_quiz_401() {
     let test_app: TestApp = spawn_app().await;
 
     // clean up database
-    cleanup_db(&test_app).await;
+    test_app.cleanup_db().await;
 
     // create user for testing
     let mut test_app_response = test_app.create_new_test_user().await;
@@ -129,7 +109,7 @@ async fn test_anon_user_delete_quiz_401() {
 
     let log_out_response: Response = test_app
         .api_client
-        .get(format!("{}/user-logout", &test_app.address))
+        .get(format!("{}/v01/user-logout", &test_app.address))
         .send()
         .await
         .expect("Failed to send log out request");
@@ -144,7 +124,7 @@ async fn test_anon_user_delete_quiz_401() {
     assert!(1 == actual.len());
 
     // clean up database
-    cleanup_db(&test_app).await;
+    test_app.cleanup_db().await;
 }
 
 #[tokio::test]
@@ -153,7 +133,7 @@ async fn test_other_user_delete_quiz_403() {
     let test_app: TestApp = spawn_app().await;
 
     // clean up database
-    cleanup_db(&test_app).await;
+    test_app.cleanup_db().await;
 
     // Test User Data
     let user_data: Value = serde_json::json!({
@@ -165,7 +145,7 @@ async fn test_other_user_delete_quiz_403() {
     // Creating User via API
     let response01: Response = test_app
         .api_client
-        .post(&format!("{}/create-user", &test_app.address))
+        .post(&format!("{}/v01/create-user", &test_app.address))
         .json(&user_data)
         .send()
         .await
@@ -180,7 +160,7 @@ async fn test_other_user_delete_quiz_403() {
     // Send Login Request
     let response02: Response = test_app
         .api_client
-        .post(&format!("{}/user-login", &test_app.address))
+        .post(&format!("{}/v01/user-login", &test_app.address))
         .json(&login_data)
         .send()
         .await
@@ -202,7 +182,7 @@ async fn test_other_user_delete_quiz_403() {
 
     let log_out_response: Response = test_app
         .api_client
-        .get(format!("{}/user-logout", &test_app.address))
+        .get(format!("{}/v01/user-logout", &test_app.address))
         .send()
         .await
         .expect("Failed to send log out request");
@@ -224,7 +204,7 @@ async fn test_other_user_delete_quiz_403() {
     assert!(1 == actual.len());
 
     // clean up database
-    cleanup_db(&test_app).await;
+    test_app.cleanup_db().await;
 }
 
 #[tokio::test]
@@ -233,7 +213,7 @@ async fn test_create_quiz_400() {
     let test_app: TestApp = spawn_app().await;
 
     // clean up database
-    cleanup_db(&test_app).await;
+    test_app.cleanup_db().await;
 
     // create user for testing
     let mut test_app_response = test_app.create_new_test_user().await;
@@ -266,5 +246,5 @@ async fn test_create_quiz_400() {
     assert!(0 < actual.len());
 
     // clean up database
-    cleanup_db(&test_app).await;
+    test_app.cleanup_db().await;
 }

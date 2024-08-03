@@ -17,7 +17,7 @@ where
 {
     async fn post_create_user(&self, json: &Body) -> Response {
         self.api_client
-            .post(&format!("{}/create-user", &self.address))
+            .post(&format!("{}/v01/create-user", &self.address))
             .json(json)
             .send()
             .await

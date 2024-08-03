@@ -136,7 +136,7 @@ impl std::default::Default for FetchBuilder {
             method: String::from("POST"),
             headers: headers,
             mode: RequestMode::Cors,
-            url: "http://127.0.0.1:8000/".to_string(),
+            url: "http://127.0.0.1:8002/".to_string(),
             query_params: None,
         }
     }

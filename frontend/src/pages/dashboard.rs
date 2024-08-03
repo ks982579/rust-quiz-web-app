@@ -7,7 +7,7 @@ use web_sys::{Headers, RequestMode, Response};
 use crate::{
     components::{
         dashboard::{ExamRoom, MakeQuiz, QuestionForge, QuizShowCase, UpdateQuiz},
-        Card,
+        Card, TodoCard,
     },
     models::mimic_surreal::{SurrealQuiz, Thing},
     store::{AppSettings, AuthState},
@@ -194,12 +194,14 @@ pub fn Dashboard() -> impl IntoView {
                     <Card on_click=Some(set_display_make_quiz)>
                         "Make a New Quiz"
                     </Card>
-                    <Card on_click=None>
+                    <TodoCard on_click=None>
                         "Saved Quizzes"
-                    </Card>
-                    <Card on_click=None>
-                        "Search Quizzes"
-                    </Card>
+                    </TodoCard>
+                    <TodoCard on_click=None>
+                        <div
+                            class:unimplemented-button=true
+                        >"Search Quizzes"</div>
+                    </TodoCard>
                 </aside>
                 <section class="main-content">
                     <div

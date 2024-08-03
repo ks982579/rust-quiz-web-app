@@ -12,7 +12,6 @@ use serde_json::Value;
 use std::future::Future;
 use std::sync::OnceLock;
 use surrealdb::sql::Thing;
-use wiremock::MockServer;
 
 // Can only be written to **ONCE**
 static TRACING: OnceLock<()> = OnceLock::new();
@@ -37,7 +36,7 @@ where
 {
     async fn post_create_quiz(&self, json: &Body) -> Response {
         self.api_client
-            .post(&format!("{}/quiz-nexus", &self.address))
+            .post(&format!("{}/v01/quiz-nexus", &self.address))
             .json(json)
             .send()
             .await
@@ -52,7 +51,7 @@ pub trait GetQuiz {
 impl GetQuiz for TestApp {
     async fn get_quizzes(&self) -> Response {
         self.api_client
-            .get(&format!("{}/quiz-nexus", &self.address))
+            .get(&format!("{}/v01/quiz-nexus", &self.address))
             .send()
             .await
             .expect("Failed to execute GET Request")
@@ -72,7 +71,10 @@ where
 {
     async fn edit_quiz(&self, quiz_id: String, json: &Body) -> Response {
         self.api_client
-            .put(&format!("{}/quiz-nexus?quiz={}", &self.address, quiz_id))
+            .put(&format!(
+                "{}/v01/quiz-nexus?quiz={}",
+                &self.address, quiz_id
+            ))
             .json(json)
             .send()
             .await
@@ -87,7 +89,10 @@ pub trait DestroyQuiz {
 impl DestroyQuiz for TestApp {
     async fn destroy_quiz(&self, quiz_id: String) -> Response {
         self.api_client
-            .delete(&format!("{}/quiz-nexus?quiz={}", &self.address, quiz_id))
+            .delete(&format!(
+                "{}/v01/quiz-nexus?quiz={}",
+                &self.address, quiz_id
+            ))
             .send()
             .await
             .expect("Failed to execute GET Request")
@@ -107,7 +112,7 @@ where
 {
     async fn post_create_questions(&self, json: &Body) -> Response {
         self.api_client
-            .post(&format!("{}/question-forge", &self.address))
+            .post(&format!("{}/v01/question-forge", &self.address))
             .json(json)
             .send()
             .await
@@ -123,7 +128,7 @@ impl GetQuestion for TestApp {
     async fn get_questions(&self, quiz_id: String) -> Response {
         self.api_client
             .get(&format!(
-                "{}/question-forge?quiz={}",
+                "{}/v01/question-forge?quiz={}",
                 &self.address, quiz_id
             ))
             .send()
@@ -146,7 +151,7 @@ where
     async fn edit_question(&self, quest_id: String, json: &Body) -> Response {
         self.api_client
             .put(&format!(
-                "{}/question-forge?quest={}",
+                "{}/v01/question-forge?quest={}",
                 &self.address, quest_id
             ))
             .json(json)
@@ -164,7 +169,7 @@ impl DestroyQuestion for TestApp {
     async fn destroy_question(&self, quest_id: String) -> Response {
         self.api_client
             .delete(&format!(
-                "{}/question-forge?quest={}",
+                "{}/v01/question-forge?quest={}",
                 &self.address, quest_id
             ))
             .send()
@@ -197,7 +202,7 @@ impl TestApp {
         dbg!("Trying to create test user");
         // Creating User via API
         self.api_client
-            .post(&format!("{}/create-user", &self.address))
+            .post(&format!("{}/v01/create-user", &self.address))
             .json(&user_data)
             .send()
             .await
@@ -212,7 +217,7 @@ impl TestApp {
         });
 
         self.api_client
-            .post(&format!("{}/user-login", &self.address))
+            .post(&format!("{}/v01/user-login", &self.address))
             .json(&login_data)
             .send()
             .await
@@ -280,7 +285,7 @@ pub async fn spawn_app() -> TestApp {
         .unwrap();
 
     TestApp {
-        address: format!("http://127.0.0.1:{}", application_port),
+        address: format!("http://127.0.0.1:{}/api", application_port),
         port: application_port,
         api_client: client,
         database,

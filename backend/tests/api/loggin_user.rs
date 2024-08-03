@@ -24,7 +24,7 @@ async fn test_log_in_user_200() {
     // Creating User via API
     let _ = test_app
         .api_client
-        .post(&format!("{}/create-user", &test_app.address))
+        .post(&format!("{}/v01/create-user", &test_app.address))
         .json(&user_data)
         .send()
         .await
@@ -39,7 +39,7 @@ async fn test_log_in_user_200() {
     // Send Login Request
     let response: Response = test_app
         .api_client
-        .post(&format!("{}/user-login", &test_app.address))
+        .post(&format!("{}/v01/user-login", &test_app.address))
         .json(&login_data)
         .send()
         .await
@@ -78,7 +78,7 @@ async fn test_log_in_user_400() {
     // Creating User via API
     let _ = test_app
         .api_client
-        .post(&format!("{}/create-user", &test_app.address))
+        .post(&format!("{}/v01/create-user", &test_app.address))
         .json(&user_data)
         .send()
         .await
@@ -114,7 +114,7 @@ async fn test_log_in_user_400() {
         // Act
         let response: Response = test_app
             .api_client
-            .post(&format!("{}/user-login", &test_app.address))
+            .post(&format!("{}/v01/user-login", &test_app.address))
             .json(&bad_data)
             .send()
             .await

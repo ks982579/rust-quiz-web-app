@@ -7,6 +7,7 @@ use std::{
 };
 
 use leptos::*;
+use leptos_dom::logging::console_warn;
 
 #[derive(Clone, Copy, Debug)]
 pub struct AuthState {
@@ -38,9 +39,11 @@ impl AppSettings {
     pub fn init() -> Self {
         // let mut settings = Self::load_from_file();
         let mut settings = AppSettings {
-            backend_url: "http://127.0.0.1:8000/".to_string(),
+            backend_url: "http://127.0.0.1:8002/api/v01/".to_string(),
         };
+        // -- Check Environment for URL
         Self::load_from_env(&mut settings);
+        // settings.backend_url = env!("APP__BACKEND_URL").to_string();
 
         settings
     }
@@ -69,8 +72,11 @@ impl AppSettings {
 
     /// Initialize from file first, then this mutates the settings in place.
     fn load_from_env(tmp_settings: &mut Self) {
-        if let Ok(url) = std::env::var("APP__BACKEND_URL") {
+        // Application cannot read env-vars at runtime
+        if let Some(url) = option_env!("APP__BACKEND_URL") {
             tmp_settings.backend_url = url.trim().to_string();
+        } else {
+            console_warn("APP__BACKEND_URL not set");
         }
     }
 }

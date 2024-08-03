@@ -7,7 +7,6 @@ use crate::{
     utils::{DashDisplay, Fetcher, JsonMsg},
 };
 use leptos::*;
-use leptos_dom::logging::console_log;
 use serde::{Deserialize, Serialize};
 use web_sys::{Headers, RequestMode, Response};
 
