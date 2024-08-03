@@ -4,13 +4,13 @@ members = [
   "frontend",
   "backend",
   "models",
-  # "jsonmodels",
+  # "jsonmodels", TODO: Possible future implementation
   "surrealize_macro",
 ]
 
 [workspace.package]
 authors = ["Kevin Sullivan"]
-version = "0.5.0"
+version = "0.6.0"
 license-file = "LICENSE"
 license = "MIT"
 repository = "https://github.com/ks982579/rust-quiz-web-app"

@@ -10,15 +10,16 @@
 
 ### Adding
 
-- v0.5 User ability to Edit Quizzes and Questions
-- v0.5 User ability to take a quiz
-- v0.6 Application updates to be suitable for hosting on cloud platform
+- v0.6 End-to-end smoke test suite
 
 ### Changing
 
+- v0.6 UI design of user login
 - v0.6 UI design of user creation
 - v0.6 UI design for user dashboard
-- v0.6 UI design for quiz creation
+- v0.6 UI design for footer when not logged in
+- v0.6 UI design for footer when logged in
+- v0.6 UI design for navbar when logged in
 - v0.6 UI design for question creation
 
 ### Decprecating
@@ -31,11 +32,38 @@ No features being removed.
 
 ### Fixing
 
-No bugs currently logged.
+- [ ] **Critical**: Created Quiz does not populate on homepage until refresh (front-end).
+- [ ] **Critical**: There is no disclaimer at Login or Signup this website is a University project.
+- [ ] **Critical**: Too many compiler warnings, both front and back-end.
+- [ ] Major: No hints in questions even though information is there.
+- [ ] Major: Create Quiz returns HTTP 200, but should be 201 for created.
+- [ ] Minor: Create account feature on front-end does not redirect after account is created (but should).
+- [ ] Minor: The "My Quizzes" box is empty with no message when no quizzes are made, should be something?
+- [ ] Minor: Buttons ":)" and ":(" do nothing.
+- [ ] Minor: Excessive comments in code that do not have purpose.
 
 ### Security
 
 No known security vulnerabilities reported as of yet.
+
+## [0.6.0] - 2024-08-03
+
+### Added
+
+- Configuration of NGINX docker container to act as reverse proxy server in production.
+- Configuration of Certbot docker container to generate free SSL certificates for production.
+- Back-end logic to wait for database connection before launching server.
+- Created external architectural documentation following Arc42.
+
+### Changed
+
+- Moved all back-end paths behind `/api/v01` to better describe their purpose and version.
+- Updated front-end to also find APIs at their new paths.
+- Moved SurrealDB database to port 8000 in production Docker container.
+- Moved back-end server to port 8002 in production Docker container.
+- Updated integration tests to follow new URL pathing structure.
+- Updated CSS for front-end components that do not have actual code implemented.
+  - The display a "TODO" bubble above them.
 
 ## [0.5.0] - 2024-07-20
 
