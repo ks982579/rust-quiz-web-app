@@ -4,6 +4,8 @@
 
 ## Getting Set Up Locally
 
+> This is outdated. Next sprint will update documentation.
+
 Using Docker Compose is the easiest way to run this locally,
 unless you have SurrealDB installed locally and would like to configure it.
 
@@ -148,6 +150,18 @@ This project will follow the book's more complicated approach to logging.
 ### Local
 
 ### Production
+
+Set up the compose-prod.yaml file, which means our commands look like:
+
+```bash
+docker compose -f compose-prod.yaml up -d
+docker compose -f compose-prod.yaml build
+docker compose -f compose-prod.yaml down
+docker compose -f compose-prod.yaml logs
+docker compose -f compose-prod.yaml exec <service_name> <command>
+```
+
+Or, in a bash profile like file, we can specify `export COMPOSE_FILE=compose-prod.yaml`
 
 ## Used Crates
 

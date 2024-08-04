@@ -7,7 +7,6 @@ use crate::pages::Dashboard;
 use crate::utils::{JsonMsg, PartialUser};
 use leptos::ev::SubmitEvent;
 use leptos::*;
-use leptos_dom::logging::console_log;
 use leptos_router::A;
 use web_sys::{Headers, RequestMode, Response};
 
@@ -27,22 +26,17 @@ fn LoadingScreen() -> impl IntoView {
 }
 
 /// Component of main home page.
+/// Checks if the user is logged in.
+/// If yes, send to dashboard.
+/// If no, render the login page
 #[component]
 pub fn HomePage() -> impl IntoView {
-    // TODO: Check if user is logged in
-    // If yes, send them to dashboard.
-    // If no, render this login.
-    // Maybe then we can have one homepage, and 2 nav bars,
-    // and conditionally render... probably not
-    console_log("Starting homepage component");
     let (auth_status, set_auth_status) = create_signal(AuthStatus::Loading);
     let auth_state: AuthState = use_context::<AuthState>().expect("AuthState context not found?");
     let app_settings: AppSettings =
         use_context::<AppSettings>().expect("AppSettings context not found");
 
     create_effect(move |_| {
-        console_log("Running check-login");
-
         let headers: Headers = Headers::new().unwrap();
         headers
             .set("Content-Type", "application/json;charset=UTF-8")
@@ -66,7 +60,6 @@ pub fn HomePage() -> impl IntoView {
                     provide_context(user);
                     auth_state.set_authenticated(true);
                     set_auth_status.set(AuthStatus::Authenticated);
-                    console_log("Everything should be set");
                 } else {
                     set_auth_status.set(AuthStatus::Unauthenticated);
                 }
@@ -79,7 +72,6 @@ pub fn HomePage() -> impl IntoView {
                     // Putting PartialUser into Context
                     provide_context(user);
                     set_auth_status.set(AuthStatus::Authenticated);
-                    console_log("Everything should be set");
                 } else {
                     set_auth_status.set(AuthStatus::Unauthenticated);
                     auth_state.set_authenticated(false);

@@ -5,7 +5,8 @@ use leptos_router::{use_navigate, NavigateOptions};
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 
-use crate::utils::JsonMsg;
+use crate::store::AppSettings;
+use crate::utils::{Fetcher, JsonMsg};
 
 use wasm_bindgen::JsValue;
 use wasm_bindgen_futures::JsFuture;
@@ -41,6 +42,10 @@ pub fn CreateNewUser() -> impl IntoView {
     // Create Navigator
     let navigator = use_navigate();
     let navigator_rc = Rc::new(navigator);
+    //
+    // -- Use Context --
+    let app_settings: AppSettings =
+        use_context::<AppSettings>().expect("AppSettings context not found");
 
     // Signals for Error Messages
     let (err_msg, set_err_msg): (ReadSignal<Option<String>>, WriteSignal<Option<String>>) =
@@ -85,36 +90,23 @@ pub fn CreateNewUser() -> impl IntoView {
             .unwrap();
 
         // Set headers for fetch
-        let mut options = RequestInit::new();
-        options.method("POST");
-        options.headers(&headers);
-        options.body(Some(&JsValue::from_str(&pckg)));
-        options.mode(RequestMode::Cors);
+        let fetcher: Fetcher = Fetcher::init()
+            .set_url(app_settings.backend_url.clone() + "create-user")
+            .set_method("POST")
+            .set_headers(headers)
+            .set_mode(RequestMode::Cors)
+            .build();
 
-        let request: Request =
-            Request::new_with_str_and_init("http://127.0.0.1:8000/create-user", &options).unwrap();
         let navigator_clone = navigator_rc.clone();
 
         // Fetch and receive
         spawn_local(async move {
-            let window = web_sys::window().unwrap();
-
-            let response: Response = JsFuture::from(window.fetch_with_request(&request))
-                .await
-                .unwrap()
-                .dyn_into()
-                .unwrap();
-
+            let response: Response = fetcher.fetch(Some(pckg)).await;
             if response.status() == 200 {
                 navigator_clone("/", NavigateOptions::default());
             }
 
-            let response_body_promise = response.array_buffer().unwrap();
-            let js_value = JsFuture::from(response_body_promise).await.unwrap();
-            let unit8_array: Uint8Array = Uint8Array::new(&js_value);
-            let response_body = unit8_array.to_vec();
-            let deserialized: JsonMsg = serde_json::from_slice(&response_body).unwrap();
-
+            let deserialized: JsonMsg = Fetcher::response_to_struct(&response).await;
             set_err_msg.set(deserialized.msg.clone());
         })
     };

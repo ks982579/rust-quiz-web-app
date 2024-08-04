@@ -1,0 +1,18 @@
+# -- BUILDER STAGE - to build binary
+FROM rust:latest AS builder
+RUN apt update && apt install lld clang -y
+WORKDIR /app
+COPY . .
+RUN cargo build --release --bin backend
+
+# -- RUNTIME STAGE - runs binary, does not require Rust
+FROM debian:bookworm-slim AS runtime
+WORKDIR /app
+# Configuration required at runtime
+COPY --from=builder /app/backend/configuration /app/configuration
+COPY --from=builder /app/target/release/backend /app
+# Application should listen port 8002 to run on
+EXPOSE 8002
+ENV APP_ENVIRONMENT production
+ENV QUIZAPP_APPLICATION__HOST 0.0.0.0
+CMD ["./backend"]

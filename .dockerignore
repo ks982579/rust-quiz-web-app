@@ -1,0 +1,13 @@
+.env
+target/
+tests/
+scripts/
+migrations/
+e2e/
+jsonmodels/
+docs/
+CHANGELOG.MD
+LICENCE
+README.md
+.git/
+.dist/

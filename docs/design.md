@@ -30,7 +30,7 @@ May need more consideration.
 
 ### Frontend
 
-Check out [Using Rust and Leptos to build beautifyl, declarative UIs | LogRocket.com](https://blog.logrocket.com/using-rust-leptos-build-beautiful-declarative-uis/).
+Check out [Using Rust and Leptos to build beautiful, declarative UIs | LogRocket.com](https://blog.logrocket.com/using-rust-leptos-build-beautiful-declarative-uis/).
 The `trunk` crate is a bundler.
 It will compile Rust to WASM and bundle in the `frontend/dist` directory
 Since it is SPA, going to follow "component-based architecture.
@@ -49,25 +49,25 @@ It is in the `AuthCookie` struct.
 
 [OpenAPI 3.1 Specification | Swagger.io](https://swagger.io/specification/)
 
-#### GET /health-check
+#### GET /api/v01/health-check
 
 Create JSON objects for request and response.
 Nothing too intense.
 
-#### POST /create-user
+#### POST /api/v01/create-user
 
 ```yaml
 openapi: 3.1.0
 info:
   title: Create User API
-  version: 0.1.0
+  version: 0.2.0
   description: API for creating new users
 
 servers:
-  - url: http://api.example.com/v1
+  - url: https://kevsquizapp.com/api/v01/create-user
 
 paths:
-  /create-user:
+  /api/v01/create-user:
     post:
       summary: Create a new user
       requestBody:
@@ -123,20 +123,20 @@ components:
           example: Unknown Error
 ```
 
-#### POST /user-login
+#### POST /api/v01/user-login
 
 ```yaml
 openapi: 3.1.0
 info:
   title: User Login API
-  version: 0.1.0
+  version: 0.2.0
   description: API for user authentication
 
 servers:
-  - url: http://api.example.com/v1
+  - url: https://kevsquizapp.com/api/v01/user-login
 
 paths:
-  /user-login:
+  /api/v01/user-login:
     post:
       summary: Log in user and create cookie
       description: Log a user into web application with provided credentials by setting token cookie
@@ -195,19 +195,17 @@ components:
           example: Unknown Error
 ```
 
-#### GET /check-login
-
-I am not 100% positive I have `msg` keys for error messages in middleware and this endpoint.
+#### GET /api/v01/check-login
 
 ```yaml
 openapi: 3.1.0
 info:
   title: Check User Authentication API
-  version: 0.1.0
+  version: 0.2.0
   description: API for user authentication and session management
 
 servers:
-  - url: http://api.example.com/v1
+  - url: https://kevsquizapp.com/api/v01/check-login
 
 components:
   securitySchemes:
@@ -236,7 +234,7 @@ components:
           example: Unknown Error
 
 paths:
-  /check-login:
+  /api/v01/check-login:
     get:
       summary: Check user login status and retrieve user data
       description: Verify user's session cookie and return user data if authenticated
@@ -261,17 +259,17 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 ```
 
-#### GET /user-logout
+#### GET /api/v01/user-logout
 
 ```yaml
 openapi: 3.1.0
 info:
   title: Log out user from application
-  version: 0.1.0
+  version: 0.2.0
   description: API for logging a user out of the quiz application
 
 servers:
-  - url: http://api.example.com/v1
+  - url: https://kevsquizapp.com/api/v01/user-logout
 
 components:
   securitySchemes:
@@ -281,7 +279,7 @@ components:
       name: sessionId
 
 paths:
-  /user-logout:
+  /api/v01/user-logout:
     get:
       summary: Logs user out of application
       description: Checks database for a session token and removes it, then sends reponse to browser to remove cookie
@@ -296,17 +294,17 @@ paths:
             application/json: {}
 ```
 
-#### /quiz-nexus
+#### /api/v01/quiz-nexus
 
 ```yaml
 openapi: 3.1.0
 info:
   title: Quiz Nexus
-  version: 0.2.0
+  version: 0.3.0
   description: Handling CRUD operations for quizzes
 
 servers:
-  - url: http://api.example.com/v1
+  - url: https://kevsquizapp.com/api/v01/quiz-nexus
 
 components:
   securitySchemes:
@@ -361,7 +359,7 @@ components:
           example: Unknown Error
 
 paths:
-  /quiz-nexus:
+  /api/v01/quiz-nexus:
     post:
       summary: Create new Quiz
       description: Given correct information, this will save a new quiz to the database
@@ -508,17 +506,17 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 ```
 
-#### /question-forge
+#### /api/v01/question-forge
 
 ```yaml
 openapi: 3.1.0
 info:
   title: Question Forge
-  version: 0.2.0
+  version: 0.3.0
   description: Handling CRUD operations for questions
 
 servers:
-  - url: http://api.example.com/v1
+  - url: https://kevsquizapp.com/api/v01/question-forge
 
 components:
   securitySchemes:
@@ -603,7 +601,7 @@ components:
           example: Unknown Error
 
 paths:
-  /question-forge:
+  /api/v01/question-forge:
     post:
       summary: Create new Question
       description: Given correct information, this will save a new question for a given quiz

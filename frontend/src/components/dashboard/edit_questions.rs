@@ -9,7 +9,6 @@ use crate::{
     utils::{Fetcher, JsonMsg},
 };
 use leptos::*;
-use leptos_dom::logging::console_log;
 use web_sys::{Headers, RequestMode, Response};
 
 /// Calibrate a Multiple Choice question (from a mold)
@@ -53,7 +52,6 @@ pub fn QuestionCalibrateMC(
             .build();
         async move {
             let response: Response = fetcher.fetch(Some(pkg_clone)).await;
-            console_log(&response.status().to_string());
             if response.status() >= 200 && response.status() < 300 {
                 let data: SurrealQuestionMC = Fetcher::response_to_struct(&response).await;
                 // Pop and Add the Updated Quest

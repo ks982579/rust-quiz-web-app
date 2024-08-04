@@ -1,2 +1,11 @@
 application:
+  # I don't think base_url is used anywhere so just include
+  base_url: "http://127.0.0.1"
   host: 0.0.0.0
+database:
+  host: surrealdb
+  port: 8000
+  username: "user"
+  password: "password"
+  namespace: "surreal"
+  name: "quiz_app"
