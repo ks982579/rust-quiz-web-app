@@ -203,7 +203,9 @@ pub fn Dashboard() -> impl IntoView {
                         >"Search Quizzes"</div>
                     </TodoCard>
                 </aside>
-                <section class="main-content">
+                <section
+                    class:main-content=true
+                >
                     <div
                         class:main-content-container=true
                     >
