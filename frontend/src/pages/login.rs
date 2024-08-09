@@ -9,6 +9,7 @@ use leptos::*;
 use leptos_router::A;
 use web_sys::{Headers, RequestMode, Response};
 
+use crate::components::Footer;
 use crate::store::{AppSettings, AuthState};
 use crate::utils::Fetcher;
 
@@ -150,7 +151,7 @@ pub fn LogIn() -> impl IntoView {
                 </form>
                 <A href="/new-user">"New? Create an account here"</A>
             </main>
-            <footer>"&copy; 2024 Kev's Quiz Web App"</footer>
+            <Footer />
         </div>
     }
 }

@@ -7,7 +7,7 @@ use web_sys::{Headers, RequestMode, Response};
 use crate::{
     components::{
         dashboard::{ExamRoom, MakeQuiz, QuestionForge, QuizShowCase, UpdateQuiz},
-        Card, TodoCard,
+        Card, Footer, TodoCard,
     },
     models::mimic_surreal::{SurrealQuiz, Thing},
     store::{AppSettings, AuthState},
@@ -213,7 +213,7 @@ pub fn Dashboard() -> impl IntoView {
                     </div>
                 </section>
             </main>
-            <footer>"&copy; 2024 Kev's Quiz Web App"</footer>
+            <Footer />
         </div>
     }
 }
