@@ -130,12 +130,15 @@ pub async fn destroy_my_quiz(
     // Delete related questions
 
     // Delete from MC table
-    let surreal_ql = "DELETE type::table($table) WHERE author_id = $user_id";
+    let surreal_ql = r#"DELETE type::table($table)
+    WHERE author_id = $user_id
+    AND parent_quiz = $quiz_id"#;
     let surreal_response: surrealdb::Response = db
         .client
         .query(surreal_ql)
         .bind(("table", "questions_mc"))
         .bind(("user_id", user_id))
+        .bind(("quiz_id", &quiz_id))
         .await
         .map_err(|err| DestroyQuizError::UnexpectedError(anyhow::anyhow!(err)))?;
 

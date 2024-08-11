@@ -18,7 +18,9 @@ pub fn QuestionMold(
     quiz_data: ReadSignal<Option<SurrealQuiz>>,
 ) -> impl IntoView {
     view! {
-        <div>
+        <div
+            style="width: 100%"
+        >
             <p>"Only Multiple Choice at the moment"</p>
             {move || {
                 match question.data {
@@ -159,7 +161,7 @@ pub fn QuestionCastMC(
 
     view! {
         <form
-            class="quest-case"
+            class="forge-container"
             on:submit=on_submit
         >
             <h4>"New Question"</h4>
