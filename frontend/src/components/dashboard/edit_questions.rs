@@ -113,7 +113,10 @@ pub fn QuestionCalibrateMC(
     };
 
     view! {
-        <form on:submit=on_submit>
+        <form
+            class="forge-container"
+            on:submit=on_submit
+        >
             <h4>"Question Calibration"</h4>
             <h4>{move || err_msg.get() }</h4>
             <input
@@ -155,8 +158,12 @@ pub fn QuestionCalibrateMC(
                 value=move || quest_sig.get().choices[2].clone()
                 required
             />
-            <input type="submit" value="Save" />
-            <button on:click=move |_| cancel_edit.call(())>"Cancel"</button>
+            <div
+                class="button-case"
+            >
+                <input type="submit" value="Save" />
+                <button on:click=move |_| cancel_edit.call(())>"Cancel"</button>
+            </div>
         </form>
     }
 }
