@@ -158,7 +158,10 @@ pub fn QuestionCastMC(
     };
 
     view! {
-        <form on:submit=on_submit>
+        <form
+            class="quest-case"
+            on:submit=on_submit
+        >
             <h4>"New Question"</h4>
             <h4>{move || err_msg.get() }</h4>
             <input type="text" placeholder="question" node_ref=question_ref required/>

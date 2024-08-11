@@ -150,7 +150,13 @@ pub fn Dashboard() -> impl IntoView {
             </>
         },
         DashDisplay::MakeQuizzes => view! {
-            <><MakeQuiz display_settings=write_display response_setter=set_quiz_data/></>
+            <>
+                <MakeQuiz
+                    display_settings=write_display
+                    response_setter=set_quiz_data
+                    push_quiz=add_quiz
+                />
+            </>
         },
         DashDisplay::MakeQuestions => view! {
             <>
