@@ -9,7 +9,7 @@ use leptos::*;
 use leptos_router::A;
 use web_sys::{Headers, RequestMode, Response};
 
-use crate::components::Footer;
+use crate::components::{CenterFormCard, Footer};
 use crate::store::{AppSettings, AuthState};
 use crate::utils::Fetcher;
 
@@ -120,17 +120,15 @@ pub fn LogIn() -> impl IntoView {
                 </p>
             </header>
             <main>
+                <CenterFormCard>
+                <h2>Login</h2>
                 <p><b>{move || { err_msg.get() } }</b></p>
                 <form  on:submit=on_submit >
-                    <label for="username">Username:</label>
-                    <br/>
                     <input id="username" type="text" name="username" placeholder="username" node_ref=username_input_elm required/>
-                    <br/>
-                    <label for="password">Password:</label>
-                    <br/>
                     <input id="password" type="password" name="password" placeholder="password" node_ref=password_input_elm required/>
-                    <br/>
-                    <div>
+                    <div
+                        style="margin-bottom: 0.5rem"
+                    >
                         <p>"This website uses cookies for user login. To log in, you must accept the use of said cookies."</p>
                         <label for="cookie_acceptance">"I accept the use of essential cookies for logging in."</label>
                         <br />
@@ -143,13 +141,13 @@ pub fn LogIn() -> impl IntoView {
                             })
                             required
                         />
-                    <span>"I accept the cookies"</span>
+                        <span>"I accept the cookies"</span>
                     </div>
-                    <br/>
                     <input type="submit" value="Log In"/>
-                    <br/>
                 </form>
+                <br/>
                 <A href="/new-user">"New? Create an account here"</A>
+                </CenterFormCard>
             </main>
             <Footer />
         </div>

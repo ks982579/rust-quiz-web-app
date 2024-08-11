@@ -38,3 +38,20 @@ pub fn TodoCard(children: Children, on_click: Option<Callback<ev::MouseEvent>>) 
         </div>
     }
 }
+
+#[component]
+pub fn CenterFormCard(children: Children) -> impl IntoView {
+    view! {
+        <div
+            class:form-card-container=true
+        >
+        <section
+            // Overflow required for the unimplemented buttons
+            style={"overflow: visible"}
+            class:form-card=true
+        >
+            {children()}
+        </section>
+        </div>
+    }
+}
