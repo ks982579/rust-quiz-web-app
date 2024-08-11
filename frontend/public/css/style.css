@@ -37,7 +37,6 @@ button, input[type="submit"]{
 
 /* -- Signin / Login -- */
 .form-card-container {
-  border: red dotted 2px;
   display: flex;
   flex-flow: column;
   justify-content: center;

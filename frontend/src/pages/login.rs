@@ -111,7 +111,7 @@ pub fn LogIn() -> impl IntoView {
             class:fill-screen=true
         >
             <header>
-                <h1>"Kev's Quiz Web App"</h1>
+                <h1>"Kev's Quiz App"</h1>
                 <p>
                     <b>"Disclaimer"</b>
                     ": This website is a university project for educational purposes only. "

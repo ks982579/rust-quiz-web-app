@@ -182,9 +182,17 @@ pub fn Dashboard() -> impl IntoView {
             class:fill-screen=true
         >
             <header>
+                <h1>"Kev's Quiz App"</h1>
+                <p>
+                    <b>"Disclaimer"</b>
+                    ": This website is a university project for educational purposes only. "
+                    "Please do not enter any sensitive, personal, or confidential information into the system. "
+                    "Use this site at your own risk, understanding it is a student project developed with limited time and resources."
+                </p>
                 <LogoutButton />
-                <nav>"left: Kev's Quiz App | Right: Find People  Notifications  Profile"</nav>
-                <h1>"Welcome back "{user.name}</h1>
+                // TODO: Add functional Navbar when more features are implemented
+                // <nav>"left: Kev's Quiz App | Right: Find People  Notifications  Profile"</nav>
+                <h2>"Welcome back "{user.name}</h2>
             </header>
             <main class="split-screen">
                 <aside class="sidebar">
