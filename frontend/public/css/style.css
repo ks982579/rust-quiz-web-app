@@ -1,14 +1,17 @@
 body {
   background-color: grey;
   height: 100%;
+  min-height: 100vh;
   margin: 0;
   padding: 1rem;
+  display: flex;
 }
             
 .fill-screen {
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-height: 100%;
   header {
     flex-shrink: 0;
   }
@@ -16,11 +19,11 @@ body {
     flex-shrink: 0;
   }
   main {
-    flex: 1 0 auto;
+    flex-grow: 1;
   }
 }
 
-input[type="radio"] {
+input[type="checkbox"], input[type="radio"] {
   width: 1.25rem;
   height: 1.25rem;
 }
@@ -30,6 +33,84 @@ button, input[type="submit"]{
   padding: 0.3rem 1rem;
   cursor: pointer;
 }
+
+
+/* -- Signin / Login -- */
+.form-card-container {
+  display: flex;
+  flex-flow: column;
+  justify-content: center;
+  align-items: center;
+  section.form-card {
+    width:100%;
+    max-width: 40rem;
+    /* border: red dashed 2px; */
+    padding: 1rem;
+    width: 100%;
+    /* user-select: none; */
+    color: ghostwhite;
+    border 1px solid #ffffff22;
+    background-color: #282c34;
+    background: linear-gradient(0deg, rgba(40,44,52,1) 0%, rgba(17, 0, 32, .5) 100%);
+    box-shadow: 0 7px 20px 5px #00000088;
+    border-radius: 0.7rem;
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+    overflow: hidden;
+    form {
+      display: flex;
+      flex-flow: column;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    a:link {
+      color: #dAdAfA;
+    }
+    a:visited {
+      color: #eA3AAA;
+    }
+  }
+}
+.form-card-container input[type="text"], .form-card-container input[type="password"] {
+  width: 60%;
+  padding: 0.2rem;
+  margin: 0.5rem;
+}
+/* -- -------------- -- */
+
+
+/* ----- For Footer ----- */
+footer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  a {
+    padding: 0.5rem 1rem;
+    color: ghostwhite;
+    background-color: #4c2d95;
+    text-decoration: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+  }
+  a:hover {
+    background-color: #854cd8;
+  }
+  .footer-links {
+    width:100%;
+    max-width: 40rem;
+    display: flex;
+    /* gap: 1rem; */
+    margin: 1rem 0;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    align-content: space-between;
+  }
+}
+/* ----- ---------- ----- */
 
 /* -- For Unimplemented Buttons -- */
 .unimplemented-feature {

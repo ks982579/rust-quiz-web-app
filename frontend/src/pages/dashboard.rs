@@ -7,7 +7,7 @@ use web_sys::{Headers, RequestMode, Response};
 use crate::{
     components::{
         dashboard::{ExamRoom, MakeQuiz, QuestionForge, QuizShowCase, UpdateQuiz},
-        Card, TodoCard,
+        Card, Footer, TodoCard,
     },
     models::mimic_surreal::{SurrealQuiz, Thing},
     store::{AppSettings, AuthState},
@@ -182,9 +182,17 @@ pub fn Dashboard() -> impl IntoView {
             class:fill-screen=true
         >
             <header>
+                <h1>"Kev's Quiz App"</h1>
+                <p>
+                    <b>"Disclaimer"</b>
+                    ": This website is a university project for educational purposes only. "
+                    "Please do not enter any sensitive, personal, or confidential information into the system. "
+                    "Use this site at your own risk, understanding it is a student project developed with limited time and resources."
+                </p>
                 <LogoutButton />
-                <nav>"left: Kev's Quiz App | Right: Find People  Notifications  Profile"</nav>
-                <h1>"Welcome back "{user.name}</h1>
+                // TODO: Add functional Navbar when more features are implemented
+                // <nav>"left: Kev's Quiz App | Right: Find People  Notifications  Profile"</nav>
+                <h2>"Welcome back "{user.name}</h2>
             </header>
             <main class="split-screen">
                 <aside class="sidebar">
@@ -203,7 +211,9 @@ pub fn Dashboard() -> impl IntoView {
                         >"Search Quizzes"</div>
                     </TodoCard>
                 </aside>
-                <section class="main-content">
+                <section
+                    class:main-content=true
+                >
                     <div
                         class:main-content-container=true
                     >
@@ -211,7 +221,7 @@ pub fn Dashboard() -> impl IntoView {
                     </div>
                 </section>
             </main>
-            <footer>"&copy; 2024 Kev's Quiz Web App"</footer>
+            <Footer />
         </div>
     }
 }
