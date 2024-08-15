@@ -6,7 +6,7 @@ use crate::{
     authentication::{validate_credentials, AuthError},
     error_chain_helper,
     session_wrapper::SessionWrapper,
-    surrealdb_repo::Database,
+    surrealdb_repo::{Database, LookUpUser},
 };
 use actix_web::{
     http::{header::ContentType, StatusCode},
@@ -49,40 +49,6 @@ impl ResponseError for UserLoginError {
                 .insert_header(ContentType::json())
                 .json(serde_json::json!({ "msg": "User Unauthenticated" })),
         }
-    }
-}
-
-// -- Traits for DB
-// Compiler suggest not making public async trait...
-pub trait LookUpUser {
-    fn get_user_by_username(
-        &self,
-        username: String,
-    ) -> impl std::future::Future<Output = Result<Option<GeneralUser>, anyhow::Error>> + Send;
-}
-
-impl LookUpUser for Database {
-    async fn get_user_by_username(
-        &self,
-        username: String,
-    ) -> Result<Option<GeneralUser>, anyhow::Error> {
-        let query: &str = r#"
-        SELECT * FROM type::table($table)
-        WHERE username IS $username
-        "#;
-
-        // How it works?
-        // SurrealDB::Error implements the Error trait.
-        // anyhow::Error implements From<Error> and Rust converts for us
-        let mut response: surrealdb::Response = self
-            .client
-            .query(query)
-            .bind(("table", "general_user"))
-            .bind(("username", username))
-            .await?;
-
-        let user: Option<GeneralUser> = response.take(0)?;
-        Ok(user)
     }
 }
 

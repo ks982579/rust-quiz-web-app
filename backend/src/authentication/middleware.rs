@@ -1,8 +1,6 @@
 //! backend/src/authentication/middleware.rs
 //! To handle the middleware authentication with cookies
 //! Following [Actix-web docs](https://docs.rs/actix-web/latest/actis_web/middleware/index.html)
-//! closely and hoping for the best
-
 use crate::session_wrapper::SessionWrapper;
 use actix_session::SessionExt;
 use actix_web::{
@@ -38,6 +36,8 @@ where
     type Transform = AuthCookieMiddleware<S>;
     type Future = std::future::Ready<Result<Self::Transform, Self::InitError>>;
 
+    /// Initializes and wraps authorization cookie in Option.
+    /// And wraps in an immediately accessible future to be async.
     fn new_transform(&self, service: S) -> Self::Future {
         std::future::ready(Ok(AuthCookieMiddleware { service }))
     }
@@ -63,6 +63,12 @@ where
     // Believe this is the required `poll_ready()` implementation
     forward_ready!(service);
 
+    /// When middleware is called it pulls the session from the request.
+    /// The session should hold the user's id.
+    /// If it does, it is returned as a Future.
+    /// Else, if the user id is a None varient, "Unauthorized" is returned.
+    /// And if getting the id is an Err varient, "Internal Server Error" is returned.
+    /// Returns are mapped into a Pin<Box<dyn Future<Output = ServiceResponse>> - heap memory pinned to location
     fn call(&self, req: ServiceRequest) -> Self::Future {
         // Creating our Session Wrapper
         let this_session = SessionWrapper::wrap(req.get_session());
@@ -73,8 +79,8 @@ where
             id
         } else {
             let (http_req, _) = req.into_parts();
-            let unauth_response = HttpResponse::InternalServerError().finish();
-            let service_response = ServiceResponse::new(http_req, unauth_response);
+            let internal_err_response = HttpResponse::InternalServerError().finish();
+            let service_response = ServiceResponse::new(http_req, internal_err_response);
             return Box::pin(async {
                 // After much fighting with borrow checker this is what works best
                 // forget the original requestion and return a clean slate
@@ -83,6 +89,7 @@ where
             });
         };
 
+        // If userid is None -> Unauthorized.
         if let Some(userid) = user_id {
             req.extensions_mut().insert(UserID(userid.to_string()));
             let req_fut = self.service.call(req);

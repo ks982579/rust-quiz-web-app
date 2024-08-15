@@ -1,6 +1,10 @@
 //! backend/src/authentication/password.rs
+//! File to hold logic for encrypting passwords.
 //! Passwords will use the Argon2 encryption method
-use crate::{surrealdb_repo::Database, telemetry::spawn_blocking_and_tracing};
+use crate::{
+    surrealdb_repo::{Database, LookUpUser},
+    telemetry::spawn_blocking_and_tracing,
+};
 use actix_web::web;
 use anyhow::Context;
 use argon2::{
@@ -9,11 +13,9 @@ use argon2::{
 };
 use rand::thread_rng;
 use secrecy::{ExposeSecret, Secret};
-use uuid::Uuid;
-// trait for Database
-use crate::routes::LookUpUser;
 use serde::Deserialize;
 use std::str::FromStr;
+use uuid::Uuid;
 
 // Errors
 #[derive(Debug, thiserror::Error)]
@@ -30,6 +32,9 @@ pub struct UserCredentials {
     pub password: Secret<String>,
 }
 
+/// Function to validate actual credentials.
+/// The hard coded credentials will fail but help secure against
+/// attacks that check difference in response times to target victims.
 #[tracing::instrument(name = "Validate Credentials", skip_all)]
 pub async fn validate_credentials(
     credentials: UserCredentials,

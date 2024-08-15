@@ -93,9 +93,9 @@ impl Database {
 }
 
 // -- Below is for Session Store --
-
 type SessionState = HashMap<String, String>;
 
+/// Session token structure to be stored in SurrealDB database.
 #[derive(Debug, Deserialize, Serialize, PartialEq, PartialOrd, Clone)]
 pub struct SessionToken {
     id: Thing,
@@ -103,6 +103,7 @@ pub struct SessionToken {
     expiry: surrealdb::sql::Datetime,
 }
 
+/// A structure used when sending session token updates to database.
 #[derive(Debug, Deserialize, Serialize, PartialEq, PartialOrd, Clone)]
 pub struct UpdatedSessionToken {
     token: Option<String>,
@@ -129,7 +130,11 @@ fn generate_time_stamp(dur: &Duration) -> anyhow::Result<DateTime<Utc>> {
     Ok(time_stamp)
 }
 
+/// Implementing Session store is required for actix_session
+/// Required methods found in (Documentation)[https://docs.rs/actix-session/latest/actix_session/storage/trait.SessionStore.html]
 impl SessionStore for Database {
+    /// With the session key, pulls session from the database for the user
+    /// or deletes it if expired.
     #[tracing::instrument(
         name = "Loading Session Token"
         skip_all
@@ -169,10 +174,13 @@ impl SessionStore for Database {
             return Ok(None);
         }
 
+        // Converts to just HashMap of token
         Ok(serde_json::from_str(&surreal_token.token)
             .context("Failed to deserialize session state")
             .map_err(LoadError::Deserialization)?)
     }
+    /// Creates a session token with a key and expiry and
+    /// saves to the database.
     /// `SessionKey` is a `String` wrapper.
     async fn save(
         &self,
@@ -205,6 +213,10 @@ impl SessionStore for Database {
 
         Ok(session_key)
     }
+    /// Given the session key and state we can update the
+    /// time to live for the same token and save to database.
+    /// This function could update additional information if ever present.
+    /// However, the state for these sessions is currently stateless.
     async fn update(
         &self,
         session_key: SessionKey,
@@ -241,6 +253,8 @@ impl SessionStore for Database {
         Ok(session_key)
     }
 
+    /// Given the session key we can update the
+    /// time to live for the same token and save to database.
     async fn update_ttl(
         &self,
         session_key: &SessionKey,
@@ -276,6 +290,7 @@ impl SessionStore for Database {
         Ok(())
     }
 
+    /// Deletes session key from database
     async fn delete(&self, session_key: &SessionKey) -> Result<(), anyhow::Error> {
         dbg!("Deleting Session");
         let token_info: Thing = Thing {
@@ -290,5 +305,40 @@ impl SessionStore for Database {
             .context("Deleting token in database failed")?;
 
         Ok(())
+    }
+}
+
+// -- Traits for DB
+// Compiler suggest not making public async trait...
+pub trait LookUpUser {
+    fn get_user_by_username(
+        &self,
+        username: String,
+    ) -> impl std::future::Future<Output = Result<Option<GeneralUser>, anyhow::Error>> + Send;
+}
+
+impl LookUpUser for Database {
+    /// Custome Surreal query to get a user by their username.
+    async fn get_user_by_username(
+        &self,
+        username: String,
+    ) -> Result<Option<GeneralUser>, anyhow::Error> {
+        let query: &str = r#"
+        SELECT * FROM type::table($table)
+        WHERE username IS $username
+        "#;
+
+        // How it works?
+        // SurrealDB::Error implements the Error trait.
+        // anyhow::Error implements From<Error> and Rust converts for us
+        let mut response: surrealdb::Response = self
+            .client
+            .query(query)
+            .bind(("table", "general_user"))
+            .bind(("username", username))
+            .await?;
+
+        let user: Option<GeneralUser> = response.take(0)?;
+        Ok(user)
     }
 }
