@@ -1,5 +1,5 @@
-//! backend/src/routes/create_quesstions.rs
-//! The plural indicates handling a vector of sorts
+//! backend/src/routes/create_questions.rs
+//! To handle logic for creating questions for user.
 use crate::{error_chain_helper, session_wrapper::SessionWrapper, surrealdb_repo::Database};
 use actix_web::http::{header::ContentType, StatusCode};
 use actix_web::{web, HttpRequest, HttpResponse, ResponseError};
@@ -52,7 +52,7 @@ impl ResponseError for CreateQuestionError {
 }
 
 // --- EndPoint ---
-/// ToDo: Documentation
+/// Route handler for creating a new question
 #[tracing::instrument(
     name = "Request to Create Questions"
     skip(db, session)
@@ -84,7 +84,7 @@ pub async fn create_new_questions(
         ));
     };
 
-    // If you have more questions, put into more lists
+    // When more types become available, this match will fill out.
     let json_val: serde_json::Value = match question {
         JsonQuestion::MultipleChoice(what) => {
             // -- Save Question into Database

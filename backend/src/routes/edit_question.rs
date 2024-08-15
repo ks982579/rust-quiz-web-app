@@ -1,19 +1,13 @@
 //! backend/src/routes/create_quesstions.rs
-//! The plural indicates handling a vector of sorts
+//! To handle logic for editing questions.
 use crate::{error_chain_helper, session_wrapper::SessionWrapper, surrealdb_repo::Database};
 use actix_web::http::{header::ContentType, StatusCode};
 use actix_web::{web, HttpRequest, HttpResponse, ResponseError};
 use anyhow::Context;
-use models::{
-    model_errors::ModelErrors,
-    questions::{
-        EditQuestionJsonPkg, JsonQuestion, QuestionMC, SurrealGenericQuestionData,
-        SurrealQuestionMC,
-    },
-    SurrealRecord,
+use models::questions::{
+    EditQuestionJsonPkg, JsonQuestion, SurrealGenericQuestionData, SurrealQuestionMC,
 };
 use serde::Deserialize;
-use surrealdb::opt::PatchOp;
 use surrealdb::sql::{thing, Thing};
 use uuid::Uuid;
 
@@ -68,7 +62,7 @@ pub struct EditQuestQueryString {
 }
 
 // --- EndPoint ---
-/// ToDo: Documentation
+/// Route handler for editing questions.
 #[tracing::instrument(
     name = "Request to Edit Questions"
     skip(db, session)
@@ -136,8 +130,7 @@ pub async fn edit_question(
         }
     }
 
-    // If you have more questions, put into more lists
-    // Each should follow same format as first, update and return response
+    // As more question types are added, this match return statement will fill out.
     match question {
         JsonQuestion::MultipleChoice(what) => {
             // -- Save Question into Database

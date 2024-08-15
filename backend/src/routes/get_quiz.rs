@@ -6,7 +6,7 @@ use crate::surrealdb_repo::Database;
 use actix_web::http::{header::ContentType, StatusCode};
 use actix_web::web;
 use actix_web::{HttpRequest, HttpResponse, ResponseError};
-use models::{model_errors::ModelErrors, quiz::SurrealQuiz};
+use models::quiz::SurrealQuiz;
 use uuid::Uuid;
 
 // Errors
@@ -40,6 +40,8 @@ impl ResponseError for GetQuizError {
     }
 }
 
+// --- EndPoint ---
+/// Route handler for fetching quizzes for a specific user.
 #[tracing::instrument(name = "Request to Get Quizzes by User", skip(db, session))]
 pub async fn get_my_quizzes(
     req: HttpRequest,

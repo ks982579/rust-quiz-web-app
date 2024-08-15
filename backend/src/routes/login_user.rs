@@ -6,14 +6,14 @@ use crate::{
     authentication::{validate_credentials, AuthError},
     error_chain_helper,
     session_wrapper::SessionWrapper,
-    surrealdb_repo::{Database, LookUpUser},
+    surrealdb_repo::Database,
 };
 use actix_web::{
     http::{header::ContentType, StatusCode},
     web, HttpMessage, HttpRequest, HttpResponse, ResponseError,
 };
 use anyhow::Context;
-use models::{GeneralUser, PartialUser, UserID};
+use models::{PartialUser, UserID};
 
 #[derive(thiserror::Error)]
 pub enum UserLoginError {
@@ -52,6 +52,8 @@ impl ResponseError for UserLoginError {
     }
 }
 
+// --- EndPoint ---
+/// Route handler for logging existing users into their accounts.
 #[tracing::instrument(
     name = "User Login"
     skip(db, session)
@@ -88,7 +90,12 @@ pub async fn user_login(
         .json(serde_json::json!({"msg": "Login Successful"})))
 }
 
-#[tracing::instrument(name = "Check If Logged In")]
+/// Route handler to check if a user is already logged in
+/// i.e., the cookie in their browser is valid.
+#[tracing::instrument(
+    name = "Check If Logged In"
+    skip(db)
+)]
 pub async fn check_login(
     req: HttpRequest,
     db: web::Data<Database>,

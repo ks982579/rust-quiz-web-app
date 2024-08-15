@@ -1,4 +1,5 @@
 //! backend/src/routes/create_quiz.rs
+//! To handle logic for creating quizzes for user.
 use crate::{error_chain_helper, session_wrapper::SessionWrapper, surrealdb_repo::Database};
 use actix_web::http::{header::ContentType, StatusCode};
 use actix_web::{web, HttpRequest, HttpResponse, ResponseError};
@@ -47,7 +48,8 @@ impl ResponseError for CreateQuizError {
     }
 }
 
-/// ToDo: Documentation
+// --- EndPoint ---
+/// Route handler for creating a new quizzes
 #[tracing::instrument(
     name = "Request to Create Quiz"
     skip(db, session)
