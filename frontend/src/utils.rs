@@ -5,6 +5,7 @@ use leptos::*;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
+use rand::{thread_rng, Rng};
 use wasm_bindgen_futures::JsFuture;
 use web_sys::js_sys::Uint8Array;
 use web_sys::UrlSearchParams;
@@ -157,4 +158,13 @@ pub enum DashDisplay {
     MakeQuestions,
     TakeQuiz,
     UpdateQuiz,
+}
+
+/// To generate random strings for unique and random IDs
+pub fn generate_random_string(length: usize) -> String {
+    thread_rng()
+        .sample_iter(rand::distributions::Alphanumeric)
+        .take(length)
+        .map(char::from)
+        .collect()
 }

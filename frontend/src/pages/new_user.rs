@@ -19,6 +19,7 @@ struct NewUserFormData {
     password: String,
 }
 
+/// To hold state of showing user their password.
 #[derive(Clone, Debug)]
 struct ShowPassword {
     show: bool,
@@ -36,12 +37,13 @@ impl std::default::Default for ShowPassword {
     }
 }
 
+/// To facilitate the creation of new users.
 #[component]
 pub fn CreateNewUser() -> impl IntoView {
     // Create Navigator
     let navigator = use_navigate();
     let navigator_rc = Rc::new(navigator);
-    //
+
     // -- Use Context --
     let app_settings: AppSettings =
         use_context::<AppSettings>().expect("AppSettings context not found");
@@ -55,8 +57,8 @@ pub fn CreateNewUser() -> impl IntoView {
     let username_input_elm: NodeRef<html::Input> = create_node_ref();
     let password_input_elm: NodeRef<html::Input> = create_node_ref();
     let (checked, set_checked) = create_signal(false);
-    // let on_submit: dyn FnOnce = move || {};
 
+    // Create Action to POST credentials to backend and receive response.
     let attempt_signup = create_action(move |data: &String| {
         let pckg: String = data.to_owned();
         let headers: Headers = Headers::new().unwrap();
@@ -119,6 +121,7 @@ pub fn CreateNewUser() -> impl IntoView {
         }
     };
 
+    // Closure to change the state of showing user their password.
     let toggle_password = move |_| match show_password.get().show {
         true => set_show_password.set(ShowPassword {
             show: false,
@@ -132,6 +135,7 @@ pub fn CreateNewUser() -> impl IntoView {
         }),
     };
 
+    // -- Render View --
     view! {
         <div
             class:fill-screen=true

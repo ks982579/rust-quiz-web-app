@@ -2,26 +2,14 @@
 //! This component will handle quiz update logic and redirect
 //! users back to the home screen
 use crate::{
-    models::mimic_surreal::SurrealQuiz,
+    models::{mimic_surreal::SurrealQuiz, quizzes::UpdateQuizActionPkg},
     store::AppSettings,
     utils::{DashDisplay, Fetcher, JsonMsg},
 };
 use leptos::*;
-use serde::{Deserialize, Serialize};
 use web_sys::{Headers, RequestMode, Response};
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct QuizJsonPkg {
-    pub name: String,
-    pub description: String,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct UpdateQuizActionPkg {
-    pub id: String,
-    pub pkg: String,
-}
-
+/// Allowing user to make updates to existing Quiz data.
 #[component]
 pub fn UpdateQuiz(
     display_settings: WriteSignal<DashDisplay>,
@@ -111,10 +99,7 @@ pub fn UpdateQuiz(
         .to_string();
 
         if let Some(raw_id) = get_quiz_id() {
-            let action_pkg = UpdateQuizActionPkg {
-                id: raw_id,
-                pkg: pkg,
-            };
+            let action_pkg = UpdateQuizActionPkg { id: raw_id, pkg };
             update_quiz.dispatch(action_pkg);
         } else {
             set_err_msg.set(Some(String::from("Cannot find Quiz ID")))

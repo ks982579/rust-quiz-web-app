@@ -1,8 +1,7 @@
 //! frontend/src/main.rs
-use leptos::*;
-
+//! Entry point of application
 use frontend::app::*;
-use frontend::utils::*;
+use leptos::*;
 
 /// Entrypoint of application
 fn main() {

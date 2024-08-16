@@ -1,9 +1,8 @@
 //! frontend/src/pages/login.rs
-//! This is main component of Homepage.
-//! The `LogIn` componenet is currently part of the `HomePage`.
-//! That is why it is implemented here.
-//! If it becomes its own page one day, it can (and should) be moved.
-use crate::utils::{JsonMsg, PartialUser};
+//! This is the login page which is encapsulated in the Homepage.
+//! Decision made to relocate file into 'components' directory as this may become its own page in
+//! the future.
+use crate::utils::JsonMsg;
 use leptos::ev::SubmitEvent;
 use leptos::*;
 use leptos_router::A;
@@ -13,6 +12,7 @@ use crate::components::{CenterFormCard, Footer};
 use crate::store::{AppSettings, AuthState};
 use crate::utils::Fetcher;
 
+// TODO: Implement the "show password" feature for logging in.
 #[derive(Clone, Debug)]
 struct ShowPassword {
     show: bool,
@@ -41,6 +41,7 @@ pub fn LogIn() -> impl IntoView {
     // Create signals for component
     let (err_msg, set_err_msg): (ReadSignal<Option<String>>, WriteSignal<Option<String>>) =
         create_signal(None);
+    // TODO: Implement the "show password" feature for logging in.
     let (show_password, set_show_password) = create_signal(ShowPassword::default());
     let (checked, set_checked) = create_signal(false);
 
@@ -48,6 +49,8 @@ pub fn LogIn() -> impl IntoView {
     let username_input_elm: NodeRef<html::Input> = create_node_ref();
     let password_input_elm: NodeRef<html::Input> = create_node_ref();
 
+    // -- Create action to post credentials to user login endpoint and update the user
+    // authenitcation status accordingly.
     let attempt_login = create_action(move |credentials: &(String, String)| {
         let (username, password) = credentials.clone();
         let pckg: String = serde_json::json!({
@@ -60,7 +63,6 @@ pub fn LogIn() -> impl IntoView {
         headers
             .set("Content-Type", "application/json;charset=UTF-8")
             .unwrap();
-        // headers.set("Access-Control-Allow-Origin", "true").unwrap();
 
         let fetcher: Fetcher = Fetcher::init()
             .set_url(app_settings.backend_url.to_string() + "user-login")
@@ -69,17 +71,11 @@ pub fn LogIn() -> impl IntoView {
             .set_headers(headers)
             .build();
 
-        // let request: Request =
-        //     Request::new_with_str_and_init("http://127.0.0.1:8000/user-login", &options).unwrap();
-
-        // let navigator_clone = Rc::clone(&navigator_rc);
-
         async move {
             let response: Response = fetcher.fetch(Some(pckg)).await;
 
             if response.status() == 200 {
                 auth_state.set_authenticated(true);
-                // navigator_clone("/dashboard", NavigateOptions::default());
             } else {
                 let deserialized: JsonMsg = Fetcher::response_to_struct(&response).await;
 
@@ -106,6 +102,7 @@ pub fn LogIn() -> impl IntoView {
         }
     };
 
+    // -- Render View --
     view! {
         <div
             class:fill-screen=true

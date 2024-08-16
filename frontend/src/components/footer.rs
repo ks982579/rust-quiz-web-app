@@ -2,6 +2,7 @@
 //! This is a file for the footer component(s) for consistency.
 use leptos::*;
 
+/// Component to render the footer consistently through application
 #[component]
 pub fn Footer() -> impl IntoView {
     view! {
@@ -15,25 +16,5 @@ pub fn Footer() -> impl IntoView {
             </div>
             <div>"© 2024 Kev's Quiz Web App"</div>
         </footer>
-    }
-}
-
-#[component]
-pub fn NotReal(children: Children, on_click: Option<Callback<ev::MouseEvent>>) -> impl IntoView {
-    view! {
-        <div
-            style={if let Some(_) = on_click {"cursor:pointer"} else {""}}
-            // Overflow required for the unimplemented buttons
-            style={"overflow: visible"}
-            on:click=move |click| {
-                if let Some(callback) = on_click {
-                    callback.call(click);
-                }
-            }
-            class:gen-card=true
-            class:unimplemented-feature=true
-        >
-            {children()}
-        </div>
     }
 }

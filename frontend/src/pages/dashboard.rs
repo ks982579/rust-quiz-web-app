@@ -1,7 +1,6 @@
 //! frontend/src/pages/dashboard.rs
 //! This is dashboard that appears for logged in users.
 use leptos::*;
-use std::cmp::Ordering;
 use web_sys::{Headers, RequestMode, Response};
 
 use crate::{
@@ -9,7 +8,7 @@ use crate::{
         dashboard::{ExamRoom, MakeQuiz, QuestionForge, QuizShowCase, UpdateQuiz},
         Card, Footer, TodoCard,
     },
-    models::mimic_surreal::{SurrealQuiz, Thing},
+    models::mimic_surreal::SurrealQuiz,
     store::{AppSettings, AuthState},
     utils::{DashDisplay, Fetcher, JsonMsg, PartialUser},
 };
@@ -17,10 +16,12 @@ use crate::{
 /// Component to log user out of web application
 #[component]
 fn LogoutButton() -> impl IntoView {
+    // -- Create Context --
     let auth_state: AuthState = use_context::<AuthState>().expect("AuthState context not found?");
     let app_settings: AppSettings =
         use_context::<AppSettings>().expect("AppSettings context not found");
 
+    // Creating user logout action to send request to logout endpoint.
     let logout_action = create_action(move |_| {
         let headers: Headers = Headers::new().unwrap();
         headers
@@ -40,6 +41,7 @@ fn LogoutButton() -> impl IntoView {
         }
     });
 
+    // -- Render View --
     view! {
         <button
             on:click=move |_| logout_action.dispatch(())
@@ -89,10 +91,9 @@ pub fn Dashboard() -> impl IntoView {
         write_display.set(DashDisplay::MakeQuestions);
     });
 
-    // TODO: Make request for current tests
-    // try `create_local_resource`
-    // or `create_render_effect`
-    // let settings_rc = std::rc::Rc::new(app_settings);
+    // Resource for fetching current quizzes already create by user
+    // designed to render only once, meaning other quizzes are to be added to associated vectors
+    // manually. This is designed to cut down requests to server, backend, and database.
     let quizzes_resource = create_resource(
         || (), // only render once
         move |_| {
@@ -111,16 +112,16 @@ pub fn Dashboard() -> impl IntoView {
                 let response: Response = fetcher.fetch(None).await;
                 if response.status() == 200 {
                     let data: Vec<SurrealQuiz> = Fetcher::response_to_struct(&response).await;
-                    // response_setter.set(Some(data));
-                    // display_settings.set(DashDisplay::MakeQuestions);
                     quiz_list.set(data);
                 } else {
-                    let deserialized: JsonMsg = Fetcher::response_to_struct(&response).await;
+                    let _deserialized: JsonMsg = Fetcher::response_to_struct(&response).await;
                     // set_err_msg.set(deserialized.msg.clone());
                 }
             }
         },
     );
+
+    // -- Callbacks to be used throughout rest of application for quiz list management
     let add_quiz: Callback<SurrealQuiz> = Callback::new(move |new_quiz: SurrealQuiz| {
         quiz_list.update(|quizzes| {
             quizzes.push(new_quiz);
@@ -130,59 +131,50 @@ pub fn Dashboard() -> impl IntoView {
     let remove_quiz: Callback<SurrealQuiz> = Callback::new(move |dead_quiz: SurrealQuiz| {
         quiz_list.update(|q| q.retain(|qz| qz.id != dead_quiz.id));
     });
+
+    // Create Effect to render quiz fetching resource only once when component is initialized.
     create_effect(move |_| {
-        // if let Some(Ok(fetched_quizzes)) = quizzes_resource.get() {
-        //     quiz_list.set(fetched_quizzes);
-        // }
         quizzes_resource.get();
     });
 
+    // The main screen is dependent on the value of the DashDisplay Enum
     let main_screen = move || match read_display.get() {
         DashDisplay::MyQuizzes => view! {
-            <>
-                <QuizShowCase
-                    quiz_list=quiz_list
-                    quiz_selector=choose_quiz_to_take
-                    pop_quiz=remove_quiz
-                    quiz_updater=choose_quiz_to_update
-                    quest_calibrate=reforge_questions
-                />
-            </>
+            <QuizShowCase
+                quiz_list=quiz_list
+                quiz_selector=choose_quiz_to_take
+                pop_quiz=remove_quiz
+                quiz_updater=choose_quiz_to_update
+                quest_calibrate=reforge_questions
+            />
         },
         DashDisplay::MakeQuizzes => view! {
-            <>
-                <MakeQuiz
-                    display_settings=write_display
-                    response_setter=set_quiz_data
-                    push_quiz=add_quiz
-                />
-            </>
+            <MakeQuiz
+                display_settings=write_display
+                response_setter=set_quiz_data
+                push_quiz=add_quiz
+            />
         },
         DashDisplay::MakeQuestions => view! {
-            <>
-                <QuestionForge
-                    display_settings=write_display
-                    quiz_data=quiz_data
-                />
-            </>
+            <QuestionForge
+                display_settings=write_display
+                quiz_data=quiz_data
+            />
         },
         DashDisplay::TakeQuiz => view! {
-            <>
-                <ExamRoom some_quiz=current_quiz_rw.get()/>
-            </>
+            <ExamRoom some_quiz=current_quiz_rw.get()/>
         },
         DashDisplay::UpdateQuiz => view! {
-            <>
-                <UpdateQuiz
-                    display_settings=write_display
-                    push_quiz=add_quiz
-                    pop_quiz=remove_quiz
-                    quiz_rw=current_quiz_rw
-                />
-            </>
+            <UpdateQuiz
+                display_settings=write_display
+                push_quiz=add_quiz
+                pop_quiz=remove_quiz
+                quiz_rw=current_quiz_rw
+            />
         },
     };
 
+    // -- Render View --
     view! {
         <div
             class:fill-screen=true

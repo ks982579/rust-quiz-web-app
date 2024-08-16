@@ -43,12 +43,11 @@ impl AppSettings {
         };
         // -- Check Environment for URL
         Self::load_from_env(&mut settings);
-        // settings.backend_url = env!("APP__BACKEND_URL").to_string();
-
         settings
     }
 
     /// Initializes the settings from .env file
+    /// Note: Unable to read file at Runtime...
     fn load_from_file() -> Self {
         let env_file: File = File::open(".env").expect("Failed to open .env file");
         let env_reader: BufReader<File> = BufReader::new(env_file);
@@ -73,6 +72,7 @@ impl AppSettings {
     /// Initialize from file first, then this mutates the settings in place.
     fn load_from_env(tmp_settings: &mut Self) {
         // Application cannot read env-vars at runtime
+        // This macro reads at compile time!
         if let Some(url) = option_env!("APP__BACKEND_URL") {
             tmp_settings.backend_url = url.trim().to_string();
         } else {

@@ -1,10 +1,8 @@
 //! frontend/src/components/dashboard/edit_questions.rs
 //! This component will handle the initial question making procecss
 use crate::{
-    models::mimic_surreal::{SurrealQuestionMC, SurrealQuiz},
-    models::questions::{
-        EditQuestionJsonPkg, JsonQuestion, JsonQuestionMC, QLInternals, QuestType, QuestionJsonPkg,
-    },
+    models::mimic_surreal::SurrealQuestionMC,
+    models::questions::{EditQuestionJsonPkg, JsonQuestion, JsonQuestionMC, QuestType},
     store::AppSettings,
     utils::{Fetcher, JsonMsg},
 };
@@ -12,6 +10,7 @@ use leptos::*;
 use web_sys::{Headers, RequestMode, Response};
 
 /// Calibrate a Multiple Choice question (from a mold)
+/// to "calibrate" is to edit a question.
 #[component]
 pub fn QuestionCalibrateMC(
     quest_mc: SurrealQuestionMC,
@@ -59,6 +58,7 @@ pub fn QuestionCalibrateMC(
                 pop_quest.call(QuestType::MC(data.clone()));
                 add_quest.call(QuestType::MC(data));
             } else {
+                // Displaying error if one occurs
                 let deserialized: JsonMsg = Fetcher::response_to_struct(&response).await;
                 set_err_msg.set(deserialized.msg.clone());
             }
@@ -66,6 +66,7 @@ pub fn QuestionCalibrateMC(
     });
 
     // -- On Submit --
+    // Pull values from form and send to the action for async ingestion
     let on_submit = move |sub_ev: ev::SubmitEvent| {
         sub_ev.prevent_default();
 
@@ -112,6 +113,7 @@ pub fn QuestionCalibrateMC(
         }
     };
 
+    // -- View --
     view! {
         <form
             class="forge-container"
