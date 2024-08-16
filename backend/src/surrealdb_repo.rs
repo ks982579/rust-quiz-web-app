@@ -1,3 +1,5 @@
+// backend/src/surreal_repo.rs
+// To hold SurrealDB logic connecting to and using the database.
 // TODO: If project grows, Add SessionStorage to different SurrealDB Instance
 use crate::configuration::DatabaseSettings;
 use actix_session::storage::{LoadError, SaveError, SessionKey, SessionStore, UpdateError};
@@ -54,6 +56,7 @@ impl Database {
         })
     }
 
+    /// helper function to fetch all users
     pub async fn get_all_general_users(&self) -> Option<Vec<GeneralUser>> {
         let result = self.client.select("general_user").await;
         match result {
@@ -61,6 +64,8 @@ impl Database {
             Err(_) => None,
         }
     }
+
+    /// helper function to create a new user.
     pub async fn add_general_user(&self, new_general_user: GeneralUser) -> Option<GeneralUser> {
         let created_gen_user: Result<Option<GeneralUser>, Error> = self
             .client
@@ -73,6 +78,8 @@ impl Database {
             Err(_) => None,
         }
     }
+
+    /// helper function count users with username.
     pub async fn count_users(&self, username: &str) -> surrealdb::Result<i64> {
         let qry = r#"SELECT count() FROM type::table($table)
         WHERE username = $username"#;

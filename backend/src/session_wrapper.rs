@@ -8,6 +8,7 @@ use uuid::Uuid;
 
 pub struct SessionWrapper(Session);
 
+/// Wraps an actix_session::Session in convenient to use shell for application.
 impl SessionWrapper {
     const USER_ID_KEY: &'static str = "user_id";
     pub fn wrap(session: Session) -> Self {
@@ -27,6 +28,7 @@ impl SessionWrapper {
     }
 }
 
+/// To derive a session from an HTTP request
 impl FromRequest for SessionWrapper {
     type Error = <Session as FromRequest>::Error;
     // To make non-future value into Future

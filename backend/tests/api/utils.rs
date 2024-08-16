@@ -1,13 +1,13 @@
 //! backend/tests/api/utils.rs
 //! To house utility functions for testing.
 use backend::{
-    configuration::{get_configuration, AllSettings, ApplicationSettings},
+    configuration::{get_configuration, AllSettings},
     startup::Application,
     surrealdb_repo::Database,
     telemetry::{get_subscriber, init_subscriber},
 };
 use models::SurrealRecord;
-use reqwest::{cookie::Cookie, Client, Response};
+use reqwest::{Client, Response};
 use serde_json::Value;
 use std::future::Future;
 use std::sync::OnceLock;

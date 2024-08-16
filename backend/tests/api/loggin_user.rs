@@ -3,16 +3,13 @@ use crate::utils::{spawn_app, TestApp};
 use backend::surrealdb_repo::SessionToken;
 use reqwest::{cookie::Cookie, Response};
 use serde_json::Value;
-use surrealdb::sql::Thing;
 
 #[tokio::test]
 async fn test_log_in_user_200() {
     // Arrange
     let test_app: TestApp = spawn_app().await;
     // Clear out users
-    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("general_user").await;
-    // Clear out session tokens
-    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("sessions").await;
+    test_app.cleanup_db().await;
 
     // Test User Data
     let user_data: Value = serde_json::json!({
@@ -54,10 +51,7 @@ async fn test_log_in_user_200() {
     assert!(db_token.len() > 0);
 
     // Clean Up
-    // TODO: Code duplication
-    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("general_user").await;
-
-    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("sessions").await;
+    test_app.cleanup_db().await;
 }
 
 #[tokio::test]
@@ -65,9 +59,7 @@ async fn test_log_in_user_400() {
     // Arrange
     let test_app: TestApp = spawn_app().await;
     // Clear out users
-    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("general_user").await;
-    // Clear out session tokens
-    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("sessions").await;
+    test_app.cleanup_db().await;
 
     // Create Test User
     let user_data: Value = serde_json::json!({
@@ -135,8 +127,5 @@ async fn test_log_in_user_400() {
     }
 
     // Clean Up
-    // TODO: Code duplication
-    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("general_user").await;
-
-    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("sessions").await;
+    test_app.cleanup_db().await;
 }

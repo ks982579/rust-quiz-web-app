@@ -8,6 +8,7 @@ use backend::{
 };
 
 /// Async main function, entrypoint to program.
+/// It instantiates important settings and begins the application.
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
     // Setting up tracing subscriber
