@@ -149,6 +149,16 @@ This project will follow the book's more complicated approach to logging.
 
 ### Local
 
+On linux it is in `/etc/hosts` file.
+I run WSL through windows, so on my machine I must update the Windows DNS file
+found in `C::\\Windows\Systems32\drivers\etc\hosts`.
+In either case, add the following to the end of the file so the application can be found locally:
+
+```
+127.0.0.1 quiztestapp.io
+127.0.0.1 www.quiztestapp.io
+```
+
 ### Production
 
 Set up the compose-prod.yaml file, which means our commands look like:
