@@ -19,12 +19,17 @@ services:
   certbot:
     image: certbot/certbot:latest
     # volumes same as NGINX to communicate
+    environment:
+      # Doesn't do much but serves as reminder to set this variable!
+      - CERTBOT_EMAIL=${CERTBOT_EMAIL}
     volumes:
       - ./certbot/conf:/etc/letsencrypt/:rw
       - ./certbot/www:/var/www/certbot/:rw
       # Below is a line for reading logs! Handy for debugging
       # - ./certbot/log:/var/log/letsencrypt/:rw
-    command: certonly --webroot -w /var/www/certbot --force-renewal --email kevin.sullivan@example.com -d kevsquizapp.com --agree-tos
+    command: >
+      certonly --webroot -w /var/www/certbot  --force-renewal --email ${CERTBOT_EMAIL:-kevin.sullivan@example.com} -d kevsquizapp.com --agree-tos
+
   # -- Backend
   actixbackend:
     # image: quiz-backend
@@ -50,8 +55,9 @@ services:
     ports:
       - 8000:8000
     # Set Environment Variables for Security
-    env_file:
-      - .env
+    environment:
+      - DB_USER=${DB_USER:-user}
+      - DB_PASSWORD=${DB_PASSWORD}
     entrypoint:
       - /surreal
       - start

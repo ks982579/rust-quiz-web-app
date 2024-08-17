@@ -60,6 +60,13 @@ This application is set for domain name "kevsquizapp.com".
 Since I own that domain name, any other user launching a production version of this application
 must update the "/frontend/nginx-prod.conf" file to point at their domain.
 This also requires setting up DNS records on your hosting platform.
+
+Additionally, the user must now set environment variables in their host machine.
+See the `compose-prod.yaml` file to see which variables to set.
+The "environment" attributes require preset variables.
+
+Also, update the email address in the compose file specified
+
 Set up the compose-prod.yaml file, which means our commands look like:
 
 ```bash
