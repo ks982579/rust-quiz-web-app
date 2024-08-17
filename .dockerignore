@@ -1,7 +1,6 @@
 .env
 target/
 tests/
-scripts/
 migrations/
 e2e/
 jsonmodels/

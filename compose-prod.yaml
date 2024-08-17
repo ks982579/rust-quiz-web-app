@@ -7,13 +7,11 @@ services:
       context: .
       dockerfile: Dockerfile.frontend.prod
     ports:
-      # NGINX listens on 80
       - 80:80
       - 443:443
     environment:
       - APP__BACKEND_URL="/api"
     volumes:
-      #   - ./ssl:/ect/nginx/ssl
       - ./certbot/conf:/etc/letsencrypt/:ro
       - ./certbot/www:/var/www/certbot/:ro
     depends_on:
@@ -26,8 +24,8 @@ services:
     volumes:
       - ./certbot/conf:/etc/letsencrypt/:rw
       - ./certbot/www:/var/www/certbot/:rw
-      - ./certbot/log:/var/log/letsencrypt/:rw
-    # command: certonly -w /var/www/certbot --standalone -d quiztestapp.io --test-cert --email kevin.sullivan@example.com --agree-tos -v
+      # Below is a line for reading logs! Handy for debugging
+      # - ./certbot/log:/var/log/letsencrypt/:rw
     command: certonly --webroot -w /var/www/certbot --force-renewal --email kevin.sullivan@example.com -d kevsquizapp.com --agree-tos
   # -- Backend
   actixbackend:

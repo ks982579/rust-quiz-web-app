@@ -30,6 +30,45 @@ The Leptos frontend _should_ be available on port 8080,
 The Actix-Web backend _should_ be available on port 8000,
 and the SurrealDB instance _should_ be accessible on port 8001.
 
+## Application Configuration
+
+> Probably going to have 2 configuration types.
+
+### Local
+
+On linux it is in `/etc/hosts` file.
+I run WSL through windows, so on my machine I must update the Windows DNS file
+found in `C:\\Windows\Systems32\drivers\etc\hosts`.
+In either case, add the following to the end of the file so the application can be found locally:
+
+```
+127.0.0.1 quiztestapp.io
+127.0.0.1 www.quiztestapp.io
+```
+
+```bash
+docker compose -f compose-local.yaml up -d
+docker compose -f compose-local.yaml build
+docker compose -f compose-local.yaml down
+docker compose -f compose-local.yaml logs
+docker compose -f compose-local.yaml exec <service_name> <command>
+```
+
+### Production
+
+Set up the compose-prod.yaml file, which means our commands look like:
+
+```bash
+docker compose -f compose-prod.yaml up -d
+docker compose -f compose-prod.yaml build
+docker compose -f compose-prod.yaml down
+docker compose -f compose-prod.yaml logs
+docker compose -f compose-prod.yaml exec <service_name> <command>
+```
+
+Or, in a bash profile like file, we can specify `export COMPOSE_FILE=compose-prod.yaml`.
+I only have one configuration so need to uncomment code for production in nginx.conf.
+
 ## Development Cycle
 
 Just setup a new branch called "develop".
@@ -142,34 +181,3 @@ an error could become hard to trace.
 This is why logs should be easy to correlate.
 The book "Zero to Production in Rust" by Luca Palmieri covers Telemetry in Chapter 4.
 This project will follow the book's more complicated approach to logging.
-
-## Application Configuration
-
-> Probably going to have 2 configuration types.
-
-### Local
-
-On linux it is in `/etc/hosts` file.
-I run WSL through windows, so on my machine I must update the Windows DNS file
-found in `C::\\Windows\Systems32\drivers\etc\hosts`.
-In either case, add the following to the end of the file so the application can be found locally:
-
-```
-127.0.0.1 quiztestapp.io
-127.0.0.1 www.quiztestapp.io
-```
-
-### Production
-
-Set up the compose-prod.yaml file, which means our commands look like:
-
-```bash
-docker compose -f compose-prod.yaml up -d
-docker compose -f compose-prod.yaml build
-docker compose -f compose-prod.yaml down
-docker compose -f compose-prod.yaml logs
-docker compose -f compose-prod.yaml exec <service_name> <command>
-```
-
-Or, in a bash profile like file, we can specify `export COMPOSE_FILE=compose-prod.yaml`.
-I only have one configuration so need to uncomment code for production in nginx.conf.

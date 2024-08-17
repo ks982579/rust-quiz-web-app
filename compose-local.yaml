@@ -1,11 +1,11 @@
-name: quiz-web-application-prod
+name: quiz-web-application-local
 services:
   # -- Frontend / NGINX
   leptosfrontend:
     restart: always
     build:
       context: .
-      dockerfile: Dockerfile.frontend.prod
+      dockerfile: Dockerfile.frontend.local
     ports:
       # NGINX listens on 80
       - 80:80
@@ -13,13 +13,13 @@ services:
     environment:
       - APP__BACKEND_URL="/api"
     volumes:
-      #   - ./ssl:/ect/nginx/ssl
+      # location of certificates, ensure same in NGINX configuration
       - ./certs/:/etc/openssl/:ro
     depends_on:
+      - opensslbot
       - actixbackend
   # -- OpenSSL Bot to create self signed SSL Certificates
   opensslbot:
-    profiles: ["openssl"]
     build:
       context: .
       dockerfile: Dockerfile.openssl

@@ -4,9 +4,8 @@ RUN apk add --no-cache openssl
 
 WORKDIR /certs
 
-# Generate self-signed certificate
-RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-  -keyout privkey.pem -out fullchain.pem \
-  -subj "/C=IE/ST=Cork/L=Cork/O=IU/CN=quiztestapp.io"
+COPY ./scripts/check_and_gen_sslcerts.sh /scripts/do_cert.sh
+RUN chmod +x /scripts/do_cert.sh
 
-CMD ["echo", "OpenSSL Certificates Generated."]
+# Run script to check and generate self-signed certificate if necessary
+CMD ["sh", "/scripts/do_cert.sh"]
