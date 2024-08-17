@@ -1,5 +1,5 @@
 # -- BUILDER STAGE - to build binary
-FROM rust:latest AS builder
+FROM rust:1.79 AS builder
 RUN apt update && apt install lld clang -y
 WORKDIR /app
 COPY . .
