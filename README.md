@@ -2,41 +2,17 @@
 
 > A Rust full-stack quiz web application.
 
-## Getting Set Up Locally
-
-> This is outdated. Next sprint will update documentation.
-
-Using Docker Compose is the easiest way to run this locally,
-unless you have SurrealDB installed locally and would like to configure it.
-
-The SurrealDB instance creates a bind-mount in `/var/lib/surrealquizdata/`.
-It was difficult allow SurrealDB to create a file database due to container permission issue.
-We can circumvent the issue by giving the container a directory it has [free rein](https://www.vocabulary.com/articles/pardon-the-expression/free-rein-vs-free-reign) over.
-
-```bash
-sudo mkdir /var/lib/surrealquizdata
-sudo chmod 777 /var/lib/surrealquizdata
-```
-
-Once you have that folder, assuming you have docker installed,
-on my WSL2 Ubuntu instance, run the following commands in the root of this project:
-
-```bash
-docker compose build
-docker compose up
-```
-
-The Leptos frontend _should_ be available on port 8080,
-The Actix-Web backend _should_ be available on port 8000,
-and the SurrealDB instance _should_ be accessible on port 8001.
-
 ## Application Configuration
 
-> Probably going to have 2 configuration types.
+There are currently two configuration types which are very similar, "local" and "production".
+It's assumed most users would run the application in "local" mode, on their machine and access through 127.0.0.1.
+Below are instructions to run the application through Docker.
 
 ### Local
 
-On linux it is in `/etc/hosts` file.
+The SSL certificates and NGINX configuration point to 'quiztestapp.io'.
+As such, it's recommended the user update their local DNS to point their browser at 127.0.0.1.
+On linux the file to update is `/etc/hosts`.
 I run WSL through windows, so on my machine I must update the Windows DNS file
 found in `C:\\Windows\Systems32\drivers\etc\hosts`.
 In either case, add the following to the end of the file so the application can be found locally:
@@ -46,16 +22,44 @@ In either case, add the following to the end of the file so the application can 
 127.0.0.1 www.quiztestapp.io
 ```
 
+Then, in the root directory the user must build the application with the docker compose "build" command.
+Then, they can run the docker compose "up" command (the `-d` flag is optional).
+A list of commands are presented below:
+
 ```bash
-docker compose -f compose-local.yaml up -d
 docker compose -f compose-local.yaml build
+docker compose -f compose-local.yaml up -d
 docker compose -f compose-local.yaml down
 docker compose -f compose-local.yaml logs
+docker compose -f compose-local.yaml start
+docker compose -f compose-local.yaml stop
 docker compose -f compose-local.yaml exec <service_name> <command>
+```
+
+Exit the application with `CTRL+C` if not in detached terminal mode.
+If the user passed in the `-d` flag, use the `down` or `stop` command.
+When images are built, the user can enter an image's container for debugging with the following command:
+
+```bash
+docker run -it --rm <image_name> /bin/sh
+```
+
+I had permission issues initially with SurrealDB.
+The SurrealDB instance creates a bind-mount in `/var/lib/surrealquizdata/`.
+It was difficult allow SurrealDB to create a file database due to container permission issue.
+We can circumvent the issue by giving the container a directory it has [free rein](https://www.vocabulary.com/articles/pardon-the-expression/free-rein-vs-free-reign) over.
+
+```bash
+sudo mkdir /var/lib/surrealquizdata
+sudo chmod 777 /var/lib/surrealquizdata
 ```
 
 ### Production
 
+This application is set for domain name "kevsquizapp.com".
+Since I own that domain name, any other user launching a production version of this application
+must update the "/frontend/nginx-prod.conf" file to point at their domain.
+This also requires setting up DNS records on your hosting platform.
 Set up the compose-prod.yaml file, which means our commands look like:
 
 ```bash
@@ -63,11 +67,25 @@ docker compose -f compose-prod.yaml up -d
 docker compose -f compose-prod.yaml build
 docker compose -f compose-prod.yaml down
 docker compose -f compose-prod.yaml logs
+docker compose -f compose-prod.yaml start
+docker compose -f compose-prod.yaml stop
 docker compose -f compose-prod.yaml exec <service_name> <command>
 ```
 
 Or, in a bash profile like file, we can specify `export COMPOSE_FILE=compose-prod.yaml`.
 I only have one configuration so need to uncomment code for production in nginx.conf.
+
+### Development
+
+For development, I do not use Docker for the application.
+I do use Docker, after creating the application locally, to run the SurrealDB database.
+However, I run the front-end with `trunk serve --port 8080`;
+and the back-end with `cargo watch -x run`.
+Both commands work well and provide hot reloading.
+
+The Leptos frontend _should_ be available on port 8080,
+The Actix-Web backend _should_ be available on port 8002,
+and the SurrealDB instance _should_ be accessible on port 8000.
 
 ## Development Cycle
 

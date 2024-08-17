@@ -9,8 +9,6 @@ services:
     ports:
       - 80:80
       - 443:443
-    environment:
-      - APP__BACKEND_URL="/api"
     volumes:
       - ./certbot/conf:/etc/letsencrypt/:ro
       - ./certbot/www:/var/www/certbot/:ro
@@ -33,6 +31,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.backend.prod
+    environment:
+      - QUIZAPP_DATABASE__USERNAME=${DB_USER:-user}
+      - QUIZAPP_DATABASE__PASSWORD=${DB_PASSWORD}
+      - QUIZAPP_APPLICATION__HMAC_SECRET=${QUIZAPP_APPLICATION__HMAC_SECRET}
     ports:
       - 8002:8002
     depends_on:
