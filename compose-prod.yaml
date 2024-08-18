@@ -17,6 +17,14 @@ services:
       # REMINDER, RUN CERTBOT TO GENERATE CERTIFICATES
       # - certbot
   # -- Certbot to create Challenge Files
+  nginx_certbot:
+    profiles: ["certbot"]
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx-certbot
+    ports:
+      - 80:80
+      - 443:443
   certbot:
     profiles: ["certbot"]
     image: certbot/certbot:latest

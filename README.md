@@ -67,7 +67,32 @@ The "environment" attributes require preset variables.
 
 Also, update the email address in the compose file specified
 
-Set up the compose-prod.yaml file, which means our commands look like:
+For initial deployment, the user must build all the images.
+
+```bash
+docker compose -f compose-prod.yaml build
+```
+
+Now, the user will need to specifically start two containers, something like:
+
+```bash
+docker compose -f compose-prod.yaml up nginx_certbot -d
+docker compose -f compose-prod.yaml up certbot
+docker compose -f compose-prod.yaml down
+```
+
+Sometimes Certbot will have permission issues.
+Simply update the permissions of the 'certbot' directory recursively and run the containers again.
+
+Once the user has the correct certificates, start the application with:
+
+```bash
+docker compose -f compose-prod.yaml up -d
+```
+
+If Surrealdb is having permissions issues, see the guide for "Local" deployment.
+
+Below is a list of common commands for docker:
 
 ```bash
 docker compose -f compose-prod.yaml up -d
