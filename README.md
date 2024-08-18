@@ -56,7 +56,7 @@ sudo chmod 777 /var/lib/surrealquizdata
 
 ### Production
 
-This application is set for domain name "kevsquizapp.com".
+This application is set for domain name "kevsquizappiu.com".
 Since I own that domain name, any other user launching a production version of this application
 must update the "/frontend/nginx-prod.conf" file to point at their domain.
 This also requires setting up DNS records on your hosting platform.

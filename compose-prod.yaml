@@ -14,9 +14,11 @@ services:
       - ./certbot/www:/var/www/certbot/:ro
     depends_on:
       - actixbackend
-      - certbot
+      # REMINDER, RUN CERTBOT TO GENERATE CERTIFICATES
+      # - certbot
   # -- Certbot to create Challenge Files
   certbot:
+    profiles: ["certbot"]
     image: certbot/certbot:latest
     # volumes same as NGINX to communicate
     environment:
@@ -28,7 +30,7 @@ services:
       # Below is a line for reading logs! Handy for debugging
       # - ./certbot/log:/var/log/letsencrypt/:rw
     command: >
-      certonly --webroot -w /var/www/certbot  --force-renewal --email ${CERTBOT_EMAIL:-kevin.sullivan@example.com} -d kevsquizapp.com --agree-tos
+      certonly --webroot -w /var/www/certbot  --force-renewal --email ${CERTBOT_EMAIL:-kevin.sullivan@example.com} -d kevsquizappiu.com --agree-tos
 
   # -- Backend
   actixbackend:
