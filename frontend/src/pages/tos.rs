@@ -1,111 +1,17 @@
-//! frontend/src/pages/login.rs
-//! This is main component of Homepage.
-//! The `LogIn` componenet is currently part of the `HomePage`.
-//! That is why it is implemented here.
-//! If it becomes its own page one day, it can (and should) be moved.
-use crate::utils::{JsonMsg, PartialUser};
-use leptos::ev::SubmitEvent;
+//! frontend/src/pages/tos.rs
+//! For displaying to the user the Terms of Service for registering an account with application.
+use crate::components::Footer;
 use leptos::*;
 use leptos_router::A;
-use web_sys::{Headers, RequestMode, Response};
 
-use crate::components::{CenterFormCard, Footer};
-use crate::store::{AppSettings, AuthState};
-use crate::utils::Fetcher;
-
-#[derive(Clone, Debug)]
-struct ShowPassword {
-    show: bool,
-    input_type: String,
-    span_class: String,
-}
-
-impl std::default::Default for ShowPassword {
-    fn default() -> Self {
-        Self {
-            show: false,
-            input_type: "password".to_string(),
-            span_class: String::from("toggle-password"),
-        }
-    }
-}
-
-/// The form for user login.
+/// To Display the Terms of Service to user
 #[component]
 pub fn TermsOfService() -> impl IntoView {
-    // Pull AuthState Context
-    let auth_state: AuthState = use_context::<AuthState>().expect("AuthState context not found");
-    let app_settings: AppSettings =
-        use_context::<AppSettings>().expect("AppSettings context not found");
+    // -- Create Signals --
+    // -- Create References --
+    // -- Use Context --
 
-    // Create signals for component
-    let (err_msg, set_err_msg): (ReadSignal<Option<String>>, WriteSignal<Option<String>>) =
-        create_signal(None);
-    let (show_password, set_show_password) = create_signal(ShowPassword::default());
-    let (checked, set_checked) = create_signal(false);
-
-    // Create nodes for form elements
-    let username_input_elm: NodeRef<html::Input> = create_node_ref();
-    let password_input_elm: NodeRef<html::Input> = create_node_ref();
-
-    let attempt_login = create_action(move |credentials: &(String, String)| {
-        let (username, password) = credentials.clone();
-        let pckg: String = serde_json::json!({
-            "username": username,
-            "password": password,
-        })
-        .to_string();
-
-        let headers: Headers = Headers::new().unwrap();
-        headers
-            .set("Content-Type", "application/json;charset=UTF-8")
-            .unwrap();
-        // headers.set("Access-Control-Allow-Origin", "true").unwrap();
-
-        let fetcher: Fetcher = Fetcher::init()
-            .set_url(app_settings.backend_url.to_string() + "user-login")
-            .set_method("POST")
-            .set_mode(RequestMode::Cors)
-            .set_headers(headers)
-            .build();
-
-        // let request: Request =
-        //     Request::new_with_str_and_init("http://127.0.0.1:8000/user-login", &options).unwrap();
-
-        // let navigator_clone = Rc::clone(&navigator_rc);
-
-        async move {
-            let response: Response = fetcher.fetch(Some(pckg)).await;
-
-            if response.status() == 200 {
-                auth_state.set_authenticated(true);
-                // navigator_clone("/dashboard", NavigateOptions::default());
-            } else {
-                let deserialized: JsonMsg = Fetcher::response_to_struct(&response).await;
-
-                set_err_msg.set(deserialized.msg.clone());
-            }
-        }
-    });
-
-    let on_submit = move |evnt: SubmitEvent| {
-        evnt.prevent_default();
-
-        if checked.get() {
-            let username_value: String = username_input_elm
-                .get()
-                .expect("<input> should be mounted")
-                .value();
-            let password_value: String = password_input_elm
-                .get()
-                .expect("<input> should be mounted")
-                .value();
-            attempt_login.dispatch((username_value, password_value));
-        } else {
-            set_err_msg.set(Some(String::from("Please accept use of cookies")));
-        }
-    };
-
+    // -- Render View --
     view! {
         <div
             class:fill-screen=true

@@ -2,10 +2,8 @@
 //! This is main component of Homepage, which acts as a wrapper for other pages
 //! and displayes them conditionally on user auth status.
 use crate::pages::{Dashboard, LogIn};
-use crate::utils::{JsonMsg, PartialUser};
-use leptos::ev::SubmitEvent;
+use crate::utils::PartialUser;
 use leptos::*;
-use leptos_router::A;
 use web_sys::{Headers, RequestMode, Response};
 
 use crate::store::{AppSettings, AuthState};
@@ -29,11 +27,15 @@ fn LoadingScreen() -> impl IntoView {
 /// If no, render the login page
 #[component]
 pub fn HomePage() -> impl IntoView {
+    // -- Create Signals --
     let (auth_status, set_auth_status) = create_signal(AuthStatus::Loading);
+
+    // -- Use Context --
     let auth_state: AuthState = use_context::<AuthState>().expect("AuthState context not found?");
     let app_settings: AppSettings =
         use_context::<AppSettings>().expect("AppSettings context not found");
 
+    // -- Create effect to fetch the user's login status
     create_effect(move |_| {
         let headers: Headers = Headers::new().unwrap();
         headers
@@ -48,6 +50,7 @@ pub fn HomePage() -> impl IntoView {
             .set_mode(RequestMode::Cors)
             .build();
 
+        // TODO: Idea during refactoring - Move into once-off resource?
         // Do not set state if it is the same, causes infinite loop
         if !auth_state.is_authenticated() {
             spawn_local(async move {
@@ -78,6 +81,7 @@ pub fn HomePage() -> impl IntoView {
         }
     });
 
+    // -- Render View --
     view! {
         <>
             {move || {

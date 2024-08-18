@@ -55,6 +55,8 @@ pub fn QuestionForge(
 
     // -- Create Resource --
     // This is pulled from the <ExamRoom /> Component
+    // Executes on component initialization (because 'create_effect') to fetch questions for a quiz and
+    // push onto the 'quest_signal' vector.
     let quizzes_resource = create_resource(
         || (), // only render once
         move |_| {
@@ -89,7 +91,7 @@ pub fn QuestionForge(
                     }
                 } else {
                     // Todo: display error message somewhere for failed fetch?
-                    let deserialized: JsonMsg = Fetcher::response_to_struct(&response).await;
+                    let _deserialized: JsonMsg = Fetcher::response_to_struct(&response).await;
                     // set_err_msg.set(deserialized.msg.clone());
                 }
             }) as Pin<Box<dyn Future<Output = _>>>
@@ -99,6 +101,7 @@ pub fn QuestionForge(
     // -- Create Effect --
     // Runs code when signal changes
     // This resource is only set to run once, depends on ()
+    // It is the reason the resource runs on initialization.
     create_effect(move |_| {
         quizzes_resource.get();
     });
@@ -108,7 +111,7 @@ pub fn QuestionForge(
     view! {
         <>
             <h1>Question Forge</h1>
-            // Here would be list of already made questions
+            // Here is list of already made questions
             <For
                 each=move || quest_signal.get()
                 key=|q| q.get_id().to_raw()
@@ -120,6 +123,7 @@ pub fn QuestionForge(
                     />
                 }
             />
+            // Here is list of questions being made
             <For
                 each=move || new_question_signal.get()
                 key=|q| q.id.clone()

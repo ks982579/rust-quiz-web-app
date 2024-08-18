@@ -11,6 +11,7 @@ pub struct Thing {
     pub id: Id,
 }
 impl Thing {
+    /// Required for passing data via query string to the backend.
     pub fn to_raw(&self) -> String {
         match &self.id {
             Id::String(it) => format!("{}:{}", self.tb, it),
@@ -39,11 +40,11 @@ pub struct SurrealQuestionMC {
     pub choices: Vec<String>,
 }
 
+/// For holding Quiz data provided by backend
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SurrealQuiz {
     pub id: Thing,
     pub name: String,
     pub description: String,
     pub author_id: String,
-    // pub questions_mc: Vec<Thing>,
 }

@@ -10,6 +10,7 @@ use leptos::*;
 use web_sys::{Headers, RequestMode, Response};
 
 /// The Mold is a generic placeholder for all question to be Cast.
+/// To 'Cast' a quiz is to create it.
 #[component]
 pub fn QuestionMold(
     question: QLInternals,
@@ -17,6 +18,11 @@ pub fn QuestionMold(
     quest_callback: Callback<QuestType>,
     quiz_data: ReadSignal<Option<SurrealQuiz>>,
 ) -> impl IntoView {
+    // -- Create Signals --
+    // -- Create References --
+    // -- Use Context --
+
+    // -- Render View --
     view! {
         <div
             style="width: 100%"
@@ -62,9 +68,6 @@ pub fn QuestionCastMC(
     let app_settings: AppSettings =
         use_context::<AppSettings>().expect("AppSettings context not found");
 
-    // --- updates
-    // let update_question = move |ev| ();
-
     // -- Create Question Action for Submitting --
     let create_question = create_action(move |pkg: &String| {
         let pkg_clone = pkg.clone();
@@ -79,13 +82,10 @@ pub fn QuestionCastMC(
             .set_mode(RequestMode::Cors)
             .build();
         async move {
+            // Saving question and moving component from Make to Display
             let response: Response = fetcher.fetch(Some(pkg_clone)).await;
             if response.status() >= 200 && response.status() < 300 {
                 let data: SurrealQuestionMC = Fetcher::response_to_struct(&response).await;
-
-                // Add component as a Quest
-                // quest_rw.update(|this| this.push(Quest::MC(data)));
-
                 quest_callback.call(QuestType::MC(data));
 
                 // Remove Component since it has been saved
@@ -94,9 +94,6 @@ pub fn QuestionCastMC(
                         this.remove(index);
                     }
                 })
-
-                // response_setter.set(Some(hack_data));
-                // display_settings.set(DashDisplay::MakeQuestions);
             } else {
                 let deserialized: JsonMsg = Fetcher::response_to_struct(&response).await;
                 set_err_msg.set(deserialized.msg.clone());
@@ -105,6 +102,7 @@ pub fn QuestionCastMC(
     });
 
     // -- On Submit --
+    // extract values from form and pass to create question action for ingestion
     let on_submit = move |sub_ev: ev::SubmitEvent| {
         sub_ev.prevent_default();
 
@@ -159,6 +157,7 @@ pub fn QuestionCastMC(
         }
     };
 
+    // -- Render View --
     view! {
         <form
             class="forge-container"

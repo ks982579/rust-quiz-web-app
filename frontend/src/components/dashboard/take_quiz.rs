@@ -5,19 +5,18 @@ use crate::{
     models::mimic_surreal::{SurrealQuestionMC, SurrealQuiz},
     models::questions::AllQuestions,
     store::AppSettings,
-    utils::{Fetcher, JsonMsg},
+    utils::{generate_random_string, Fetcher, JsonMsg},
 };
 use leptos::*;
-use rand::{seq::SliceRandom, thread_rng, Rng};
+use rand::{seq::SliceRandom, thread_rng};
 use std::boxed::Box;
 use std::future::Future;
 use std::pin::Pin;
 use web_sys::{Headers, RequestMode, Response};
 
-/* Look at tests
-* Return AllQuestions { mc: Vec<SurrealQuestionMC>}
-*/
-
+// TODO: Update score results - perhaps render in separate componenet?
+/// This is container for rendering a shuffled set of questions to a quiz.
+/// There is also a small part to display results when quiz is submitted.
 #[component]
 pub fn ExamRoom(some_quiz: Option<SurrealQuiz>) -> impl IntoView {
     // -- Create Signals --
@@ -61,13 +60,11 @@ pub fn ExamRoom(some_quiz: Option<SurrealQuiz>) -> impl IntoView {
                 let response: Response = fetcher.fetch(None).await;
                 if response.status() == 200 {
                     let data: AllQuestions = Fetcher::response_to_struct(&response).await;
-                    // response_setter.set(Some(data));
-                    // display_settings.set(DashDisplay::MakeQuestions);
                     // -- Update question signals below
                     mcquestions.set(data.mc);
                 } else {
                     // Todo: display error message somewhere for failed fetch?
-                    let deserialized: JsonMsg = Fetcher::response_to_struct(&response).await;
+                    let _deserialized: JsonMsg = Fetcher::response_to_struct(&response).await;
                     // set_err_msg.set(deserialized.msg.clone());
                 }
             }) as Pin<Box<dyn Future<Output = _>>>
@@ -78,9 +75,6 @@ pub fn ExamRoom(some_quiz: Option<SurrealQuiz>) -> impl IntoView {
     // Runs code when signal changes
     // This resource is only set to run once, depends on ()
     create_effect(move |_| {
-        // if let Some(Ok(fetched_quizzes)) = quizzes_resource.get() {
-        //     quiz_list.set(fetched_quizzes);
-        // }
         quizzes_resource.get();
     });
 
@@ -146,6 +140,8 @@ pub fn ExamRoom(some_quiz: Option<SurrealQuiz>) -> impl IntoView {
     }
 }
 
+/// To render Multiple Choice questions for a quiz so that they can be
+/// answered by a user.
 #[component]
 pub fn MCQuestion(
     sq: SurrealQuestionMC,
@@ -177,7 +173,8 @@ pub fn MCQuestion(
         this.shuffle(&mut randrng);
     });
 
-    // We can tuple (anw, t/f for r/w)
+    // Lambda to constantly update score based on the user's answers
+    // Comes from failed attempts to grade at end - all at once.
     let radio_change = move |evnt: ev::Event| {
         let val: String = event_target_value(&evnt);
         radio_val.set(val.clone());
@@ -213,6 +210,7 @@ pub fn MCQuestion(
         }
     };
 
+    // -- Render View --
     view! {
         <div
             class:quest-case=true
@@ -266,12 +264,4 @@ pub fn MCQuestion(
         }
         </div>
     }
-}
-
-fn generate_random_string(length: usize) -> String {
-    thread_rng()
-        .sample_iter(rand::distributions::Alphanumeric)
-        .take(length)
-        .map(char::from)
-        .collect()
 }

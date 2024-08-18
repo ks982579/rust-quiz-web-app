@@ -13,15 +13,13 @@ struct SurrealRecord {
 async fn test_create_quiz_200() {
     // Arrange
     let test_app: TestApp = spawn_app().await;
-
-    let _: Vec<SurrealRecord> = test_app.database.client.delete("quizzes").await.unwrap();
+    test_app.cleanup_db().await;
 
     let mut test_app_response = test_app.create_new_test_user().await;
     assert!(test_app_response.status().is_success());
     test_app_response = test_app.log_in_test_user().await;
     assert!(test_app_response.status().is_success());
 
-    // Quiz Structure - Hopefully no questions starts and empty vector
     let info: serde_json::Value = serde_json::json!({
         "name": "Algorithms",
         "description": "An algorithms quiz"
@@ -34,19 +32,17 @@ async fn test_create_quiz_200() {
         // Assert
         dbg!(&response);
         assert!(response.status().is_success());
-        // TODO: Also want to compare `response.json().await` to database query.
     }
 
     // Clean up
-    let _: Vec<SurrealRecord> = test_app.database.client.delete("quizzes").await.unwrap();
+    test_app.cleanup_db().await;
 }
 
 #[tokio::test]
 async fn test_create_quiz_400() {
     // Arrange
     let test_app: TestApp = spawn_app().await;
-
-    let _: Vec<SurrealRecord> = test_app.database.client.delete("quizzes").await.unwrap();
+    test_app.cleanup_db().await;
 
     let mut test_app_response = test_app.create_new_test_user().await;
     assert!(test_app_response.status().is_success());
@@ -74,8 +70,7 @@ async fn test_create_quiz_400() {
 async fn test_create_quiz_401() {
     // Arrange
     let test_app: TestApp = spawn_app().await;
-
-    let _: Vec<SurrealRecord> = test_app.database.client.delete("quizzes").await.unwrap();
+    test_app.cleanup_db().await;
 
     // Not Creating a User
     // Quiz Structure
@@ -88,9 +83,8 @@ async fn test_create_quiz_401() {
     let response: Response = test_app.post_create_quiz(&info).await;
 
     // Assert
-    dbg!(&response);
     assert!(response.status() == 401);
 
     // Clean up
-    let _: Vec<SurrealRecord> = test_app.database.client.delete("quizzes").await.unwrap();
+    test_app.cleanup_db().await;
 }

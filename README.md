@@ -2,13 +2,49 @@
 
 > A Rust full-stack quiz web application.
 
-## Getting Set Up Locally
+## Application Configuration
 
-> This is outdated. Next sprint will update documentation.
+There are currently two configuration types which are very similar, "local" and "production".
+It's assumed most users would run the application in "local" mode, on their machine and access through 127.0.0.1.
+Below are instructions to run the application through Docker.
 
-Using Docker Compose is the easiest way to run this locally,
-unless you have SurrealDB installed locally and would like to configure it.
+### Local
 
+The SSL certificates and NGINX configuration point to 'quiztestapp.io'.
+As such, it's recommended the user update their local DNS to point their browser at 127.0.0.1.
+On linux the file to update is `/etc/hosts`.
+I run WSL through windows, so on my machine I must update the Windows DNS file
+found in `C:\\Windows\Systems32\drivers\etc\hosts`.
+In either case, add the following to the end of the file so the application can be found locally:
+
+```
+127.0.0.1 quiztestapp.io
+127.0.0.1 www.quiztestapp.io
+```
+
+Then, in the root directory the user must build the application with the docker compose "build" command.
+Then, they can run the docker compose "up" command (the `-d` flag is optional).
+A list of commands are presented below:
+
+```bash
+docker compose -f compose-local.yaml build
+docker compose -f compose-local.yaml up -d
+docker compose -f compose-local.yaml down
+docker compose -f compose-local.yaml logs
+docker compose -f compose-local.yaml start
+docker compose -f compose-local.yaml stop
+docker compose -f compose-local.yaml exec <service_name> <command>
+```
+
+Exit the application with `CTRL+C` if not in detached terminal mode.
+If the user passed in the `-d` flag, use the `down` or `stop` command.
+When images are built, the user can enter an image's container for debugging with the following command:
+
+```bash
+docker run -it --rm <image_name> /bin/sh
+```
+
+I had permission issues initially with SurrealDB.
 The SurrealDB instance creates a bind-mount in `/var/lib/surrealquizdata/`.
 It was difficult allow SurrealDB to create a file database due to container permission issue.
 We can circumvent the issue by giving the container a directory it has [free rein](https://www.vocabulary.com/articles/pardon-the-expression/free-rein-vs-free-reign) over.
@@ -18,17 +54,70 @@ sudo mkdir /var/lib/surrealquizdata
 sudo chmod 777 /var/lib/surrealquizdata
 ```
 
-Once you have that folder, assuming you have docker installed,
-on my WSL2 Ubuntu instance, run the following commands in the root of this project:
+### Production
+
+This application is set for domain name "kevsquizappiu.com".
+Since I own that domain name, any other user launching a production version of this application
+must update the "/frontend/nginx-prod.conf" file to point at their domain.
+This also requires setting up DNS records on your hosting platform.
+
+Additionally, the user must now set environment variables in their host machine.
+See the `compose-prod.yaml` file to see which variables to set.
+The "environment" attributes require preset variables.
+
+Also, update the email address in the compose file specified
+
+For initial deployment, the user must build all the images.
 
 ```bash
-docker compose build
-docker compose up
+docker compose -f compose-prod.yaml build
 ```
 
+Now, the user will need to specifically start two containers, something like:
+
+```bash
+docker compose -f compose-prod.yaml up nginx_certbot -d
+docker compose -f compose-prod.yaml up certbot
+docker compose -f compose-prod.yaml down
+```
+
+Sometimes Certbot will have permission issues.
+Simply update the permissions of the 'certbot' directory recursively and run the containers again.
+
+Once the user has the correct certificates, start the application with:
+
+```bash
+docker compose -f compose-prod.yaml up -d
+```
+
+If Surrealdb is having permissions issues, see the guide for "Local" deployment.
+
+Below is a list of common commands for docker:
+
+```bash
+docker compose -f compose-prod.yaml up -d
+docker compose -f compose-prod.yaml build
+docker compose -f compose-prod.yaml down
+docker compose -f compose-prod.yaml logs
+docker compose -f compose-prod.yaml start
+docker compose -f compose-prod.yaml stop
+docker compose -f compose-prod.yaml exec <service_name> <command>
+```
+
+Or, in a bash profile like file, we can specify `export COMPOSE_FILE=compose-prod.yaml`.
+I only have one configuration so need to uncomment code for production in nginx.conf.
+
+### Development
+
+For development, I do not use Docker for the application.
+I do use Docker, after creating the application locally, to run the SurrealDB database.
+However, I run the front-end with `trunk serve --port 8080`;
+and the back-end with `cargo watch -x run`.
+Both commands work well and provide hot reloading.
+
 The Leptos frontend _should_ be available on port 8080,
-The Actix-Web backend _should_ be available on port 8000,
-and the SurrealDB instance _should_ be accessible on port 8001.
+The Actix-Web backend _should_ be available on port 8002,
+and the SurrealDB instance _should_ be accessible on port 8000.
 
 ## Development Cycle
 
@@ -142,83 +231,3 @@ an error could become hard to trace.
 This is why logs should be easy to correlate.
 The book "Zero to Production in Rust" by Luca Palmieri covers Telemetry in Chapter 4.
 This project will follow the book's more complicated approach to logging.
-
-## Application Configuration
-
-> Probably going to have 2 configuration types.
-
-### Local
-
-### Production
-
-Set up the compose-prod.yaml file, which means our commands look like:
-
-```bash
-docker compose -f compose-prod.yaml up -d
-docker compose -f compose-prod.yaml build
-docker compose -f compose-prod.yaml down
-docker compose -f compose-prod.yaml logs
-docker compose -f compose-prod.yaml exec <service_name> <command>
-```
-
-Or, in a bash profile like file, we can specify `export COMPOSE_FILE=compose-prod.yaml`
-
-## Used Crates
-
-### FrontEnd
-
-To format the component code in the `view!{ ... }` macros,
-
-```bash
-cargo install leptosfmt
-```
-
-- `cargo add leptos@0.6 --features=csr`
-  - Required for using Leptos as our frontend framework.
-- `cargo add leptos_router --features=csr`
-  - Since this is SPA, we want to give illusion of routing with a router.
-- `cargo add serde@1.0 --features=derive`
-  - Required for serializing and deserialization
-- `cargo add serde_json@1.0`
-  - Required for serializing and deserialization
-- `cargo add wasm-bindgen@0.2`
-  - This is crate of WASM bindings to JavaScript web APIs, needed to fetch.
-- `cargo add wasm-bindgen-futures@0.4`
-  - This is crate of WASM bindings to JavaScript web APIs, needed Promises and futures (for fetching).
-
-### BackEnd
-
-- `cargo add actix-web@4.6`
-  - Required for using Actix-Web as the backend framework.
-- `cargo add tokio@1.37 --features=macros,rt-multi-thread`
-  - Following Zero to Production, Tokio is an asynchronous runtime for Rust.
-- `cargo add actix-cors@0.7`
-  - Cannot get separate frontend without it, see [Cors docs](https://docs.rs/actix-cors/latest/actix_cors/)
-- `cargo add tracing@0.1 --features=log`
-  - Better logs for asynchronous applications
-- `cargo add tracing-subscriber@0.3 --features=registry,env-filter`
-  - To help implement and use the `tracing::Subscriber` trait
-- `cargo add tracing-bunyan-formatter@0.3`
-  - Handy crate to format logs as JSON
-- `cargo add tracing-log@0.2`
-  - When actix-web fires a log event, this crate can redirect logs to our tracing subscriber.
-- `cargo add tracing-actix-web@0.7`
-  - Provides `TracingLogger` to be used as middleware to collect telemetry data.
-- `cargo add thiserror@1`
-  - Provides procedural macro to derive `std::error::Error` trait.
-- `cargo add anyhow@1`
-  - Helps to simplify error handling by being like a catch-all error trait object.
-- `cargo add --no-default-features reqwest --features=json,rustls-tls,cookies`
-  - This is easy-to-use HTTP client, which is very helpful in testing
-- `cargo add --dev wiremock`
-  - Can spawn mock servers for testing.
-  - This will only be used for testing purposes, no need to spawn mock servers in live code.
-  - Actix-Web testing does not appear to necessarily spawn a server for integration tests.
-- `cargo add serde@1 --features=derive`
-  - Rust standard for data serialization and deserialization.
-- `cargo add serde-aux@4.5`
-  - Houses helpful function for casting types during deserialization.
-- `cargo add serde_json`
-  - Providing serialization and deserialization implementation for JSON format.
-- `cargo add config`
-  - Allows you to read and merge configuration from multiple sources.

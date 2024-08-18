@@ -3,12 +3,9 @@ use crate::utils::{spawn_app, CreateQuestions, CreateQuiz, DestroyQuiz, TestApp}
 use models::{
     questions::{JsonQuestion, JsonQuestionMC, QuestionJsonPkg, SurrealQuestionMC},
     quiz::SurrealQuiz,
-    SurrealRecord,
 };
 use reqwest::Response;
-use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use surrealdb::sql::Thing;
 
 #[tokio::test]
 async fn test_user_delete_quiz_200() {
@@ -50,7 +47,7 @@ async fn test_user_delete_quiz_200() {
         ],
     });
 
-    let mut package: QuestionJsonPkg = QuestionJsonPkg {
+    let package: QuestionJsonPkg = QuestionJsonPkg {
         quiz_id: quiz.id.clone(),
         question: q1,
     };
@@ -229,14 +226,12 @@ async fn test_create_quiz_400() {
     });
     let response: Response = test_app.post_create_quiz(&info).await;
     assert!(response.status().is_success());
-    let quiz: SurrealQuiz = response.json().await.unwrap();
+    let _quiz: SurrealQuiz = response.json().await.unwrap();
 
     // Setting up query param
-    // let query_param: String = urlencoding::encode(&quiz.id.to_raw()).to_string();
     let query_param: String = urlencoding::encode("quizzes:not-real-id-123").to_string();
 
     // Act
-    // NOTE: Currently the DB returns an error that is converted to a 500.
     let test_res: Response = test_app.destroy_quiz(query_param).await;
     assert!(test_res.status() == 400);
 

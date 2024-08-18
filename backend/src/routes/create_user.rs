@@ -1,5 +1,5 @@
 //! backend/src/routes/create_user.rs
-//! Endpoint used for user creation given credentials.
+//! To handle logic for creating user.
 use crate::authentication::create_password_hash;
 use crate::error_chain_helper;
 use crate::surrealdb_repo::Database;
@@ -52,6 +52,7 @@ pub struct CreateUserPayload {
     password: Secret<String>,
 }
 
+/// Allowing GeneralUser to be derived from CreateUserPayload
 impl From<CreateUserPayload> for GeneralUser {
     fn from(value: CreateUserPayload) -> Self {
         // hash should not fail
@@ -94,6 +95,8 @@ impl CreateUserPayload {
     }
 }
 
+// --- EndPoint ---
+/// Route handler for creating a new user
 /// Takes in JSON with user information and stores in database.
 /// If successful, returns 201 CREATED.
 #[tracing::instrument(name = "Request to Create User", skip(db))]
@@ -118,6 +121,7 @@ pub async fn create_user(
         .json(serde_json::json!({ "msg": "Account created successfully"})))
 }
 
+/// Helper function to check if the username already exists
 async fn unique_username(
     db: &web::Data<Database>,
     username: &str,

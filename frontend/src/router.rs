@@ -5,6 +5,8 @@ use leptos_router::{Route, Router, Routes};
 
 use crate::pages::*;
 
+/// For a SPA renders a few different paths critical for users to save their favourite quizzes and
+/// find users through URL patterns (when features implemented).
 #[component]
 pub fn AppRouter() -> impl IntoView {
     view! {

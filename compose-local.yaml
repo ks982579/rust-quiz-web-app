@@ -1,0 +1,64 @@
+name: quiz-web-application-local
+services:
+  # -- Frontend / NGINX
+  leptosfrontend:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend.local
+    ports:
+      # NGINX listens on 80
+      - 80:80
+      - 443:443
+    environment:
+      - APP__BACKEND_URL="/api"
+    volumes:
+      # location of certificates, ensure same in NGINX configuration
+      - ./certs/:/etc/openssl/:ro
+    depends_on:
+      - opensslbot
+      - actixbackend
+  # -- OpenSSL Bot to create self signed SSL Certificates
+  opensslbot:
+    build:
+      context: .
+      dockerfile: Dockerfile.openssl
+    # volumes same as NGINX to communicate
+    volumes:
+      - ./certs:/certs
+  # -- Backend
+  actixbackend:
+    # image: quiz-backend
+    build:
+      context: .
+      dockerfile: Dockerfile.backend.prod
+    ports:
+      - 8002:8002
+    depends_on:
+      - surrealdb
+  # -- DataBase
+  surrealdb:
+    image: surrealdb/surrealdb:latest
+    volumes:
+      # May require giving privileges to source directory
+      - type: bind
+        source: /var/lib/surrealquizdata
+        target: /data
+    ports:
+      - 8000:8000
+    # Set Environment Variables for Security
+    env_file:
+      - .env
+    entrypoint:
+      - /surreal
+      - start
+      - --log
+      - trace
+      - --auth
+      - --user
+      - $DB_USER
+      - --pass
+      - $DB_PASSWORD
+      - file:data/mydatabase.db
+# volumes:
+#   surrealdata:

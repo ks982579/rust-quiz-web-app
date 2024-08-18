@@ -12,7 +12,7 @@ RUN trunk build --release ./frontend/index.html
 # Small NGINX container to distribute WASM Bundle
 FROM nginx:alpine
 COPY --from=builder /app/frontend/dist /usr/share/nginx/html
-COPY ./frontend/nginx-prod.conf /etc/nginx/nginx.conf
+COPY ./frontend/nginx-local.conf /etc/nginx/nginx.conf
 EXPOSE 80
 EXPOSE 443
 ENV APP__BACKEND_URL="/api/v01/"

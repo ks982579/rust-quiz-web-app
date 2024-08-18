@@ -2,7 +2,7 @@
 //! To hold question related structs
 use crate::model_errors::ModelErrors;
 use serde::{Deserialize, Serialize};
-use surrealdb::sql::{Id, Thing};
+use surrealdb::sql::Thing;
 use surrealize_macro::Surrealize;
 
 /// Currently for deleting questions generically

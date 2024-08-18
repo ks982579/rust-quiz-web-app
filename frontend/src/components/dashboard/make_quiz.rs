@@ -16,6 +16,7 @@ pub struct QuizJsonPkg {
     pub description: String,
 }
 
+/// To render the component for creating new quizzes.
 #[component]
 pub fn MakeQuiz(
     display_settings: WriteSignal<DashDisplay>,

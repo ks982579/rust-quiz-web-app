@@ -5,6 +5,7 @@ use crate::store::AppSettings;
 use crate::store::AuthState;
 use leptos::*;
 
+/// Main component for rendering entire application
 #[component]
 pub fn App() -> impl IntoView {
     // Adding Context

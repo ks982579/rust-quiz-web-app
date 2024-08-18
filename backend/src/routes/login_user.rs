@@ -13,7 +13,7 @@ use actix_web::{
     web, HttpMessage, HttpRequest, HttpResponse, ResponseError,
 };
 use anyhow::Context;
-use models::{GeneralUser, PartialUser, UserID};
+use models::{PartialUser, UserID};
 
 #[derive(thiserror::Error)]
 pub enum UserLoginError {
@@ -52,40 +52,8 @@ impl ResponseError for UserLoginError {
     }
 }
 
-// -- Traits for DB
-// Compiler suggest not making public async trait...
-pub trait LookUpUser {
-    fn get_user_by_username(
-        &self,
-        username: String,
-    ) -> impl std::future::Future<Output = Result<Option<GeneralUser>, anyhow::Error>> + Send;
-}
-
-impl LookUpUser for Database {
-    async fn get_user_by_username(
-        &self,
-        username: String,
-    ) -> Result<Option<GeneralUser>, anyhow::Error> {
-        let query: &str = r#"
-        SELECT * FROM type::table($table)
-        WHERE username IS $username
-        "#;
-
-        // How it works?
-        // SurrealDB::Error implements the Error trait.
-        // anyhow::Error implements From<Error> and Rust converts for us
-        let mut response: surrealdb::Response = self
-            .client
-            .query(query)
-            .bind(("table", "general_user"))
-            .bind(("username", username))
-            .await?;
-
-        let user: Option<GeneralUser> = response.take(0)?;
-        Ok(user)
-    }
-}
-
+// --- EndPoint ---
+/// Route handler for logging existing users into their accounts.
 #[tracing::instrument(
     name = "User Login"
     skip(db, session)
@@ -122,7 +90,12 @@ pub async fn user_login(
         .json(serde_json::json!({"msg": "Login Successful"})))
 }
 
-#[tracing::instrument(name = "Check If Logged In")]
+/// Route handler to check if a user is already logged in
+/// i.e., the cookie in their browser is valid.
+#[tracing::instrument(
+    name = "Check If Logged In"
+    skip(db)
+)]
 pub async fn check_login(
     req: HttpRequest,
     db: web::Data<Database>,

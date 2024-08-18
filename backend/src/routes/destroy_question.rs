@@ -7,9 +7,8 @@ use actix_web::http::{header::ContentType, StatusCode};
 use actix_web::web;
 use actix_web::{HttpRequest, HttpResponse, ResponseError};
 use anyhow::Context;
-use models::questions::{GenericQuestionData, SurrealGenericQuestionData, SurrealQuestionMC};
-use models::{model_errors::ModelErrors, quiz::SurrealQuiz};
-use serde::{Deserialize, Serialize};
+use models::questions::{SurrealGenericQuestionData, SurrealQuestionMC};
+use serde::Deserialize;
 use surrealdb::sql::{thing, Thing};
 use uuid::Uuid;
 
@@ -63,7 +62,8 @@ pub struct QuestDestroyerQueryString {
     quest: String,
 }
 
-/// TODO: Documentation
+// --- EndPoint ---
+/// Route handler for deleting questions from database.
 #[tracing::instrument(name = "Request to Destroy User's Quiz by User", skip(db, session))]
 pub async fn destroy_my_quest(
     req: HttpRequest,
@@ -126,6 +126,5 @@ pub async fn destroy_my_quest(
         .map_err(|err| DestroyQuestError::UnexpectedError(anyhow::anyhow!(err)))?;
 
     // After removing vector to track questions on Quiz, nothing more to do
-
     Ok(HttpResponse::Ok().json(deleted_quest))
 }

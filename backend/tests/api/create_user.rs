@@ -1,5 +1,4 @@
 //! backend/tests/api/create_user.rs
-
 use crate::utils::{spawn_app, TestApp};
 use models::GeneralUser;
 use reqwest::Response;
@@ -29,6 +28,7 @@ where
 async fn test_create_user_200() {
     // Arrange
     let test_app: TestApp = spawn_app().await;
+    test_app.cleanup_db().await;
 
     let info: serde_json::Value = serde_json::json!({
         "name": "Joe Bob",
@@ -44,27 +44,14 @@ async fn test_create_user_200() {
     assert!(response.status().is_success());
 
     // Clean up
-    let _ = test_app
-        .database
-        .client
-        .query(
-            r#"
-            DELETE general_user
-            WHERE username is 'joebob1234'
-            "#,
-        )
-        .await;
+    test_app.cleanup_db().await;
 }
-
-/* Other Tests that shouldn't be too demanding:
-* - incomplete information is rejected
-* - username already taken
-*/
 
 #[tokio::test]
 async fn test_create_user_400_incomplete_data() {
     // Arrange
     let test_app: TestApp = spawn_app().await;
+    test_app.cleanup_db().await;
 
     // Clean database first
     let _: surrealdb::Result<Vec<GeneralUser>> =
@@ -129,4 +116,7 @@ async fn test_create_user_400_incomplete_data() {
         42
     };
     assert_eq!(count, 0);
+
+    // Clean Up
+    test_app.cleanup_db().await;
 }

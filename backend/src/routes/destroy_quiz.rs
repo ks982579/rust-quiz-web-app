@@ -7,8 +7,8 @@ use actix_web::http::{header::ContentType, StatusCode};
 use actix_web::web;
 use actix_web::{HttpRequest, HttpResponse, ResponseError};
 use anyhow::Context;
-use models::{model_errors::ModelErrors, quiz::SurrealQuiz};
-use serde::{Deserialize, Serialize};
+use models::quiz::SurrealQuiz;
+use serde::Deserialize;
 use surrealdb::sql::{thing, Thing};
 use uuid::Uuid;
 
@@ -62,7 +62,8 @@ pub struct QuizDestroyerQueryString {
     quiz: String,
 }
 
-/// TODO: Documentation
+// --- EndPoint ---
+/// Route handler for deleting a quiz and associated questions from database.
 #[tracing::instrument(name = "Request to Destroy User's Quiz by User", skip(db, session))]
 pub async fn destroy_my_quiz(
     req: HttpRequest,
@@ -94,14 +95,12 @@ pub async fn destroy_my_quiz(
         .context("Unable to parse query")
         .map_err(|err| DestroyQuizError::ValidationError(err))?;
 
-    // Checking  -- Error returned from database indicates no ID exists.
-    let mut surreal_quiz: Option<SurrealQuiz> = db
+    // Checking -- Error returned from database indicates no ID exists.
+    let surreal_quiz: Option<SurrealQuiz> = db
         .client
         .select(&quiz_id)
         .await
         .map_err(|err| DestroyQuizError::ValidationError(anyhow::anyhow!(err)))?;
-
-    dbg!(&surreal_quiz);
 
     // Sanity checks
     match &surreal_quiz {
@@ -119,8 +118,6 @@ pub async fn destroy_my_quiz(
         }
     }
 
-    dbg!(&surreal_quiz);
-
     // Delete Quiz
     let deleted_quiz: Option<SurrealQuiz> = db
         .client
@@ -133,7 +130,7 @@ pub async fn destroy_my_quiz(
     let surreal_ql = r#"DELETE type::table($table)
     WHERE author_id = $user_id
     AND parent_quiz = $quiz_id"#;
-    let surreal_response: surrealdb::Response = db
+    let _surreal_response: surrealdb::Response = db
         .client
         .query(surreal_ql)
         .bind(("table", "questions_mc"))

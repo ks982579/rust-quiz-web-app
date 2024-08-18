@@ -1,0 +1,11 @@
+FROM alpine:latest
+
+RUN apk add --no-cache openssl
+
+WORKDIR /certs
+
+COPY ./scripts/check_and_gen_sslcerts.sh /scripts/do_cert.sh
+RUN chmod +x /scripts/do_cert.sh
+
+# Run script to check and generate self-signed certificate if necessary
+CMD ["sh", "/scripts/do_cert.sh"]

@@ -1,10 +1,12 @@
 //! backend/src/routes/user_logout.rs
 //! Quick endpoint to log user out of application.
-//! Hopefully it deletes cookie from both browser and database.
+//! Deletes cookie from both browser and database.
 use crate::authentication::http_500;
 use crate::session_wrapper::SessionWrapper;
 use actix_web::{self, HttpRequest, HttpResponse};
 
+// --- EndPoint ---
+/// Route handler for Logging user out of application.
 #[tracing::instrument(name = "Log User Out", skip(session))]
 pub async fn user_logout(
     req: HttpRequest,
