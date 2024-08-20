@@ -10,17 +10,14 @@
 
 ### Adding
 
-- v0.6 End-to-end smoke test suite
+- v0.8 End-to-end smoke test suite
 
 ### Changing
 
-- v0.6 UI design of user login
-- v0.6 UI design of user creation
-- v0.6 UI design for user dashboard
-- v0.6 UI design for footer when not logged in
-- v0.6 UI design for footer when logged in
-- v0.6 UI design for navbar when logged in
-- v0.6 UI design for question creation
+No major changes planned for the upcoming future.
+Since the project will be submitted for Univeristy, cannot make changes until after graded.
+
+- UI design for navbar when logged in
 
 ### Decprecating
 
@@ -32,12 +29,8 @@ No features being removed.
 
 ### Fixing
 
-- [ ] **Critical**: Created Quiz does not populate on homepage until refresh (front-end).
-- [ ] **Critical**: There is no disclaimer at Login or Signup this website is a University project.
-- [ ] **Critical**: Too many compiler warnings, both front and back-end.
 - [ ] Major: No hints in questions even though information is there.
 - [ ] Major: Create Quiz returns HTTP 200, but should be 201 for created.
-- [ ] Minor: Create account feature on front-end does not redirect after account is created (but should).
 - [ ] Minor: The "My Quizzes" box is empty with no message when no quizzes are made, should be something?
 - [ ] Minor: Buttons ":)" and ":(" do nothing.
 - [ ] Minor: Excessive comments in code that do not have purpose.
@@ -45,6 +38,33 @@ No features being removed.
 ### Security
 
 No known security vulnerabilities reported as of yet.
+
+## [0.7.0] - 2024-08-20
+
+### Added
+
+- A "Terms of Service" page and checkbox for signing up so users are aware of the Terms of Service
+- local and production deployment methods have been updated, giving the local build its own Docker compose file and setup
+  - The local build relies only on OpenSSL for certificates
+  - The production build has a smaller NGINX server now for initial deployment since Certbot needs something to prove user's ownership over the domain.
+
+### Changed
+
+- UI design of user login
+- UI design of user creation
+- UI design for user dashboard
+- UI design for footer when not logged in
+- UI design for footer when logged in
+- UI design for question creation
+- Refactored code giving some components new homes in the front-end.
+
+### Fixed
+
+- [x] **Critical**: Created Quiz does not populate on homepage until refresh (front-end).
+- [x] **Critical**: Deleting a Quiz causes all questions from other quizzes to be deleted (found during manual testing)
+- [x] **Critical**: There is no disclaimer at Login or Signup this website is a University project.
+- [x] **Critical**: Too many compiler warnings, both front and back-end.
+- [x] Minor: Create account feature on front-end does not redirect after account is created (but should).
 
 ## [0.6.0] - 2024-08-03
 

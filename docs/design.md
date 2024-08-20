@@ -64,7 +64,7 @@ info:
   description: API for creating new users
 
 servers:
-  - url: https://kevsquizapp.com/api/v01/create-user
+  - url: https://kevsquizappiu.com/api/v01/create-user
 
 paths:
   /api/v01/create-user:
@@ -133,7 +133,7 @@ info:
   description: API for user authentication
 
 servers:
-  - url: https://kevsquizapp.com/api/v01/user-login
+  - url: https://kevsquizappiu.com/api/v01/user-login
 
 paths:
   /api/v01/user-login:
@@ -205,7 +205,7 @@ info:
   description: API for user authentication and session management
 
 servers:
-  - url: https://kevsquizapp.com/api/v01/check-login
+  - url: https://kevsquizappiu.com/api/v01/check-login
 
 components:
   securitySchemes:
@@ -269,7 +269,7 @@ info:
   description: API for logging a user out of the quiz application
 
 servers:
-  - url: https://kevsquizapp.com/api/v01/user-logout
+  - url: https://kevsquizappiu.com/api/v01/user-logout
 
 components:
   securitySchemes:
@@ -304,7 +304,7 @@ info:
   description: Handling CRUD operations for quizzes
 
 servers:
-  - url: https://kevsquizapp.com/api/v01/quiz-nexus
+  - url: https://kevsquizappiu.com/api/v01/quiz-nexus
 
 components:
   securitySchemes:
@@ -516,7 +516,7 @@ info:
   description: Handling CRUD operations for questions
 
 servers:
-  - url: https://kevsquizapp.com/api/v01/question-forge
+  - url: https://kevsquizappiu.com/api/v01/question-forge
 
 components:
   securitySchemes:

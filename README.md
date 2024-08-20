@@ -24,6 +24,9 @@ In either case, add the following to the end of the file so the application can 
 
 Then, in the root directory the user must build the application with the docker compose "build" command.
 Then, they can run the docker compose "up" command (the `-d` flag is optional).
+The OpenSSL container will try to create and store OpenSSL certificates in a new 'certs' directory.
+If there are permission issues with saving the certificates the user can update the permissions of the directory
+with `sudo chmod -R 777 ./certs`, or a variant of this command.
 A list of commands are presented below:
 
 ```bash
@@ -44,7 +47,7 @@ When images are built, the user can enter an image's container for debugging wit
 docker run -it --rm <image_name> /bin/sh
 ```
 
-I had permission issues initially with SurrealDB.
+I also had permission issues initially with SurrealDB.
 The SurrealDB instance creates a bind-mount in `/var/lib/surrealquizdata/`.
 It was difficult allow SurrealDB to create a file database due to container permission issue.
 We can circumvent the issue by giving the container a directory it has [free rein](https://www.vocabulary.com/articles/pardon-the-expression/free-rein-vs-free-reign) over.
@@ -123,7 +126,8 @@ and the SurrealDB instance _should_ be accessible on port 8000.
 
 Just setup a new branch called "develop".
 The workflow will follow something like [Gitflow | Atlassian.com](https://www.atlassian.com/continuous-delivery/continuous-integration/trunk-based-development).
-This project is (as of May 2024) still in early stages of development.
+This project is (as of August 2024) still in early stages of development.
+Although most of the major features have been worked out, some new features could still be on the way.
 As such, there will be the "main" branch, which _should_ always be stable.
 Then there is the "develop" branch, where features branches are merged into.
 Only after proving changes to "develop" are stable should it be merged to "main".
