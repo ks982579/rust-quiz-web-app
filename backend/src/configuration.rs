@@ -132,6 +132,5 @@ pub fn get_configuration() -> Result<AllSettings, ConfigError> {
         .build()?;
 
     // Try deserialize values into struct
-    println!("{:?}", &settings);
     settings.try_deserialize::<AllSettings>()
 }

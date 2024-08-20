@@ -7,34 +7,49 @@ services:
       context: .
       dockerfile: Dockerfile.frontend.prod
     ports:
-      # NGINX listens on 80
       - 80:80
       - 443:443
-    environment:
-      - APP__BACKEND_URL="/api"
     volumes:
-      #   - ./ssl:/ect/nginx/ssl
       - ./certbot/conf:/etc/letsencrypt/:ro
       - ./certbot/www:/var/www/certbot/:ro
     depends_on:
       - actixbackend
-      - certbot
+      # REMINDER, RUN CERTBOT TO GENERATE CERTIFICATES
+      # - certbot
   # -- Certbot to create Challenge Files
+  nginx_certbot:
+    profiles: ["certbot"]
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx-certbot
+    ports:
+      - 80:80
+      - 443:443
   certbot:
+    profiles: ["certbot"]
     image: certbot/certbot:latest
     # volumes same as NGINX to communicate
+    environment:
+      # Doesn't do much but serves as reminder to set this variable!
+      - CERTBOT_EMAIL=${CERTBOT_EMAIL}
     volumes:
       - ./certbot/conf:/etc/letsencrypt/:rw
       - ./certbot/www:/var/www/certbot/:rw
-      - ./certbot/log:/var/log/letsencrypt/:rw
-    # command: certonly -w /var/www/certbot --standalone -d quiztestapp.io --test-cert --email kevin.sullivan@example.com --agree-tos -v
-    command: certonly --webroot -w /var/www/certbot --force-renewal --email kevin.sullivan@example.com -d kevsquizapp.com --agree-tos
+      # Below is a line for reading logs! Handy for debugging
+      # - ./certbot/log:/var/log/letsencrypt/:rw
+    command: >
+      certonly --webroot -w /var/www/certbot  --force-renewal --email ${CERTBOT_EMAIL:-kevin.sullivan@example.com} -d kevsquizappiu.com --agree-tos
+
   # -- Backend
   actixbackend:
     # image: quiz-backend
     build:
       context: .
       dockerfile: Dockerfile.backend.prod
+    environment:
+      - QUIZAPP_DATABASE__USERNAME=${DB_USER:-user}
+      - QUIZAPP_DATABASE__PASSWORD=${DB_PASSWORD}
+      - QUIZAPP_APPLICATION__HMAC_SECRET=${QUIZAPP_APPLICATION__HMAC_SECRET}
     ports:
       - 8002:8002
     depends_on:
@@ -50,8 +65,9 @@ services:
     ports:
       - 8000:8000
     # Set Environment Variables for Security
-    env_file:
-      - .env
+    environment:
+      - DB_USER=${DB_USER:-user}
+      - DB_PASSWORD=${DB_PASSWORD}
     entrypoint:
       - /surreal
       - start

@@ -50,6 +50,8 @@ pub struct QuestionsQueryString {
     quiz: String,
 }
 
+// --- EndPoint ---
+/// Route handler for fetching questions for a given quiz from the database.
 /// Per documentation, 400 response returned if cannot serialize query.
 #[tracing::instrument(name = "Request to Get Quizzes by User", skip(db))]
 pub async fn get_questions(

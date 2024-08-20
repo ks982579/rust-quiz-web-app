@@ -2,3 +2,4 @@
 //! File to track models
 pub mod mimic_surreal;
 pub mod questions;
+pub mod quizzes;

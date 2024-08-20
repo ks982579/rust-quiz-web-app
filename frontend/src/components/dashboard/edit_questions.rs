@@ -1,10 +1,8 @@
 //! frontend/src/components/dashboard/edit_questions.rs
 //! This component will handle the initial question making procecss
 use crate::{
-    models::mimic_surreal::{SurrealQuestionMC, SurrealQuiz},
-    models::questions::{
-        EditQuestionJsonPkg, JsonQuestion, JsonQuestionMC, QLInternals, QuestType, QuestionJsonPkg,
-    },
+    models::mimic_surreal::SurrealQuestionMC,
+    models::questions::{EditQuestionJsonPkg, JsonQuestion, JsonQuestionMC, QuestType},
     store::AppSettings,
     utils::{Fetcher, JsonMsg},
 };
@@ -12,6 +10,7 @@ use leptos::*;
 use web_sys::{Headers, RequestMode, Response};
 
 /// Calibrate a Multiple Choice question (from a mold)
+/// to "calibrate" is to edit a question.
 #[component]
 pub fn QuestionCalibrateMC(
     quest_mc: SurrealQuestionMC,
@@ -59,6 +58,7 @@ pub fn QuestionCalibrateMC(
                 pop_quest.call(QuestType::MC(data.clone()));
                 add_quest.call(QuestType::MC(data));
             } else {
+                // Displaying error if one occurs
                 let deserialized: JsonMsg = Fetcher::response_to_struct(&response).await;
                 set_err_msg.set(deserialized.msg.clone());
             }
@@ -66,6 +66,7 @@ pub fn QuestionCalibrateMC(
     });
 
     // -- On Submit --
+    // Pull values from form and send to the action for async ingestion
     let on_submit = move |sub_ev: ev::SubmitEvent| {
         sub_ev.prevent_default();
 
@@ -112,8 +113,12 @@ pub fn QuestionCalibrateMC(
         }
     };
 
+    // -- View --
     view! {
-        <form on:submit=on_submit>
+        <form
+            class="forge-container"
+            on:submit=on_submit
+        >
             <h4>"Question Calibration"</h4>
             <h4>{move || err_msg.get() }</h4>
             <input
@@ -155,8 +160,12 @@ pub fn QuestionCalibrateMC(
                 value=move || quest_sig.get().choices[2].clone()
                 required
             />
-            <input type="submit" value="Save" />
-            <button on:click=move |_| cancel_edit.call(())>"Cancel"</button>
+            <div
+                class="button-case"
+            >
+                <input type="submit" value="Save" />
+                <button on:click=move |_| cancel_edit.call(())>"Cancel"</button>
+            </div>
         </form>
     }
 }

@@ -11,7 +11,7 @@ use syn::{parse_macro_input, DeriveInput, Ident};
 #[proc_macro_derive(Surrealize)]
 pub fn surrealize_macro(input: TokenStream) -> TokenStream {
     // Parsing input tokens into syntax tree
-    let mut input: DeriveInput = parse_macro_input!(input as DeriveInput);
+    let input: DeriveInput = parse_macro_input!(input as DeriveInput);
 
     // Getting Struct Name
     let struct_name: Ident = input.ident.clone();

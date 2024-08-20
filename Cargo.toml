@@ -1,5 +1,5 @@
 [workspace]
-resolver = "2"
+resolver = "1"
 members = [
   "frontend",
   "backend",
@@ -10,7 +10,7 @@ members = [
 
 [workspace.package]
 authors = ["Kevin Sullivan"]
-version = "0.6.0"
+version = "0.7.0"
 license-file = "LICENSE"
 license = "MIT"
 repository = "https://github.com/ks982579/rust-quiz-web-app"

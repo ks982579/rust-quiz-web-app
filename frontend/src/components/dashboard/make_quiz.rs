@@ -16,10 +16,12 @@ pub struct QuizJsonPkg {
     pub description: String,
 }
 
+/// To render the component for creating new quizzes.
 #[component]
 pub fn MakeQuiz(
     display_settings: WriteSignal<DashDisplay>,
     response_setter: WriteSignal<Option<SurrealQuiz>>,
+    push_quiz: Callback<SurrealQuiz>,
 ) -> impl IntoView {
     //  -- Create Signals --
     let (err_msg, set_err_msg): (ReadSignal<Option<String>>, WriteSignal<Option<String>>) =
@@ -48,6 +50,7 @@ pub fn MakeQuiz(
             let response: Response = fetcher.fetch(Some(pkg_clone)).await;
             if response.status() == 200 {
                 let data: SurrealQuiz = Fetcher::response_to_struct(&response).await;
+                push_quiz.call(data.clone());
                 response_setter.set(Some(data));
                 display_settings.set(DashDisplay::MakeQuestions);
             } else {

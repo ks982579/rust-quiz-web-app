@@ -55,7 +55,8 @@ pub struct QuizEditorQueryString {
     quiz: String,
 }
 
-/// ToDo: Documentation
+// --- EndPoint ---
+/// Route handler for editing quizzes
 #[tracing::instrument(
     name = "Request to Edit Quiz"
     skip(db, session)

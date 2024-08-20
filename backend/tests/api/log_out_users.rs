@@ -1,10 +1,9 @@
 //! backend/tests/api/log_out_users.rs
 use crate::utils::{spawn_app, TestApp};
 use backend::surrealdb_repo::SessionToken;
-use std::time::Duration;
-// need new model
 use reqwest::{cookie::Cookie, Response};
 use serde_json::Value;
+use std::time::Duration;
 use surrealdb::sql::Thing;
 
 #[tokio::test]
@@ -13,9 +12,7 @@ async fn test_log_out_logged_in_user_200() {
     let test_app: TestApp = spawn_app().await;
 
     // Clear out users
-    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("general_user").await;
-    // Clear out session tokens
-    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("sessions").await;
+    test_app.cleanup_db().await;
 
     // Test User Data
     let user_data: Value = serde_json::json!({
@@ -115,11 +112,6 @@ async fn test_log_out_anonymous_user_200() {
         .await
         .expect("Failed to create user");
 
-    let login_data: Value = serde_json::json!({
-        "username": "testuser123",
-        "password": "Password@1234"
-    });
-
     // Not logging user into application
 
     // Act
@@ -136,8 +128,5 @@ async fn test_log_out_anonymous_user_200() {
     assert!(log_out_response.status().as_u16() == 401_u16);
 
     // Clean Up
-    // TODO: Code duplication
-    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("general_user").await;
-
-    let _: surrealdb::Result<Vec<Thing>> = test_app.database.client.delete("sessions").await;
+    test_app.cleanup_db().await;
 }

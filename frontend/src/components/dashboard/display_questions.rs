@@ -1,11 +1,8 @@
 //! frontend/src/components/dashboard/display_questions.rs
 //! This component will handle the question rendering procecss for viewing and editing Questions
 use crate::{
-    components::dashboard::QuestionCalibrateMC,
-    models::mimic_surreal::SurrealQuestionMC,
-    models::questions::{Quest, QuestType},
-    store::AppSettings,
-    utils::Fetcher,
+    components::dashboard::QuestionCalibrateMC, models::mimic_surreal::SurrealQuestionMC,
+    models::questions::QuestType, store::AppSettings, utils::Fetcher,
 };
 use leptos::*;
 use web_sys::{Headers, RequestMode, Response};
@@ -35,6 +32,7 @@ pub fn QuestionShowcase(
         edit_sig.set(false);
     });
 
+    // -- View --
     view! {
         {move || {
             if edit_sig.get() {
@@ -69,6 +67,8 @@ pub fn QuestionShowcase(
     }
 }
 
+/// Component to display Multiple Choice questions
+/// and allow for them to be editted or deleted.
 #[component]
 pub fn QuestionExhibitMC(
     data: SurrealQuestionMC,

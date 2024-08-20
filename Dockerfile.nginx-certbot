@@ -1,0 +1,8 @@
+# Container for serving files for Certbot
+FROM nginx:alpine
+COPY ./frontend/nginx-certbot.conf /etc/nginx/nginx.conf
+EXPOSE 80
+EXPOSE 443
+ENV APP__BACKEND_URL="/api/v01/"
+CMD ["nginx", "-g", "daemon off;"]
+

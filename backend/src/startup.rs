@@ -8,7 +8,6 @@ use actix_session::{config::PersistentSession, SessionMiddleware};
 use actix_web::{
     cookie::{time::Duration, Key, SameSite},
     dev::Server,
-    http::header,
     web, App, HttpServer,
 };
 use secrecy::{ExposeSecret, Secret};
@@ -31,14 +30,13 @@ pub async fn run(
 
     let server: Server = HttpServer::new(move || {
         App::new()
-            // consider versioning like /api/v1/
             .wrap(
+                // Setting should also work for localhost
                 SessionMiddleware::builder(db_connect.as_ref().clone(), secret_key.clone())
                     .cookie_http_only(true)
                     .cookie_name(String::from("sessionid"))
                     .cookie_same_site(SameSite::None)
                     .cookie_secure(true)
-                    // .cookie_domain(Some(String::from("localhost:8000")))
                     .cookie_content_security(actix_session::config::CookieContentSecurity::Signed)
                     .session_lifecycle(
                         PersistentSession::default()
@@ -50,12 +48,15 @@ pub async fn run(
                     .build(),
             )
             .wrap(
+                // After much testing, allowing everything is most reliable way run application.
+                // Application should be protected by firewall when hosted on cloud.
                 Cors::default()
                     // front-end URL
                     // .allowed_origin("http://localhost:8080")
                     .allow_any_origin()
                     .allow_any_header()
                     .allow_any_method()
+                    // -- Leaving previous try for future security updates
                     // .allowed_header(header::CONTENT_TYPE)
                     // .allowed_headers(vec![
                     //     header::AUTHORIZATION,
@@ -73,13 +74,13 @@ pub async fn run(
             // This checks if authorized
             .wrap(TracingLogger::default())
             .service(
+                // Allows for API Versioning
                 web::scope("/api/v01")
                     .route("/health-check", web::get().to(health_check))
                     .route("/create-user", web::post().to(create_user))
                     .route("/user-login", web::post().to(user_login))
                     .service(
                         web::scope("")
-                            // .wrap(SessionMiddleware::new(database.clone(), secret_key.clone()))
                             .wrap(AuthCookie)
                             .route("/check-login", web::get().to(check_login))
                             .route("/user-logout", web::get().to(user_logout))
@@ -91,11 +92,9 @@ pub async fn run(
                             .route("/question-forge", web::post().to(create_new_questions))
                             .route("/question-forge", web::put().to(edit_question))
                             .route("/question-forge", web::delete().to(destroy_my_quest)),
-                        // Below I think will be for making questions
-                        // .route("/query-forge", web::get().to(?)),
                     ),
             )
-            // setting
+            // Additional settings - everything returned as JSON
             .app_data(
                 web::JsonConfig::default().content_type(|_| "application/json".parse().unwrap()),
             )
@@ -116,12 +115,12 @@ impl Application {
     /// Initialization for `Application` struct to set up application
     /// based on configuration setting from files or environment variables.
     pub async fn from_config(config: AllSettings) -> Result<Self, anyhow::Error> {
-        // TODO: Set up proper configuration
-
         println!(
             "Database on {:?}:{:?}",
             &config.database.host, &config.database.port
         );
+
+        // Below is a check for database connection when application starts.
         let mut cnt = 1;
         let database: Database = loop {
             match Database::from_config(config.database.clone()).await {
@@ -139,9 +138,6 @@ impl Application {
                 }
             }
         };
-        // let database: Database = Database::from_config(config.database)
-        //     .await // Result<Database, Error>
-        //     .expect("Unable to Connect to Database");
 
         // Update port based on settings
         let address: String = format! {

@@ -3,12 +3,8 @@ use crate::utils::{spawn_app, CreateQuestions, CreateQuiz, EditQuiz, TestApp};
 use models::{
     questions::{JsonQuestion, JsonQuestionMC, QuestionJsonPkg, SurrealQuestionMC},
     quiz::SurrealQuiz,
-    SurrealRecord,
 };
 use reqwest::Response;
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use surrealdb::sql::Thing;
 
 #[tokio::test]
 async fn test_edit_quiz_200() {
@@ -51,7 +47,7 @@ async fn test_edit_quiz_200() {
         ],
     });
 
-    let mut package: QuestionJsonPkg = QuestionJsonPkg {
+    let package: QuestionJsonPkg = QuestionJsonPkg {
         quiz_id: quiz.id.clone(),
         question: q1,
     };
@@ -104,57 +100,3 @@ async fn test_edit_quiz_200() {
 *   401 -> anonymous user cannot edit
 *   403 -> the wrong user cannot edit
 */
-
-// #[tokio::test]
-// async fn test_edit_quiz_400() {
-//     // Arrange
-//     let test_app: TestApp = spawn_app().await;
-//
-//     let _: Vec<SurrealRecord> = test_app.database.client.delete("quizzes").await.unwrap();
-//
-//     let mut test_app_response = test_app.create_new_test_user().await;
-//     assert!(test_app_response.status().is_success());
-//     test_app_response = test_app.log_in_test_user().await;
-//     assert!(test_app_response.status().is_success());
-//
-//     // Quiz Structure - Hopefully no questions starts and empty vector
-//     let info: serde_json::Value = serde_json::json!({
-//         "name": "  ",
-//         "description": "A blank quiz"
-//     });
-//
-//     // Act
-//     let response: Response = test_app.post_create_quiz(&info).await;
-//
-//     // Assert
-//     dbg!(&response);
-//     assert!(response.status() == 400);
-//
-//     // Clean up
-//     let _: Vec<SurrealRecord> = test_app.database.client.delete("quizzes").await.unwrap();
-// }
-//
-// #[tokio::test]
-// async fn test_edit_quiz_401() {
-//     // Arrange
-//     let test_app: TestApp = spawn_app().await;
-//
-//     let _: Vec<SurrealRecord> = test_app.database.client.delete("quizzes").await.unwrap();
-//
-//     // Not Creating a User
-//     // Quiz Structure
-//     let info: serde_json::Value = serde_json::json!({
-//         "name": "Algorithms",
-//         "description": "An algorithms quiz"
-//     });
-//
-//     // Act
-//     let response: Response = test_app.post_create_quiz(&info).await;
-//
-//     // Assert
-//     dbg!(&response);
-//     assert!(response.status() == 401);
-//
-//     // Clean up
-//     let _: Vec<SurrealRecord> = test_app.database.client.delete("quizzes").await.unwrap();
-// }
